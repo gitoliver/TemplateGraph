@@ -35,23 +35,30 @@ namespace TemplateGraph
 		//////////////////////////////////////////////////////////
 		//                       ACCESSOR                       //
 		//////////////////////////////////////////////////////////
-		std::vector<Edge<T>*> GetEdges();
-		std::vector<Node<T>*> GetNeighbors(); // Can't have a typedef for this to be NodePtrVector?
-		std::vector<T*> GetNodesNeighborsObjects(); //
-		T* GetObjectPtr();
-		unsigned long long GetIndex();
+		inline std::vector<Edge<T>*> GetEdges() {return edges_;}
+		inline T* GetObjectPtr() {return objectPtr_;}
+		inline unsigned long long GetIndex() {return index_;}
 		inline bool IsVisited() {return is_visited_;}
+
 		//////////////////////////////////////////////////////////
         //                       MUTATOR                        //
         //////////////////////////////////////////////////////////
-		void SetObjectPtr(T *objectPtr);
-		void AddEdge(Edge<T> *edgePtr);
+		inline void SetObjectPtr(T *objectPtr) {objectPtr_ = objectPtr;}
+		inline void AddEdge(Edge<T> *edgePtr) {edges_.push_back(edgePtr);}
 		inline void SetIsVisited(bool status = false) {is_visited_ = status;}
+
+		//////////////////////////////////////////////////////////
+        //                       FUNCTIONS                      //
+        //////////////////////////////////////////////////////////
+		std::vector<Node<T>*> GetNeighbors(); // Can't have a typedef for this to be NodePtrVector?
+		std::vector<T*> GetNodesNeighborsObjects(); //
+		std::vector<Node<T>*> GetIncomingEdgeNeighbors();
 
 		//////////////////////////////////////////////////////////
         //                  OPERATOR OVERLOADING                //
         //////////////////////////////////////////////////////////
         bool operator== (const Node<T>& rhs) const { return (this->GetIndex() == rhs.GetIndex());}
+        bool operator!= (const Node<T>& rhs) const { return (this->GetIndex() != rhs.GetIndex());}
 
 	private:
 		//////////////////////////////////////////////////////////
@@ -68,44 +75,35 @@ namespace TemplateGraph
 	};
 
 // Template classes are easier if it's all in one header file, so consider this next bit the equivalent to the cc file:
-
-template <typename T>
-	T* Node<T>::GetObjectPtr()
-	{
-		return objectPtr_;
-	}
-
-template <typename T>
-	unsigned long long Node<T>::GetIndex()
-	{
-		return index_;
-	}
-
-template <typename T>
-	void Node<T>::SetObjectPtr(T *objectPtr)
-	{
-		objectPtr_ = objectPtr;
-	}
-
-template <typename T>
-	void Node<T>::AddEdge(Edge<T> *edge)
-	{
-		edges_.push_back(edge);
-	}
-
-template < typename T> 
-	std::vector<Edge<T>*> Node<T>::GetEdges()
-	{
-		return edges_;
-	}
+	//////////////////////////////////////////////////////////
+    //                       DEFINITIONS                    //
+    //////////////////////////////////////////////////////////
 
 template <typename T>
 	std::vector<Node<T>*> Node<T>::GetNeighbors()
 	{
 		std::vector<Node<T>*> neighbors;
 		for(auto &edge : this->GetEdges())
-		{
-			neighbors.push_back(edge->GetTarget());
+		{   // Incoming Edges should be ignored
+			if (edge->GetTarget() != this) 
+			{
+				neighbors.push_back(edge->GetTarget());
+			}
+		}
+		return neighbors;
+	}
+
+template <typename T>
+	std::vector<Node<T>*> Node<T>::GetIncomingEdgeNeighbors()
+	{
+		std::vector<Node<T>*> neighbors;
+		for(auto &edge : this->GetEdges())
+		{   // Incoming Edges only
+			if (edge->GetTarget() == this) 
+			{
+				std::cout << edge->GetSource()->GetIndex() << " ---> " << this->GetIndex() << "\n"; 
+				neighbors.push_back(edge->GetSource());
+			}
 		}
 		return neighbors;
 	}
@@ -128,14 +126,6 @@ template <typename T>
 		std::cout << "Generated index: " << s_NodeIndex << std::endl;
 		return s_NodeIndex++; // makes copy of s_AtomIndex, increments the real s_AtomIndex, then returns the value in the copy
 	} // end generateAtomIndex
-
-	// std::ostream& operator << <>(std::ostream &out, const Node<T> &nodeObj)
-	// {
-	// 	out << "Node:\n    Id: " << nodeObj.id_ << "\n    Index: " << nodeObj.index_ << "\n    Visted?:" << nodeObj.is_visited_ << "\n";
-	// 	return out;
-	// }
-
-
 
 }
 #endif // T_NODE_HPP
