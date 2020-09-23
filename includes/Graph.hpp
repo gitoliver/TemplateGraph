@@ -3,6 +3,7 @@
 
 #include "Edge.hpp"
 #include "Cycle.hpp"
+#include "CyclePoint.hpp"
 
 namespace TemplateGraph
 {
@@ -37,7 +38,8 @@ namespace TemplateGraph
         //////////////////////////////////////////////////////////
         //                       FUNCTIONS                      //
         //////////////////////////////////////////////////////////
-        void DetectCycles(Node<T>* currentNode = nullptr);
+        void DetectCyclesInDFSGraph();
+        void DetectCyclesInBFSGraph();
         std::vector<Node<T>*> GetNodes();
 
 	private:
@@ -47,6 +49,7 @@ namespace TemplateGraph
 
 		void ResetAllNodesToUnvisited();
         std::vector<Node<T>*> GetCyclePoints();
+        void FindPathsToSelf(Node<T>* cycleStartNode, Node<T>* currentNode, std::vector<Node<T>*> currentPath);
 
 		//void DetermineCyclePointsRecurve(Node<T>* currentNode, Node<T>* previousNode, std::vector<Node<T>* > &nodePath);
 
@@ -55,6 +58,7 @@ namespace TemplateGraph
         //////////////////////////////////////////////////////////
 		std::vector<Edge<T>*> edges_;
 		std::vector<Cycle<T>*> cycles_;
+        std::vector<std::vector<Node<T>*>> paths_;
 	};
 
 		//////////////////////////////////////////////////////////
@@ -78,32 +82,78 @@ template <typename T>
 
 // // Uses a Recurve function to find cycles.
 template <typename T>
-     void Graph<T>::DetectCycles(Node<T>* currentNode)
+    void Graph<T>::DetectCyclesInDFSGraph()
     {
         this->ResetAllNodesToUnvisited();
         for (auto &cyclePoint : this->GetCyclePoints())
         {
             std::cout << "Cyclepoint is " << cyclePoint->GetIndex() << "\n";
+            std::vector<Node<T>*> currentPath;
+            currentPath.push_back(cyclePoint);
+            for (auto &neighbor : cyclePoint->GetIncomingEdgeNeighbors())
+            {
+                currentPath.push_back(neighbor);
+                for (auto &secondNeighbor : neighbor->GetIncomingEdgeNeighbors())
+                {
+                    if(secondNeighbor != cyclePoint)
+                    {
+                        this->FindPathsToSelf(cyclePoint, secondNeighbor, currentPath);
+                    }
+                }
+                currentPath.pop_back();
+            }           
         }
-        // if (!currentNode) // Just started and no Node supplied.
-        // {
-        //     currentNode = this->GetEdges().at(0)->GetSource();
-       	//     std::cout << "Starting with node " << currentNode->GetIndex() << "\n";
-        // }
-        // currentNode->SetIsVisited(true);
-        // std::vector<Node<T>* > nodePath = {currentNode};
-        // for (auto &neighbor : currentNode->GetNeighbors())
-        // {
-        //     neighbor->SetIsVisited(true);
-        //     nodePath.push_back(neighbor);
-        //     std::cout << "A neighbor is " << neighbor->GetIndex() << "\n"; 
-        // }
-        // for (auto &neighbor : currentNode->GetNeighbors())
-        // {
-        // 	std::cout << "Start neighbor is " << neighbor->GetIndex() << " status is " << neighbor->IsVisited() << "\n";
-        // 	this->DetermineCyclePointsRecurve(neighbor, currentNode, nodePath);       		
-        // }
+        std::cout << "Found these paths:\n";
+        for (auto &currentPath : paths_)
+        {
+            for (auto &node : currentPath)
+            {
+                std::cout << node->GetIndex() << ", ";
+            }
+            std::cout << "\n";
+        }
         this->ResetAllNodesToUnvisited();
+        return;
+    }
+
+// ABANDONED 
+template <typename T>
+    void Graph<T>::DetectCyclesInBFSGraph()
+    {
+        this->ResetAllNodesToUnvisited();
+        for (auto &cyclePoint : this->GetCyclePoints())
+        {
+            std::cout << "Cyclepoint *is " << cyclePoint->GetIndex() << "\n";
+            for (auto &neighbor : cyclePoint->GetIncomingEdgeNeighbors())
+            {
+                std::vector<Node<T>*> currentPath {cyclePoint, neighbor};
+            }
+        }
+    }
+
+template <typename T>
+    void Graph<T>::FindPathsToSelf(Node<T>* cycleStartNode, Node<T>* currentNode, std::vector<Node<T>*> currentPath)
+    {
+        currentPath.push_back(currentNode);
+        auto allNodeNeighbors = currentNode->GetNeighbors();
+        auto cyclePointFoundCheck = std::find(allNodeNeighbors.begin(), allNodeNeighbors.end(), cycleStartNode);
+        if (cyclePointFoundCheck != allNodeNeighbors.end()) // i.e. std::find found it in the neighbor list
+        {
+            currentPath.push_back(cycleStartNode);
+            std::cout << "Found it!, current currentPath is: ";
+            for (auto &node : currentPath)
+            {
+                std::cout << node->GetIndex() << ", ";
+            }
+            paths_.push_back(currentPath);
+            currentPath.pop_back();
+            std::cout << std::endl;
+        }
+        for(auto &inNeighbor : currentNode->GetIncomingEdgeNeighbors())
+        {
+            this->FindPathsToSelf(cycleStartNode, inNeighbor, currentPath);
+        }
+        currentPath.pop_back(); // remove currentNode if falling out of recursion
         return;
     }
 
@@ -114,7 +164,6 @@ template <typename T>
         std::vector<Node<T>*> cyclePoints;
         for(auto &node : this->GetNodes())
         {   // For each incoming edge, add node to cyclePoints. Can appear twice.
-            std::cout << "Node is " << node->GetIndex() << "\n";
             int numberOfIncoming = 0;
             for(auto &incoming : node->GetIncomingEdgeNeighbors())
             {

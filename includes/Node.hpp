@@ -97,14 +97,16 @@ template <typename T>
 	std::vector<Node<T>*> Node<T>::GetIncomingEdgeNeighbors()
 	{
 		std::vector<Node<T>*> neighbors;
+		//std::cout << "Incoming edge neighbors are: ";
 		for(auto &edge : this->GetEdges())
 		{   // Incoming Edges only
 			if (edge->GetTarget() == this) 
 			{
-				std::cout << edge->GetSource()->GetIndex() << " ---> " << this->GetIndex() << "\n"; 
+		//		std::cout << edge->GetSource()->GetIndex() << " ---> " << this->GetIndex() << ", "; 
 				neighbors.push_back(edge->GetSource());
 			}
 		}
+		//std::cout << std::endl;
 		return neighbors;
 	}
 
