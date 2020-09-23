@@ -1,15 +1,13 @@
 #ifndef T_GRAPH_HPP
 #define T_GRAPH_HPP
 
+#include <algorithm> // std::unique,sort,reverse
 #include "Edge.hpp"
-#include "Cycle.hpp"
-#include "CyclePoint.hpp"
 
 namespace TemplateGraph
 {
  	template <class T> class Edge; // Forward declare Edge
 	template <class T> class Node;
-	template <class T> class Cycle;
 	template <class T>
 	class Graph
 	{
@@ -33,13 +31,12 @@ namespace TemplateGraph
         inline void AddEdge(Edge<T>* edge) {edges_.push_back(edge);}
         inline void AddEdge(Node<T>* node1, Node<T>* node2) {edges_.emplace_back(new Edge<T>(node1, node2));}
         inline void AddEdge(T* object1, T* object2) {this->AddEdge(new Node<T>(object1) , new Node<T>(object2));}
-        inline void AddCycle(Node<T>* rootNode, std::vector<Node<T>*> nodePath) {cycles_.emplace_back(new Cycle<T>(rootNode, nodePath));}
+        //inline void AddCycle(Node<T>* rootNode, std::vector<Node<T>*> nodePath) {cycles_.emplace_back(new Cycle<T>(rootNode, nodePath));}
 
         //////////////////////////////////////////////////////////
         //                       FUNCTIONS                      //
         //////////////////////////////////////////////////////////
         void DetectCyclesInDFSGraph();
-        void DetectCyclesInBFSGraph();
         std::vector<Node<T>*> GetNodes();
 
 	private:
@@ -57,7 +54,6 @@ namespace TemplateGraph
         //                       ATTRIBUTES                     //
         //////////////////////////////////////////////////////////
 		std::vector<Edge<T>*> edges_;
-		std::vector<Cycle<T>*> cycles_;
         std::vector<std::vector<Node<T>*>> paths_;
 	};
 
@@ -114,21 +110,6 @@ template <typename T>
         }
         this->ResetAllNodesToUnvisited();
         return;
-    }
-
-// ABANDONED 
-template <typename T>
-    void Graph<T>::DetectCyclesInBFSGraph()
-    {
-        this->ResetAllNodesToUnvisited();
-        for (auto &cyclePoint : this->GetCyclePoints())
-        {
-            std::cout << "Cyclepoint *is " << cyclePoint->GetIndex() << "\n";
-            for (auto &neighbor : cyclePoint->GetIncomingEdgeNeighbors())
-            {
-                std::vector<Node<T>*> currentPath {cyclePoint, neighbor};
-            }
-        }
     }
 
 template <typename T>
