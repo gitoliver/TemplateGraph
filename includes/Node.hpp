@@ -6,8 +6,6 @@
 #include <vector>
 #include <memory>
 
-typedef std::vector<std::string> StringVector;
-
 namespace TemplateGraph
 {
 	
@@ -39,6 +37,7 @@ namespace TemplateGraph
 		inline T* GetObjectPtr() {return objectPtr_;}
 		inline unsigned long long GetIndex() {return index_;}
 		inline bool IsVisited() {return is_visited_;}
+		std::string GetLabel();
 
 		//////////////////////////////////////////////////////////
         //                       MUTATOR                        //
@@ -46,7 +45,8 @@ namespace TemplateGraph
 		inline void SetObjectPtr(T *objectPtr) {objectPtr_ = objectPtr;}
 		inline void AddEdge(Edge<T> *edgePtr) {edges_.push_back(edgePtr);}
 		inline void SetIsVisited(bool status = false) {is_visited_ = status;}
-
+		inline void SetLabels(std::vector<std::string> labels) {labels_ = labels;}
+		inline void AddLabel(std::string label) {labels_.push_back(label);}
 		//////////////////////////////////////////////////////////
         //                       FUNCTIONS                      //
         //////////////////////////////////////////////////////////
@@ -68,7 +68,7 @@ namespace TemplateGraph
 		bool is_visited_ = false;
 		std::string id_ = "";
 		unsigned long long index_ ;
-		StringVector tags_;
+		std::vector<std::string> labels_;
 		//std::vector<std::shared_ptr<Edge<T>>> edges_;
 		std::vector<Edge<T>*> edges_;
 		unsigned long long GenerateNodeIndex();
@@ -119,6 +119,15 @@ template <typename T>
 			neighborObjects.push_back(edge->GetTarget()->GetObjectPtr());
 		}
 		return neighborObjects;
+	}
+
+template <typename T>  
+	std::string Node<T>::GetLabel()
+	{
+		if (labels_.empty())
+			return "";
+		else
+			return labels_.back();
 	}
 
 template <typename T>
