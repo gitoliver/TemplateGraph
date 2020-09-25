@@ -37,6 +37,7 @@ namespace TemplateGraph
         //                       FUNCTIONS                      //
         //////////////////////////////////////////////////////////
         void DetectCyclesInDFSGraph();
+        bool SubGraphMatch(Graph<T> &subGraph); // Need someway to specify what will match
         std::vector<Node<T>*> GetNodes();
 
 	private:
@@ -60,6 +61,26 @@ namespace TemplateGraph
 		//////////////////////////////////////////////////////////
         //                       DEFINITIONS                    //
         //////////////////////////////////////////////////////////
+
+template <typename T>
+    bool Graph<T>::SubGraphMatch(Graph<T> &subGraph) 
+    {
+        bool returnMatch = false;
+        for(auto &subEdge : subGraph.GetEdges())
+        {
+            for(auto &edge : this->GetEdges())
+            {       // Can pass a function here instead of a string to match.
+                // If label in subgraph edge matches any of labels in graph
+                std::vector<std::string> edgeLabels = edge->GetLabels();
+                 if (std::find(edgeLabels.begin(), edgeLabels.end(), subEdge->GetLabel() ) != edgeLabels.end()) 
+                // {
+                     std::cout << "Edges " << subEdge->GetId() << " & " << edge->GetId() << " matched! Beer time\n";
+                // }
+            }
+        }
+        return returnMatch;
+    }
+
 template <typename T>
     std::vector<Node<T>*> Graph<T>::GetNodes() 
     { // Why not store nodes_ you asK? Imaginary scenarios where I don't have the NodeList when constructing. Feck.
