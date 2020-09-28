@@ -22,6 +22,11 @@ namespace TemplateGraph
 		//                       ACCESSOR                       //
 		//////////////////////////////////////////////////////////
 		inline std::vector<Edge<T>*> GetEdges() {return edges_;}
+        inline Node<T>* GetRoot() {return this->GetNodes().at(0);}
+        std::vector<Node<T>*> GetNodes();
+        inline std::vector<std::string> GetLabels() {return labels_;}
+        inline size_t GetSize() {return this->GetEdges().size();}
+        std::string GetLabel();
 	//	inline bool GetIfCyclic() {return isCyclic_;}
 
 		//////////////////////////////////////////////////////////
@@ -31,55 +36,126 @@ namespace TemplateGraph
         inline void AddEdge(Edge<T>* edge) {edges_.push_back(edge);}
         inline void AddEdge(Node<T>* node1, Node<T>* node2) {edges_.emplace_back(new Edge<T>(node1, node2));}
         inline void AddEdge(T* object1, T* object2) {this->AddEdge(new Node<T>(object1) , new Node<T>(object2));}
+        inline void SetLabels(std::vector<std::string> labels) {labels_ = labels;}
+        inline void AddLabel(std::string label) {labels_.push_back(label);}
         //inline void AddCycle(Node<T>* rootNode, std::vector<Node<T>*> nodePath) {cycles_.emplace_back(new Cycle<T>(rootNode, nodePath));}
 
         //////////////////////////////////////////////////////////
         //                       FUNCTIONS                      //
         //////////////////////////////////////////////////////////
         void DetectCyclesInDFSGraph();
-        bool SubGraphMatch(Graph<T> &subGraph); // Need someway to specify what will match
-        std::vector<Node<T>*> GetNodes();
+        std::vector<Graph<T>> SubGraphMatch(Graph<T> &subGraph);
 
 	private:
 		//////////////////////////////////////////////////////////
         //                  PRIVATE FUNCTIONS                   //
         //////////////////////////////////////////////////////////
 
-		void ResetAllNodesToUnvisited();
+		void ResetAllEdgesAndNodesToUnvisited();
         std::vector<Node<T>*> GetCyclePoints();
         void FindPathsToSelf(Node<T>* cycleStartNode, Node<T>* currentNode, std::vector<Node<T>*> currentPath);
+        void RecurveSubGraphMatch(Node<T>* graphNode, Node<T>* queryGraphNode, Graph<T> &matchingPartOfGraph);
 
 		//void DetermineCyclePointsRecurve(Node<T>* currentNode, Node<T>* previousNode, std::vector<Node<T>* > &nodePath);
-
 		//////////////////////////////////////////////////////////
         //                       ATTRIBUTES                     //
         //////////////////////////////////////////////////////////
 		std::vector<Edge<T>*> edges_;
         std::vector<std::vector<Node<T>*>> paths_;
+        std::vector<std::string> labels_;
 	};
-
 		//////////////////////////////////////////////////////////
         //                       DEFINITIONS                    //
         //////////////////////////////////////////////////////////
 
-template <typename T>
-    bool Graph<T>::SubGraphMatch(Graph<T> &subGraph) 
+template <typename T>  
+    std::string Graph<T>::GetLabel()
     {
-        bool returnMatch = false;
-        for(auto &subEdge : subGraph.GetEdges())
+        if (labels_.empty())
+            return "";
+        else
+            return labels_.back();
+    }
+
+template <typename T> // requires at least one edge in subGraph
+    std::vector<Graph<T>> Graph<T>::SubGraphMatch(Graph<T> &subGraph) 
+    {
+        this->ResetAllEdgesAndNodesToUnvisited();
+        subGraph.ResetAllEdgesAndNodesToUnvisited();
+        std::vector<Graph<T>> matchingGraphs; // Multiple parts of Graph can match subGraph. 
+        std::cout << "subRoot label is " << subGraph.GetRoot()->GetLabel() << " and checking against:\n";
+        for(auto &node : this->GetNodes())
         {
-            for(auto &edge : this->GetEdges())
-            {       // Can pass a function here instead of a string to match.
-                // If label in subgraph edge matches any of labels in graph
-                std::vector<std::string> edgeLabels = edge->GetLabels();
-                 if (std::find(edgeLabels.begin(), edgeLabels.end(), subEdge->GetLabel() ) != edgeLabels.end()) 
-                // {
-                     std::cout << "Edges " << subEdge->GetId() << " & " << edge->GetId() << " matched! Beer time\n";
-                // }
+            std::cout << node->GetLabel() << "\n";
+            if ( node->GetLabel() == subGraph.GetRoot()->GetLabel() )
+            {
+                Graph<T> matchingPartOfGraph; 
+                this->RecurveSubGraphMatch(node, subGraph.GetRoot(), matchingPartOfGraph);
+                subGraph.ResetAllEdgesAndNodesToUnvisited();
+                std::cout << "Finished checking that path.\nQuery size: " << subGraph.GetSize() << "\nMatch size: " << matchingPartOfGraph.GetSize() << "\n";
+                if (matchingPartOfGraph.GetSize() == subGraph.GetSize()) 
+                { // After recursion, if they are the same size, they now match.
+                    matchingGraphs.push_back(matchingPartOfGraph); // A copy, but whatever man.
+                }
             }
         }
-        return returnMatch;
+        this->ResetAllEdgesAndNodesToUnvisited();
+        subGraph.ResetAllEdgesAndNodesToUnvisited();
+        return matchingGraphs;
     }
+
+template <typename T>
+    void Graph<T>::RecurveSubGraphMatch(Node<T>* graphNode, Node<T>* queryGraphNode, Graph<T> &matchingPartOfGraph)
+    {
+        for (auto &queryEdge: queryGraphNode->GetEdges())
+        {
+            std::cout << "   " << queryEdge->GetLabel() << queryEdge->GetTarget()->GetLabel() << " of query, checking against edges:\n";
+            for (auto &edge: graphNode->GetEdges())
+            {
+                if (!queryEdge->GetIsVisited() && !edge->GetIsVisited())
+                { // if edges are unvisited so far
+                    queryEdge->SetIsVisited(true);
+                    edge->SetIsVisited(true);
+                    std::cout << "   " << edge->GetLabel() << edge->GetTarget()->GetLabel() << "\n";
+                    if (queryEdge->CompareEdgeAndNodeLabels(edge))
+                    {
+                        matchingPartOfGraph.AddEdge(edge);
+                        std::cout << "   MATCH, now recurve with target node: " << queryEdge->GetTarget()->GetLabel() << "\n";
+                        RecurveSubGraphMatch(edge->GetTarget(), queryEdge->GetTarget(), matchingPartOfGraph);
+                    }
+                }
+            }
+        }
+        return;
+    }
+        // if(std::any_of(nodes.cbegin(), nodes.cend(), [rootNode](Node<T>* a) {return a->GetLabel() == rootNode->GetLabel();} ) )
+        // {
+        //     std::cout << "Matches one of these fucks";
+        // }
+        // auto nodeMatch = (std::find_if(nodes.cbegin(), nodes.cend(), [rootNode](Node<T>* a) {return a->GetLabel() == rootNode->GetLabel();} ) );+
+
+        //     for(auto &node : this->GetNodes())
+        //     {
+        //         if(node->GetLabel() == subGraph.GetRoot()->GetLabel())
+        //         {
+        //             for(auto &queryEdge)
+        //         }
+        // }
+
+        // for (auto &neighbor : subGraph.GetRoot()->GetNeighbors());
+
+        //     for(auto &queryEdge : rootNode.GetEdges())
+        //     {
+
+        //         for(auto &edge : this->GetEdges())
+        //     {   // Can pass a function to std::if_any instead of a string to match.
+        //         std::vector<std::string> edgeLabels = edge->GetLabels();
+        //         if (std::find(edgeLabels.begin(), edgeLabels.end(), queryEdge->GetLabel() ) != edgeLabels.end()) 
+        //         {   // If label in subgraph edge matches any of labels in graph
+        //             std::cout << "Edges " << queryEdge->GetId() << " & " << edge->GetId() << " matcheted!\n";
+        //         }
+        //     }
+        // }
 
 template <typename T>
     std::vector<Node<T>*> Graph<T>::GetNodes() 
@@ -101,7 +177,7 @@ template <typename T>
 template <typename T>
     void Graph<T>::DetectCyclesInDFSGraph()
     {
-        this->ResetAllNodesToUnvisited();
+        this->ResetAllEdgesAndNodesToUnvisited();
         for (auto &cyclePoint : this->GetCyclePoints())
         {
             std::cout << "Cyclepoint is " << cyclePoint->GetIndex() << "\n";
@@ -129,7 +205,7 @@ template <typename T>
             }
             std::cout << "\n";
         }
-        this->ResetAllNodesToUnvisited();
+        this->ResetAllEdgesAndNodesToUnvisited();
         return;
     }
 
@@ -159,7 +235,6 @@ template <typename T>
         return;
     }
 
-
 template <typename T>
     std::vector<Node<T>*> Graph<T>::GetCyclePoints()
     {
@@ -180,14 +255,14 @@ template <typename T>
     }
 
 template <typename T> 
-    void Graph<T>::ResetAllNodesToUnvisited()
+    void Graph<T>::ResetAllEdgesAndNodesToUnvisited()
     {
         for(auto &edge : this->GetEdges())
         {
+           edge->SetIsVisited(false);
            edge->GetSource()->SetIsVisited(false);
            edge->GetTarget()->SetIsVisited(false);
         }
     }
-
 }
 #endif // T_GRAPH_HPP

@@ -2,40 +2,12 @@
 #include "../includes/Edge.hpp"
 #include "../includes/Graph.hpp"
 
+
+
 int main ()
 {
 	using namespace TemplateGraph;
-	// int intStance = 1, intStance2 = 24, intStance3 = 999;
-	// Node<int> intNode(&intStance);
-	// Node<int> intNoder(&intStance2);
-	// Node<int> intNodest(&intStance3);
-	// //intNode.SetObjectPtr(&intStance);
-	// int *test = intNode.GetObjectPtr();
-	// std::cout << "Test is " << *test << " while intStance is " << intStance << std::endl;
-	// intStance = 2;
-	// std::cout << "Test is " << *test << " while intStance is " << intStance << std::endl;
-
-	// Edge<int> edger(&intNode, &intNoder);
-	// Edge<int> edgier(&intNode, &intNodest);
 	
-	// int *test2 = edgier.GetTarget()->GetObjectPtr();
-
-	// std::cout << "Test2 is " << *test2 << std::endl;
-
-	// std::vector<Node<int>*> neighbors;
-	// neighbors.push_back(edgier.GetTarget());
-	// neighbors = intNode.GetNeighbors();
-
-	// std::vector<int*> allDaNeighborObjects = intNode.GetNodesNeighborsObjects();
-	// std::cout << "Neighbors are: ";
-	// for (auto & element : allDaNeighborObjects)
-	// {
-	// 	std::cout << *element << ", ";
-	// }
-	// std::cout << std::endl;
-	//std::vector<std::shared_ptr<int*>> steve = intNode.GetNodesNeighborsObjects();
-	//std::vector<std::shared_ptr<TemplateGraph::Node<int>>> steve = intNode.GetNodesNeighbors();
-
 	std::vector<Node<int>* > vectorOfNodes;
 	Graph<int> intGraph1;
 	std::vector<int> vect1(18);
@@ -137,7 +109,67 @@ int main ()
     Graph<Graph<int>> garyTheGraphGraph;
     garyTheGraphGraph.AddEdge(new Edge<Graph<int>>(&graphNode1, &graphNode2));
 
-    //Graph<Graph<Atom>> residueGraph;
+
+    // Subgraph matching test
+    int intStance = 1, intStance2 = 24, intStance3 = 999;
+    Graph<int> mainGraph, queryGraph;
+    Node<int> mana(&intStance, "Man");
+    Node<int> gala(&intStance2, "Gal");
+    Node<int> man(&intStance, "Man");
+    Node<int> gal(&intStance2, "Gal");
+    Node<int> glc(&intStance3, "Glc");
+    Node<int> roh(&intStance3, "ROH");
+
+    Node<int> man1(&intStance, "Man");
+    Node<int> gal2(&intStance2, "Gal");
+    //intNode.SetObjectPtr(&intStance);
+    // int *test = intNode.GetObjectPtr();
+    // std::cout << "Test is " << *test << " while intStance is " << intStance << std::endl;
+    // intStance = 2;
+    // std::cout << "Test is " << *test << " while intStance is " << intStance << std::endl;
+
+    Edge<int> edge1(&man, &gal);
+    Edge<int> edge2(&glc, &gal);
+    Edge<int> edge3(&mana, &gala);
+    Edge<int> edge4(&gala, &man);
+    Edge<int> edge5(&gal, &roh);
+    edge1.AddLabel("1-4");
+    edge2.AddLabel("1-3");
+    edge3.AddLabel("1-4");
+    edge4.AddLabel("1-2");
+    edge5.AddLabel("1-");
+    mainGraph.AddEdge(&edge1);
+    mainGraph.AddEdge(&edge2);
+    mainGraph.AddEdge(&edge3);
+    mainGraph.AddEdge(&edge4);
+    mainGraph.AddEdge(&edge5);
+
+    Edge<int> edge9(&man1, &gal2);
+    edge9.AddLabel("1-4");
+    queryGraph.AddEdge(&edge9);
+
+    std::vector<Graph<int>> matchingSubGraphs = mainGraph.SubGraphMatch(queryGraph);
+    std::cout << "Found " << matchingSubGraphs.size() << " subgraphs that matched\n";
+
+    // int *test2 = edgier.GetTarget()->GetObjectPtr();
+
+    // std::cout << "Test2 is " << *test2 << std::endl;
+
+    // std::vector<Node<int>*> neighbors;
+    // neighbors.push_back(edgier.GetTarget());
+    // neighbors = intNode.GetNeighbors();
+
+   // std::vector<int*> allDaNeighborObjects = intNode.GetNodesNeighborsObjects();
+ //    std::cout << "Neighbors are: ";
+ //    for (auto & element : allDaNeighborObjects)
+ //    {
+ //     std::cout << *element << ", ";
+ //    }
+ //    std::cout << std::endl;
+ //    std::vector<std::shared_ptr<int*>> steve = intNode.GetNodesNeighborsObjects();
+ //    std::vector<std::shared_ptr<TemplateGraph::Node<int>>> steve = intNode.GetNodesNeighbors();
+
+ //    Graph<Graph<Atom>> residueGraph;
 
 	// Edge<int> edgeA(Node<int> intNode1(1), &intNoder);
 
@@ -145,4 +177,8 @@ int main ()
 	// Graph<int> theBestGraph(vectorOfEdges);
 	
 	return 0;
+}
+
+bool compareLabel(TemplateGraph::Edge<int> &edge, TemplateGraph::Edge<int> &otherEdge) {
+    return (edge.GetLabel() == otherEdge.GetLabel());
 }

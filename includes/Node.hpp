@@ -5,30 +5,25 @@
 #include <iostream>
 #include <vector>
 #include <memory>
+#include <algorithm>
 
 namespace TemplateGraph
 {
-	
 	 template <class T> class Edge; // Forward declare Edge
 	 template <class T> class Node; // Forward declare Node
-
-
 	// template<typename T>
 	// std::ostream& operator << (std::ostream& out, const Node<T>& nodeObj);
 	// template <class T> class Edge;
-	// typedef std::vector<Edge*> EdgePtrVector;
 	template <class T>
 	class Node
 	{
-
-    //typedef std::vector<Edge<T>*> EdgePtrVector;
-
 	public:
 		//////////////////////////////////////////////////////////
 		//                       CONSTRUCTOR                    //
 		//////////////////////////////////////////////////////////
 	//	Node() {} // Unless needed, no.
-		Node(T *objectPtr) : objectPtr_ {objectPtr} {index_ = GenerateNodeIndex();}
+		Node(T *objectPtr) : objectPtr_ (objectPtr) {index_ = this->GenerateNodeIndex();}
+		Node(T *objectPtr, std::string label) : objectPtr_ (objectPtr) {index_ = this->GenerateNodeIndex(); this->AddLabel(label);}
 		Node(T *objectPtr, unsigned long long index) : objectPtr_ (objectPtr), index_ (index){}
 		//////////////////////////////////////////////////////////
 		//                       ACCESSOR                       //
@@ -36,9 +31,9 @@ namespace TemplateGraph
 		inline std::vector<Edge<T>*> GetEdges() {return edges_;}
 		inline T* GetObjectPtr() {return objectPtr_;}
 		inline unsigned long long GetIndex() {return index_;}
-		inline bool IsVisited() {return is_visited_;}
+		inline bool GetIsVisited() {return is_visited_;}
+		inline std::vector<std::string> GetLabels() {return labels_;}
 		std::string GetLabel();
-
 		//////////////////////////////////////////////////////////
         //                       MUTATOR                        //
         //////////////////////////////////////////////////////////
@@ -53,14 +48,18 @@ namespace TemplateGraph
 		std::vector<Node<T>*> GetNeighbors(); // Can't have a typedef for this to be NodePtrVector?
 		std::vector<T*> GetNodesNeighborsObjects(); //
 		std::vector<Node<T>*> GetIncomingEdgeNeighbors();
+		bool CompareLabels(Node<T>* otherNode);
 
 		//////////////////////////////////////////////////////////
         //                  OPERATOR OVERLOADING                //
         //////////////////////////////////////////////////////////
         bool operator== (const Node<T>& rhs) const { return (this->GetIndex() == rhs.GetIndex());}
         bool operator!= (const Node<T>& rhs) const { return (this->GetIndex() != rhs.GetIndex());}
-
 	private:
+		//////////////////////////////////////////////////////////
+        //                       FUNCTIONS                      //
+        //////////////////////////////////////////////////////////
+		unsigned long long GenerateNodeIndex();
 		//////////////////////////////////////////////////////////
         //                       ATTRIBUTES                     //
         //////////////////////////////////////////////////////////
@@ -71,7 +70,6 @@ namespace TemplateGraph
 		std::vector<std::string> labels_;
 		//std::vector<std::shared_ptr<Edge<T>>> edges_;
 		std::vector<Edge<T>*> edges_;
-		unsigned long long GenerateNodeIndex();
 	};
 
 // Template classes are easier if it's all in one header file, so consider this next bit the equivalent to the cc file:
@@ -130,13 +128,27 @@ template <typename T>
 			return labels_.back();
 	}
 
+template <typename T>  
+	bool Node<T>::CompareLabels(Node<T>* otherNode)
+	{ // If any label here matches any in other label, return true
+		for(auto &otherLabel : otherNode->GetLabels())
+		{
+			if (std::find(labels_.begin(), labels_.end(), otherLabel ) != labels_.end() )
+			{
+				std::cout << "Node labels match for " << this->GetLabel() << " & " << otherLabel << "\n";
+				return true;
+			}
+			std::cout << "Node labels DONT match for " << this->GetLabel() << " & " << otherLabel << "\n";
+		}
+		return false;
+	}
+
 template <typename T>
 	unsigned long long Node<T>::GenerateNodeIndex() 
 	{
 		static unsigned long long s_NodeIndex = 0; // static keyword means it is created only once and persists beyond scope of code block.
-		std::cout << "Generated index: " << s_NodeIndex << std::endl;
-		return s_NodeIndex++; // makes copy of s_AtomIndex, increments the real s_AtomIndex, then returns the value in the copy
-	} // end generateAtomIndex
+		return s_NodeIndex++; // makes copy of index, increments the real index, then returns the value in the copy
+	} 
 
 }
 #endif // T_NODE_HPP
