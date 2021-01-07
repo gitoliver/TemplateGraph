@@ -10,21 +10,23 @@
 
 namespace TemplateGraph
 {
+	template <class T> class Edge; // forward declare 
+	//template <class T> Edge();
 	template <class T>
-	class Edge
+	class Edge // Always owned by a Node
 	{
 	public:
 		//////////////////////////////////////////////////////////
 		//                       CONSTRUCTOR                    //
 		//////////////////////////////////////////////////////////
 		Edge() {index_ = GenerateEdgeIndex();}
-		Edge(Node<T> *source, Node<T> *target);
+		Edge(std::weak_ptr<Node<T>> source, std::weak_ptr<Node<T>> target, std::string label = ""); // Only Node should call this. How to enforce?
+		~Edge() { std::cout << "Edge labeled " << this->GetLabel() << ", with index " << this->GetIndex() << " destroyed\n";}
 		//	Edge(Node *source, Node *target) : source_(source), target_(target){};
 		//////////////////////////////////////////////////////////
 		//                       ACCESSOR                       //
 		//////////////////////////////////////////////////////////
-		inline Node<T>* GetSource() {return source_;}
-		inline Node<T>* GetTarget() {return target_;}
+		
 		inline std::vector<std::string> GetLabels() {return labels_;}
 		inline unsigned long long GetIndex() {return index_;}
 		inline bool GetIsVisited() {return is_visited_;}
@@ -34,8 +36,6 @@ namespace TemplateGraph
 		//////////////////////////////////////////////////////////
         //                       MUTATOR                        //
         //////////////////////////////////////////////////////////
-		inline void SetSource(Node<T>* source) {source_ = source;}
-		inline void SetTarget(Node<T>* target) {target_ = target;}
 		inline void SetLabels(std::vector<std::string> labels) {labels_ = labels;}
 		inline void AddLabel(std::string label) {labels_.push_back(label);}
 		inline void SetIsVisited(bool status = false) {is_visited_ = status;}
@@ -50,31 +50,51 @@ namespace TemplateGraph
         bool operator== (const Edge<T>& rhs) const { return (this->GetIndex() == rhs.GetIndex());}
         bool operator!= (const Edge<T>& rhs) const { return (this->GetIndex() != rhs.GetIndex());}
 	private:
+		//////////////////////////////////////////////////////////
+		//                       CONSTRUCTOR                    //
+		//////////////////////////////////////////////////////////
+
+		//////////////////////////////////////////////////////////
+		//                       ACCESSOR                       //
+		//////////////////////////////////////////////////////////
+		inline std::weak_ptr<Node<T>> GetSource() {return source_;}
+		inline std::weak_ptr<Node<T>> GetTarget() {return target_;}
+		//////////////////////////////////////////////////////////
+        //                       MUTATOR                        //
+        //////////////////////////////////////////////////////////
+		inline void SetSource(std::weak_ptr<Node<T>> source) {source_ = source;}
+		inline void SetTarget(std::weak_ptr<Node<T>> target) {target_ = target;}       		
     	//////////////////////////////////////////////////////////
         //                       FUNCTIONS                      //
         //////////////////////////////////////////////////////////
+
 		unsigned long long GenerateEdgeIndex();
 		//////////////////////////////////////////////////////////
         //                       ATTRIBUTES                     //
         //////////////////////////////////////////////////////////
-		Node<T> *source_ = nullptr;
-		Node<T> *target_ = nullptr;
+        std::weak_ptr<Node<T>> source_;
+		std::weak_ptr<Node<T>> target_;
 		std::vector<std::string> labels_;
 		unsigned long long index_ ;
 		bool is_visited_ = false;
+		//////////////////////////////////////////////////////////
+        //                       FRIENDS                        //
+        //////////////////////////////////////////////////////////
+		friend class Node<T>; // Allows Node to access private stuff like GetSource().
 	};
 	//////////////////////////////////////////////////////////
     //                       DEFINITIONS                    //
     //////////////////////////////////////////////////////////
 template <typename T> 
-	Edge<T>::Edge(Node<T> *source, Node<T> *target)
+	Edge<T>::Edge(std::weak_ptr<Node<T>> source, std::weak_ptr<Node<T>> target, std::string label)
 	{
 		this->SetSource(source);
 		this->SetTarget(target);
-		this->GetSource()->AddEdge(this);
-		this->GetTarget()->AddEdge(this); // Incoming Edge
+		this->AddLabel(label);
+		//this->GetSource()->AddEdge(this); Node will handle this.
+		//this->GetTarget()->AddIncomingEdge(this); Node will handle this.
 		index_ = this->GenerateEdgeIndex();
-		//std::cout << "Constructed with " << *source_ << " source and " << *target_ << "target." << std::endl;
+		std::cout << "Edge labeled " << this->GetLabel() << ", with index " << this->GetIndex() << " constructed\n";
 	}
 
 // Should I throw an exception if the user asks for a label and none are set? Probably.

@@ -16,29 +16,30 @@ namespace TemplateGraph
 		//                       CONSTRUCTOR                    //
 		//////////////////////////////////////////////////////////
 		Graph() {};
-		Graph(std::vector<Edge<T>*> edges);
+        Graph(std::shared_ptr<Node<T>> rootNode) : rootNode_ (rootNode) {;}
+
+		//Graph(std::vector<std::weak_ptr<Edge<T>>> edges);
 
 		//////////////////////////////////////////////////////////
 		//                       ACCESSOR                       //
 		//////////////////////////////////////////////////////////
-		inline std::vector<Edge<T>*> GetEdges() {return edges_;}
-        inline Node<T>* GetRoot() {return this->GetNodes().at(0);}
-        std::vector<Node<T>*> GetNodes();
-        inline std::vector<std::string> GetLabels() {return labels_;}
-        inline size_t GetSize() {return this->GetEdges().size();}
-        std::string GetLabel();
+		// inline std::vector<std::shared_ptr<Edge<T>>> GetEdges() {return edges_;}
+  //       inline Node<T>* GetRoot() {return this->GetNodes().at(0);}
+  //       inline std::vector<std::string> GetLabels() {return labels_;}
+  //       inline size_t GetSize() {return this->GetEdges().size();}
+       // std::string GetLabel();
 	//	inline bool GetIfCyclic() {return isCyclic_;}
 
 		//////////////////////////////////////////////////////////
         //                       MUTATOR                        //
         //////////////////////////////////////////////////////////
-        inline void SetEdges(std::vector<Edge<T>*> edges) {edges_ = edges;}
-        inline void AddEdge(Edge<T>* edge) {edges_.push_back(edge);}
-        inline void AddEdge(Node<T>* node1, Node<T>* node2) {edges_.emplace_back(new Edge<T>(node1, node2));}
-        inline void AddEdge(T* object1, T* object2) {this->AddEdge(new Node<T>(object1) , new Node<T>(object2));}
-        inline void SetLabels(std::vector<std::string> labels) {labels_ = labels;}
-        inline void AddLabel(std::string label) {labels_.push_back(label);}
-        //inline void AddCycle(Node<T>* rootNode, std::vector<Node<T>*> nodePath) {cycles_.emplace_back(new Cycle<T>(rootNode, nodePath));}
+        // inline void SetEdges(std::vector<Edge<T>*> edges) {edges_ = edges;}
+        // inline void AddEdge(Edge<T>* edge) {edges_.push_back(edge);}
+        // inline void AddEdge(Node<T>* node1, Node<T>* node2) {edges_.emplace_back(new Edge<T>(node1, node2));}
+        // inline void AddEdge(T* object1, T* object2) {this->AddEdge(new Node<T>(object1) , new Node<T>(object2));}
+        // inline void SetLabels(std::vector<std::string> labels) {labels_ = labels;}
+        // inline void AddLabel(std::string label) {labels_.push_back(label);}
+        // //inline void AddCycle(Node<T>* rootNode, std::vector<Node<T>*> nodePath) {cycles_.emplace_back(new Cycle<T>(rootNode, nodePath));}
 
         //////////////////////////////////////////////////////////
         //                       FUNCTIONS                      //
@@ -47,6 +48,15 @@ namespace TemplateGraph
         std::vector<Graph<T>> SubGraphMatch(Graph<T> &subGraph);
 
 	private:
+        //////////////////////////////////////////////////////////
+        //                       ACCESSOR                       //
+        //////////////////////////////////////////////////////////
+        std::vector<std::shared_ptr<Node<T>>> GetNodes();
+        inline std::vector<std::shared_ptr<Node<T>>> GetRoot() {return rootNode_;}
+        //////////////////////////////////////////////////////////
+        //                       MUTATOR                        //
+        //////////////////////////////////////////////////////////
+
 		//////////////////////////////////////////////////////////
         //                  PRIVATE FUNCTIONS                   //
         //////////////////////////////////////////////////////////
@@ -63,19 +73,22 @@ namespace TemplateGraph
 		std::vector<Edge<T>*> edges_;
         std::vector<std::vector<Node<T>*>> paths_;
         std::vector<std::string> labels_;
+        std::weak_ptr<Node<T>> rootNode_;
 	};
 		//////////////////////////////////////////////////////////
         //                       DEFINITIONS                    //
         //////////////////////////////////////////////////////////
 
-template <typename T>  
-    std::string Graph<T>::GetLabel()
-    {
-        if (labels_.empty())
-            return "";
-        else
-            return labels_.back();
-    }
+// template <typename T>  
+//     std::string Graph<T>::GetLabel()
+//     {
+//         if (labels_.empty())
+//             return "";
+//         else
+//             return labels_.back();
+//     }
+
+
 
 template <typename T> // requires at least one edge in subGraph
     std::vector<Graph<T>> Graph<T>::SubGraphMatch(Graph<T> &subGraph) 
@@ -158,9 +171,9 @@ template <typename T>
         // }
 
 template <typename T>
-    std::vector<Node<T>*> Graph<T>::GetNodes() 
+    std::vector<std::shared_ptr<Node<T>>> Graph<T>::GetNodes() 
     { // Why not store nodes_ you asK? Imaginary scenarios where I don't have the NodeList when constructing. Feck.
-        std::vector<Node<T>*> nodes;
+        std::vector<std::shared_ptr<Node<T>>> nodes;
         for(auto &edge : this->GetEdges())
         {
            nodes.push_back(edge->GetSource());
