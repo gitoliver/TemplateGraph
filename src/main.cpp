@@ -7,12 +7,14 @@ class Atom
 {
 public:
     Atom(std::string name) : name_ (name) {atomNodePtr_ = std::make_shared<Node<Atom>>(this, name);} // default node label is atom name 
-    inline void AddBond(Atom *otherAtom) {atomNodePtr_->AddEdge(otherAtom->GetNode(), this->GetName() + "--" + otherAtom->GetName());}
+    inline void AddBond(Atom *otherAtom) {atomNodePtr_->AddEdge(otherAtom->GetNode(), this->GetName() + "->" + otherAtom->GetName());}
     inline void RemoveBond(Atom *otherAtom) {atomNodePtr_->RemoveEdge(otherAtom->GetNode());}
     inline std::vector<Atom*> GetNeighbors() {return this->GetNode()->GetNodesNeighborsObjects();}
     inline std::string GetName() {return name_;}
+    inline const std::shared_ptr<Node<Atom>> GetNode() {return atomNodePtr_;}
 private:
-    inline std::shared_ptr<Node<Atom>> GetNode() {return atomNodePtr_;}
+    //friend std::shared_ptr<Node<Atom>> Graph<Atom>::GetNodeGraph(const Atom& atom);
+    //inline std::shared_ptr<Node<Atom>> GetNode() {return atomNodePtr_;}
     std::shared_ptr<Node<Atom>> atomNodePtr_;
     std::string name_;
 };
@@ -25,38 +27,34 @@ int main ()
     Atom *atom4 = new Atom("Bingo");
     Atom *atom5 = new Atom("Marsh");
     Atom *atom6 = new Atom("Delux");
+    Atom *atom7 = new Atom("Frank");
     atom1->AddBond(atom2);
-    atom1->AddBond(atom6);
     atom2->AddBond(atom3);
     atom3->AddBond(atom4);
+    atom4->AddBond(atom5);
     atom5->AddBond(atom6);
-    atom1->AddBond(atom6);
+   // atom1->AddBond(atom6);
+    atom6->AddBond(atom7);
     atom6->AddBond(atom1);
+    atom7->AddBond(atom1);
     
-    for (auto &neighbor : atom1->GetNeighbors())
-    {
-        std::cout << "Neighbor of " << atom1->GetName() << " is " << neighbor->GetName() << "\n";
-    }
-    for (auto &neighbor : atom6->GetNeighbors())
-    {
-        std::cout << "Neighbor of " << atom6->GetName() << " is " << neighbor->GetName() << "\n";
-    }
-    std::cout << "About to delete atom1 aka " << atom1->GetName() << "\n";
-    delete atom1;
-    for (auto &neighbor : atom6->GetNeighbors())
-    {
-        std::cout << "Neighbor of " << atom6->GetName() << " is " << neighbor->GetName() << "\n";
-    }
-    std::cout << "About to delete bond\n";
-    atom3->RemoveBond(atom4);
-    atom4->RemoveBond(atom3);
-    atom3->RemoveBond(atom4);
-    std::cout << "About to delete all the atoms\n";
+    Graph<Atom> atomGraph(atom1->GetNode()); // Bad idea. What if atom1 gets deleted?
+    std::cout << "Graph:\n" << atomGraph.Print() << "\n\n";
+    atomGraph.DetectCyclesInDFSGraph();
+    // std::cout << "Deleting " << atom2->GetName() << "\n";
     delete atom2;
-    delete atom3;
-    delete atom4;
-    delete atom5;
-    delete atom6;
+    // std::cout << "Graph:\n" << atomGraph.Print() << "\n\n";
+    // std::cout << "Deleting bonds: \n";
+    //atom1->RemoveBond(atom6);
+    // atom4->RemoveBond(atom3);
+    // atom3->RemoveBond(atom4);
+    //  std::cout << "Graph:\n" << atomGraph.Print() << "\n\n";
+    // std::cout << "Deleting atoms.\n";
+    // // delete atom3;
+    // delete atom4;
+    // delete atom5;
+    // delete atom6;
+    std::cout << "Graph:\n" << atomGraph.Print() << "\n\n";
     std::cout << "Finished atom section\n\n";
 
 //     //atom1.atomNodePtr_ = std::make_shared<Node<Atom>>(&atom1);
