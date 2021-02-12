@@ -27,11 +27,11 @@ namespace TemplateGraph
 		// Node(T *objectPtr, unsigned long long index) : objectPtr_ (objectPtr), index_ (index){}
 		~Node() 
 		{
+			for(auto& inNeighbor: this->GetIncomingEdgeNeighbors())
+			{
+			  	inNeighbor->UpdateOutEdges();
+			}
 			std::cout << "Node labelled " << this->GetLabel() << " destroyed\n";
-			// for(auto& inNeighbor: this->GetIncomingEdgeNeighbors())
-			// {
-			// 	inNeighbor->RemoveEdge(this->shared_from_this());
-			// }
 		}
 		//////////////////////////////////////////////////////////
 		//                       ACCESSOR                       //
@@ -42,6 +42,7 @@ namespace TemplateGraph
 		inline bool GetIsVisited() {return is_visited_;}
 		inline std::vector<std::string> GetLabels() {return labels_;}
 		std::string GetLabel();
+		inline std::vector<std::shared_ptr<Edge<T>>> GetOutEdges() {return outEdges_;}
 		//////////////////////////////////////////////////////////
         //                       MUTATOR                        //
         //////////////////////////////////////////////////////////
@@ -66,15 +67,16 @@ namespace TemplateGraph
         //////////////////////////////////////////////////////////
         bool operator== (const Node<T>& rhs) const { return (this->GetIndex() == rhs.GetIndex());}
         bool operator!= (const Node<T>& rhs) const { return (this->GetIndex() != rhs.GetIndex());}
+ 		
 	private:
 		//////////////////////////////////////////////////////////
         //                       FUNCTIONS                      //
         //////////////////////////////////////////////////////////
-        inline std::vector<std::shared_ptr<Edge<T>>> GetOutEdges() {return outEdges_;}
 		std::vector<std::shared_ptr<Edge<T>>> GetInEdges();
 		std::vector<std::shared_ptr<Edge<T>>> GetEdges(); 
 		// void RemoveEdge(std::shared_ptr<Edge<T>> edgeToDie);
 		unsigned long long GenerateNodeIndex();
+		void UpdateOutEdges();
 
 
 		//////////////////////////////////////////////////////////
@@ -94,6 +96,12 @@ namespace TemplateGraph
 	//////////////////////////////////////////////////////////
     //                       DEFINITIONS                    //
     //////////////////////////////////////////////////////////
+
+	//////////////////////////////////////////////////////////
+    //                  OPERATOR OVERLOADING                //
+    //////////////////////////////////////////////////////////
+// template <typename T>
+
 
 template <typename T>  // Need to alter type from weak to shared.
 	std::vector<std::shared_ptr<Edge<T>>> Node<T>::GetInEdges()
@@ -130,10 +138,23 @@ template <typename T>
 		for(auto &edge : this->GetInEdges())
 		{   
 			if (edge->GetSource().lock() == otherNode)
-			{
+			{	
 				otherNode->RemoveEdge(this->shared_from_this());
 			}
 		}
+		return;
+	}
+
+template <typename T>  
+	void Node<T>::UpdateOutEdges()
+	{
+		for(auto &edge : this->GetOutEdges())
+		{   
+			if (!edge->GetTarget().lock()) // If you cannot lock the weak pointer, get rid of this edge.
+			{ 
+				outEdges_.erase(std::remove(outEdges_.begin(), outEdges_.end(), edge), outEdges_.end());
+			}
+		} 
 		return;
 	}
 
@@ -178,6 +199,8 @@ template <typename T>
 		}
 		return neighbors;
 	}
+
+
 
 template <typename T>
 	std::vector<T*> Node<T>::GetNodesNeighborsObjects()
