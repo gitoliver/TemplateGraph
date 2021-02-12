@@ -44,11 +44,19 @@ namespace TemplateGraph
         //////////////////////////////////////////////////////////
 		bool CompareLabels(Edge<T>* otherEdge);
 		bool CompareEdgeAndNodeLabels(Edge<T>* otherEdge);
+		std::string Print();
 		//////////////////////////////////////////////////////////
         //                  OPERATOR OVERLOADING                //
         //////////////////////////////////////////////////////////
         bool operator== (const Edge<T>& rhs) const { return (this->GetIndex() == rhs.GetIndex());}
         bool operator!= (const Edge<T>& rhs) const { return (this->GetIndex() != rhs.GetIndex());}
+        // std::ostream& operator<< (std::ostream &out, Edge<T> const& edge) 
+        // {
+        //     out << 'edge: ' << edge.GetIndex() << ' : ';
+        //     out << edge.GetLabel() << ' : ';
+        //     out << edge.GetSource() << ' -> ' << edge.GetTarget(); 
+        //     return out;
+        // }
 	private:
 		//////////////////////////////////////////////////////////
 		//                       CONSTRUCTOR                    //
@@ -67,7 +75,6 @@ namespace TemplateGraph
     	//////////////////////////////////////////////////////////
         //                       FUNCTIONS                      //
         //////////////////////////////////////////////////////////
-
 		unsigned long long GenerateEdgeIndex();
 		//////////////////////////////////////////////////////////
         //                       ATTRIBUTES                     //
@@ -85,6 +92,8 @@ namespace TemplateGraph
 	//////////////////////////////////////////////////////////
     //                       DEFINITIONS                    //
     //////////////////////////////////////////////////////////
+
+	
 template <typename T> 
 	Edge<T>::Edge(std::weak_ptr<Node<T>> source, std::weak_ptr<Node<T>> target, std::string label)
 	{
@@ -143,6 +152,13 @@ template <typename T>
 		return false;
 	}
 
+template <typename T>
+	std::string Edge<T>::Print()
+	{
+		std::stringstream ss;
+		ss << this->GetLabel();
+		return ss.str();
+	}
 template <typename T>
 	unsigned long long Edge<T>::GenerateEdgeIndex() 
 	{
