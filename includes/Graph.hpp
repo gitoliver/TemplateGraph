@@ -16,8 +16,14 @@ namespace TemplateGraph
 		//                       CONSTRUCTOR                    //
 		//////////////////////////////////////////////////////////
 		Graph() {};
-        Graph(std::shared_ptr<Node<T>> rootNode) : rootNode_ (rootNode) {;}
-
+        Graph(std::shared_ptr<Node<T>> rootNode) 
+        {   
+            rootNode_ = std::weak_ptr<Node<T>>(rootNode);
+            ResetAllEdgesAndNodesToUnvisited();
+        } // convert to weak_ptr
+        // {
+        //     this->InitializeGraph(std::shared_ptr<Node<T>> initialNode);
+        // }
 		//Graph(std::vector<std::weak_ptr<Edge<T>>> edges);
 
 		//////////////////////////////////////////////////////////
@@ -44,15 +50,46 @@ namespace TemplateGraph
         //////////////////////////////////////////////////////////
         //                       FUNCTIONS                      //
         //////////////////////////////////////////////////////////
-        void DetectCyclesInDFSGraph();
-        std::vector<Graph<T>> SubGraphMatch(Graph<T> &subGraph);
+        std::string Print();
+         void DetectCyclesInDFSGraph();
+        // std::vector<Graph<T>> SubGraphMatch(Graph<T> &subGraph);
+
+        // Go look in selection.cc in gmml for the types of functionality you need.
+        // class DeadEndSeeker
+        // {
+        // public:
+        //     DeadEndSeeker(AtomNode startNode, int startDepth, AtomNodeVector avoidList) : current_depth_ (startDepth), max_depth_ (startDepth), {path_.push_back(startNode); SetAvoidList(avoidList);} 
+        //     inline AtomNodeVector Seek() {;}
+        //     // inline void RemoveBond(Atom *otherAtom) {atomNodePtr_->RemoveEdge(otherAtom->GetNode());}
+         
+        // private:
+        //     inline void SetAvoidList(AtomNodeVector avoidList) {for (auto &node : avoidList) node->SetIsVisited(true);} 
+        //     int max_depth_;
+        //     int current_depth_;
+        //     AtomNodeVector path_;
+        // };
+        //////////////////////////////////////////////////////////
+        //                  OPERATOR OVERLOADING                //
+        //////////////////////////////////////////////////////////
+        bool operator== (const Node<T>& rhs) const { return (this->GetIndex() == rhs.GetIndex());}
+        bool operator!= (const Node<T>& rhs) const { return (this->GetIndex() != rhs.GetIndex());}
+        // std::ostream& operator<< (std::ostream &out, Graph<T> const& graph) 
+        // {
+        //     for (auto &edge : graph.GetEdges())
+        //     {
+        //         out << edge << '\n';                
+        //     }
+        //     return out;
+        // }
 
 	private:
         //////////////////////////////////////////////////////////
         //                       ACCESSOR                       //
         //////////////////////////////////////////////////////////
         std::vector<std::shared_ptr<Node<T>>> GetNodes();
-        inline std::vector<std::shared_ptr<Node<T>>> GetRoot() {return rootNode_;}
+        void RecurveFindNodes(std::vector<std::shared_ptr<Node<T>>> &foundNodes, std::shared_ptr<Node<T>> currentNode);
+        std::vector<std::shared_ptr<Edge<T>>> GetEdges();
+        std::shared_ptr <Node<T>> GetRoot();
         //////////////////////////////////////////////////////////
         //                       MUTATOR                        //
         //////////////////////////////////////////////////////////
@@ -61,23 +98,28 @@ namespace TemplateGraph
         //                  PRIVATE FUNCTIONS                   //
         //////////////////////////////////////////////////////////
 
+        //oid InitializeGraph(std::shared_ptr<Node<T>> initialNode);
 		void ResetAllEdgesAndNodesToUnvisited();
-        std::vector<Node<T>*> GetCyclePoints();
-        void FindPathsToSelf(Node<T>* cycleStartNode, Node<T>* currentNode, std::vector<Node<T>*> currentPath);
-        void RecurveSubGraphMatch(Node<T>* graphNode, Node<T>* queryGraphNode, Graph<T> &matchingPartOfGraph);
+        std::vector<std::shared_ptr<Node<T>>> GetCyclePoints();
+        void FindPathsToSelf(std::shared_ptr<Node<T>> cycleStartNode, std::shared_ptr<Node<T>> currentNode, std::vector<std::shared_ptr<Node<T>>> currentPath);
+        //void RecurveSubGraphMatch(Node<T>* graphNode, Node<T>* queryGraphNode, Graph<T> &matchingPartOfGraph);
 
 		//void DetermineCyclePointsRecurve(Node<T>* currentNode, Node<T>* previousNode, std::vector<Node<T>* > &nodePath);
 		//////////////////////////////////////////////////////////
         //                       ATTRIBUTES                     //
         //////////////////////////////////////////////////////////
-		std::vector<Edge<T>*> edges_;
-        std::vector<std::vector<Node<T>*>> paths_;
-        std::vector<std::string> labels_;
+		// std::vector<Edge<T>*> edges_;
+        std::vector<std::vector<std::shared_ptr<Node<T>>>> paths_;
+  //       std::vector<std::string> labels_;
+        //std::vector<std::weak_ptr<Edge<T>>> edges_;
         std::weak_ptr<Node<T>> rootNode_;
+
 	};
 		//////////////////////////////////////////////////////////
         //                       DEFINITIONS                    //
         //////////////////////////////////////////////////////////
+
+
 
 // template <typename T>  
 //     std::string Graph<T>::GetLabel()
@@ -88,59 +130,87 @@ namespace TemplateGraph
 //             return labels_.back();
 //     }
 
+// template <typename T> // requires at least one edge in subGraph
+//     void Graph<T>::InitializeGraph(std::shared_ptr<Node<T>> initialNode)
+//     {
+//         for 
+//     }
 
 
 template <typename T> // requires at least one edge in subGraph
-    std::vector<Graph<T>> Graph<T>::SubGraphMatch(Graph<T> &subGraph) 
+    std::shared_ptr <Node<T>> Graph<T>::GetRoot()
     {
-        this->ResetAllEdgesAndNodesToUnvisited();
-        subGraph.ResetAllEdgesAndNodesToUnvisited();
-        std::vector<Graph<T>> matchingGraphs; // Multiple parts of Graph can match subGraph. 
-        std::cout << "subRoot label is " << subGraph.GetRoot()->GetLabel() << " and checking against:\n";
-        for(auto &node : this->GetNodes())
+        auto check = rootNode_.lock();
+        if (!check)
         {
-            std::cout << node->GetLabel() << "\n";
-            if ( node->GetLabel() == subGraph.GetRoot()->GetLabel() )
-            {
-                Graph<T> matchingPartOfGraph; 
-                this->RecurveSubGraphMatch(node, subGraph.GetRoot(), matchingPartOfGraph);
-                subGraph.ResetAllEdgesAndNodesToUnvisited();
-                std::cout << "Finished checking that path.\nQuery size: " << subGraph.GetSize() << "\nMatch size: " << matchingPartOfGraph.GetSize() << "\n";
-                if (matchingPartOfGraph.GetSize() == subGraph.GetSize()) 
-                { // After recursion, if they are the same size, they now match.
-                    matchingGraphs.push_back(matchingPartOfGraph); // A copy, but whatever man.
-                }
-            }
+            std::cerr << "rootNode of graph no longer exists.\n";
+            // Throw
         }
-        this->ResetAllEdgesAndNodesToUnvisited();
-        subGraph.ResetAllEdgesAndNodesToUnvisited();
-        return matchingGraphs;
+        return check;
     }
 
-template <typename T>
-    void Graph<T>::RecurveSubGraphMatch(Node<T>* graphNode, Node<T>* queryGraphNode, Graph<T> &matchingPartOfGraph)
+template <typename T> 
+    std::string Graph<T>::Print()
     {
-        for (auto &queryEdge: queryGraphNode->GetEdges())
+        std::string output;
+        for (auto &edge : this->GetEdges())
         {
-            std::cout << "   " << queryEdge->GetLabel() << queryEdge->GetTarget()->GetLabel() << " of query, checking against edges:\n";
-            for (auto &edge: graphNode->GetEdges())
-            {
-                if (!queryEdge->GetIsVisited() && !edge->GetIsVisited())
-                { // if edges are unvisited so far
-                    queryEdge->SetIsVisited(true);
-                    edge->SetIsVisited(true);
-                    std::cout << "   " << edge->GetLabel() << edge->GetTarget()->GetLabel() << "\n";
-                    if (queryEdge->CompareEdgeAndNodeLabels(edge))
-                    {
-                        matchingPartOfGraph.AddEdge(edge);
-                        std::cout << "   MATCH, now recurve with target node: " << queryEdge->GetTarget()->GetLabel() << "\n";
-                        RecurveSubGraphMatch(edge->GetTarget(), queryEdge->GetTarget(), matchingPartOfGraph);
-                    }
-                }
-            }
+            output += edge->Print();
+            output += "\n";
         }
-        return;
+        return output;
     }
+// template <typename T> // requires at least one edge in subGraph
+//     std::vector<Graph<T>> Graph<T>::SubGraphMatch(Graph<T> &subGraph) 
+//     {
+//         this->ResetAllEdgesAndNodesToUnvisited();
+//         subGraph.ResetAllEdgesAndNodesToUnvisited();
+//         std::vector<Graph<T>> matchingGraphs; // Multiple parts of Graph can match subGraph. 
+//         std::cout << "subRoot label is " << subGraph.GetRoot()->GetLabel() << " and checking against:\n";
+//         for(auto &node : this->GetNodes())
+//         {
+//             std::cout << node->GetLabel() << "\n";
+//             if ( node->GetLabel() == subGraph.GetRoot()->GetLabel() )
+//             {
+//                 Graph<T> matchingPartOfGraph; 
+//                 this->RecurveSubGraphMatch(node, subGraph.GetRoot(), matchingPartOfGraph);
+//                 subGraph.ResetAllEdgesAndNodesToUnvisited();
+//                 std::cout << "Finished checking that path.\nQuery size: " << subGraph.GetSize() << "\nMatch size: " << matchingPartOfGraph.GetSize() << "\n";
+//                 if (matchingPartOfGraph.GetSize() == subGraph.GetSize()) 
+//                 { // After recursion, if they are the same size, they now match.
+//                     matchingGraphs.push_back(matchingPartOfGraph); // A copy, but whatever man.
+//                 }
+//             }
+//         }
+//         this->ResetAllEdgesAndNodesToUnvisited();
+//         subGraph.ResetAllEdgesAndNodesToUnvisited();
+//         return matchingGraphs;
+//     }
+
+// template <typename T>
+//     void Graph<T>::RecurveSubGraphMatch(Node<T>* graphNode, Node<T>* queryGraphNode, Graph<T> &matchingPartOfGraph)
+//     {
+//         for (auto &queryEdge: queryGraphNode->GetEdges())
+//         {
+//             std::cout << "   " << queryEdge->GetLabel() << queryEdge->GetTarget()->GetLabel() << " of query, checking against edges:\n";
+//             for (auto &edge: graphNode->GetEdges())
+//             {
+//                 if (!queryEdge->GetIsVisited() && !edge->GetIsVisited())
+//                 { // if edges are unvisited so far
+//                     queryEdge->SetIsVisited(true);
+//                     edge->SetIsVisited(true);
+//                     std::cout << "   " << edge->GetLabel() << edge->GetTarget()->GetLabel() << "\n";
+//                     if (queryEdge->CompareEdgeAndNodeLabels(edge))
+//                     {
+//                         matchingPartOfGraph.AddEdge(edge);
+//                         std::cout << "   MATCH, now recurve with target node: " << queryEdge->GetTarget()->GetLabel() << "\n";
+//                         RecurveSubGraphMatch(edge->GetTarget(), queryEdge->GetTarget(), matchingPartOfGraph);
+//                     }
+//                 }
+//             }
+//         }
+//         return;
+//     }
         // if(std::any_of(nodes.cbegin(), nodes.cend(), [rootNode](Node<T>* a) {return a->GetLabel() == rootNode->GetLabel();} ) )
         // {
         //     std::cout << "Matches one of these fucks";
@@ -171,19 +241,46 @@ template <typename T>
         // }
 
 template <typename T>
-    std::vector<std::shared_ptr<Node<T>>> Graph<T>::GetNodes() 
-    { // Why not store nodes_ you asK? Imaginary scenarios where I don't have the NodeList when constructing. Feck.
-        std::vector<std::shared_ptr<Node<T>>> nodes;
-        for(auto &edge : this->GetEdges())
+    std::vector<std::shared_ptr<Edge<T>>> Graph<T>::GetEdges() 
+    { 
+        std::vector<std::shared_ptr<Edge<T>>> edgesInGraph;
+        for (auto &node : this->GetNodes())
         {
-           nodes.push_back(edge->GetSource());
-           nodes.push_back(edge->GetTarget());
+            //std::cout << "Outedges of " << node->GetLabel() << ":\n";
+            for (auto &outEdge : node->GetOutEdges())
+            {
+                outEdge->SetIsVisited(false);
+                edgesInGraph.push_back(outEdge);
+                //std::cout << outEdge->GetLabel() << "\n";
+            }
         }
-        // nodes has duplicates. Want to get only unique nodes. std::unique requires a sorted vector.
-        std::sort(nodes.begin(), nodes.end()); // uses the overloaded == operator in Nodes class.
-        auto newEnd = std::unique(nodes.begin(), nodes.end()); // After removing duplicates, it returns the position of the new end.
-        nodes.resize( std::distance(nodes.begin(), newEnd) ); // Must reize nodes now.
-        return nodes;
+        return edgesInGraph;
+    } 
+
+template <typename T>
+    std::vector<std::shared_ptr<Node<T>>> Graph<T>::GetNodes() 
+    { 
+        std::vector<std::shared_ptr<Node<T>>> nodesInGraph;
+        this->RecurveFindNodes(nodesInGraph, this->GetRoot());
+        for(auto &node : nodesInGraph)
+        {
+            node->SetIsVisited(false);
+        }
+        return nodesInGraph;
+    }
+
+template <typename T>
+    void Graph<T>::RecurveFindNodes(std::vector<std::shared_ptr<Node<T>>> &foundNodes, std::shared_ptr<Node<T>> currentNode)
+    {
+        currentNode->SetIsVisited(true);
+        foundNodes.push_back(currentNode);
+        for (auto &neighbor : currentNode->GetNeighbors())
+        {
+            if (!neighbor->GetIsVisited())
+            {
+                this->RecurveFindNodes(foundNodes, neighbor);
+            }
+        }
     }
 
 // // Uses a Recurve function to find cycles.
@@ -194,7 +291,7 @@ template <typename T>
         for (auto &cyclePoint : this->GetCyclePoints())
         {
             std::cout << "Cyclepoint is " << cyclePoint->GetIndex() << "\n";
-            std::vector<Node<T>*> currentPath;
+            std::vector<std::shared_ptr<Node<T>>> currentPath;
             currentPath.push_back(cyclePoint);
             for (auto &neighbor : cyclePoint->GetIncomingEdgeNeighbors())
             {
@@ -223,7 +320,7 @@ template <typename T>
     }
 
 template <typename T>
-    void Graph<T>::FindPathsToSelf(Node<T>* cycleStartNode, Node<T>* currentNode, std::vector<Node<T>*> currentPath)
+    void Graph<T>::FindPathsToSelf(std::shared_ptr<Node<T>> cycleStartNode, std::shared_ptr<Node<T>> currentNode, std::vector<std::shared_ptr<Node<T>>> currentPath)
     {
         currentPath.push_back(currentNode);
         auto allNodeNeighbors = currentNode->GetNeighbors();
@@ -231,27 +328,30 @@ template <typename T>
         if (cyclePointFoundCheck != allNodeNeighbors.end()) // i.e. std::find found it in the neighbor list
         {
             currentPath.push_back(cycleStartNode);
-            std::cout << "Found it!, current currentPath is: ";
+            std::cout << "Found the cyclePoint!, current currentPath is: ";
             for (auto &node : currentPath)
             {
                 std::cout << node->GetIndex() << ", ";
             }
             paths_.push_back(currentPath);
-            currentPath.pop_back();
+            //currentPath.pop_back();
             std::cout << std::endl;
         }
-        for(auto &inNeighbor : currentNode->GetIncomingEdgeNeighbors())
+        else 
         {
-            this->FindPathsToSelf(cycleStartNode, inNeighbor, currentPath);
+            for(auto &inNeighbor : currentNode->GetIncomingEdgeNeighbors())
+            {
+                this->FindPathsToSelf(cycleStartNode, inNeighbor, currentPath);
+            }
+            currentPath.pop_back(); // remove currentNode if falling out of recursion
         }
-        currentPath.pop_back(); // remove currentNode if falling out of recursion
         return;
     }
 
 template <typename T>
-    std::vector<Node<T>*> Graph<T>::GetCyclePoints()
+    std::vector<std::shared_ptr<Node<T>>> Graph<T>::GetCyclePoints()
     {
-        std::vector<Node<T>*> cyclePoints;
+        std::vector<std::shared_ptr<Node<T>>> cyclePoints;
         for(auto &node : this->GetNodes())
         {   // For each incoming edge, add node to cyclePoints. Can appear twice.
             int numberOfIncoming = 0;
@@ -273,8 +373,6 @@ template <typename T>
         for(auto &edge : this->GetEdges())
         {
            edge->SetIsVisited(false);
-           edge->GetSource()->SetIsVisited(false);
-           edge->GetTarget()->SetIsVisited(false);
         }
     }
 }
