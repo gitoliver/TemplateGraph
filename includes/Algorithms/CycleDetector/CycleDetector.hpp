@@ -39,7 +39,6 @@ template <class T>
         //////////////////////////////////////////////////////////
         //                       FRIENDS                        //
         //////////////////////////////////////////////////////////
-        friend class Graph<T>; // Allows access to Graph's privates
     };
 
 // Uses a Recurve function to find cycles.
