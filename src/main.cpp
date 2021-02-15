@@ -1,7 +1,7 @@
 #include "../includes/Node.hpp"
 #include "../includes/Edge.hpp"
 #include "../includes/Graph.hpp"
-
+#include "../includes/Algorithms/CycleDetector/CycleDetector.hpp"
 using namespace TemplateGraph;
 class Atom
 {
@@ -21,26 +21,31 @@ private:
 
 int main ()
 {
-	Atom *atom1 = new Atom("Bobie");
-    Atom *atom2 = new Atom("Steve");
-    Atom *atom3 = new Atom("Ronne");
-    Atom *atom4 = new Atom("Bingo");
-    Atom *atom5 = new Atom("Marsh");
-    Atom *atom6 = new Atom("Delux");
-    Atom *atom7 = new Atom("Frank");
+	Atom *atom0 = new Atom("Bobie");
+    Atom *atom1 = new Atom("Steve");
+    Atom *atom2 = new Atom("Ronne");
+    Atom *atom3 = new Atom("Bingo");
+    Atom *atom4 = new Atom("Marsh");
+    Atom *atom5 = new Atom("Delux");
+    Atom *atom6 = new Atom("Frank");
+    atom0->AddBond(atom1);
     atom1->AddBond(atom2);
     atom2->AddBond(atom3);
     atom3->AddBond(atom4);
     atom4->AddBond(atom5);
-    atom5->AddBond(atom6);
    // atom1->AddBond(atom6);
-    atom6->AddBond(atom7);
-    atom6->AddBond(atom1);
-    atom7->AddBond(atom1);
+    atom5->AddBond(atom6);
+    atom5->AddBond(atom0);
+    atom6->AddBond(atom0);
+    atom6->AddBond(atom2);
     
-    Graph<Atom> atomGraph(atom1->GetNode()); // Bad idea. What if atom1 gets deleted?
+    Graph<Atom> atomGraph(atom0->GetNode()); // Bad idea. What if atom1 gets deleted?
     std::cout << "Graph:\n" << atomGraph.Print() << "\n\n";
-    atomGraph.DetectCyclesInDFSGraph();
+    std::cout << "Graph:\n" << atomGraph.Print("ID") << "\n\n";
+    //atomGraph.DetectCyclesInDFSGraph();
+    CycleDetector<Atom> cycleDetector(atom0->GetNode());
+    cycleDetector.DetectCyclesInDFSGraph();
+
     // std::cout << "Deleting " << atom2->GetName() << "\n";
     delete atom2;
     // std::cout << "Graph:\n" << atomGraph.Print() << "\n\n";

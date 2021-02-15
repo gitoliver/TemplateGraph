@@ -44,7 +44,7 @@ namespace TemplateGraph
         //////////////////////////////////////////////////////////
 		bool CompareLabels(Edge<T>* otherEdge);
 		bool CompareEdgeAndNodeLabels(Edge<T>* otherEdge);
-		std::string Print();
+		std::string Print(std::string type = "label");
 		//////////////////////////////////////////////////////////
         //                  OPERATOR OVERLOADING                //
         //////////////////////////////////////////////////////////
@@ -122,7 +122,7 @@ template <typename T>
 	std::string Edge<T>::GetId()
 	{
 		std::stringstream ss;
-		ss << this->GetSource()->GetIndex() << "-->" << this->GetTarget()->GetIndex();
+		ss << this->GetSource().lock()->GetIndex() << "->" << this->GetTarget().lock()->GetIndex();
 		return ss.str();
 	}
 
@@ -153,10 +153,13 @@ template <typename T>
 	}
 
 template <typename T>
-	std::string Edge<T>::Print()
+	std::string Edge<T>::Print(std::string type)
 	{
 		std::stringstream ss;
-		ss << this->GetLabel();
+		if (type == "label")
+			ss << this->GetLabel();
+		if (type == "ID")
+			ss << this->GetId();
 		return ss.str();
 	}
 template <typename T>
