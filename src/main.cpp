@@ -35,9 +35,8 @@ int main ()
     atom4->AddBond(atom5);
    // atom1->AddBond(atom6);
     atom5->AddBond(atom6);
-    atom5->AddBond(atom0);
-    atom6->AddBond(atom0);
-    atom6->AddBond(atom2);
+    atom2->AddBond(atom5);
+    atom2->AddBond(atom6);
     
     Graph<Atom> atomGraph(atom0->GetNode()); // Bad idea. What if atom1 gets deleted?
     std::cout << "Graph:\n" << atomGraph.Print() << "\n\n";
