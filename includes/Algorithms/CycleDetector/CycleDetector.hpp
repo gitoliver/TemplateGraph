@@ -30,6 +30,7 @@ template <class T>
         inline std::vector<std::vector<std::shared_ptr<Node<T>>>> GetPaths() {return paths_;}
     	std::vector<std::shared_ptr<Node<T>>> GetCyclePoints();
         void FindPathsToSelf(std::shared_ptr<Node<T>> cycleStartNode, std::shared_ptr<Node<T>> currentNode, std::vector<std::shared_ptr<Node<T>>> currentPath);
+        void TrimCyclePath(Node<T>* cycleRootNode, std::vector<Node<T>*> nodes);
 		//////////////////////////////////////////////////////////
         //                  PRIVATE VARIABLES                   //
         //////////////////////////////////////////////////////////
@@ -124,6 +125,42 @@ template <typename T>
             currentPath.pop_back(); // remove currentNode if falling out of recursion
         }
         return;
+    }
+
+template <typename T>
+    void CycleDetector<T>::TrimCyclePath(Node<T>* cycleRootNode, std::vector<Node<T>*> nodes)
+    {
+        //std::cout << "cycleRootNode is " << cycleRootNode->GetIndex() << "\n";
+        std::vector<Node<T>*> trimmedPath;
+        std::reverse(nodes.begin(), nodes.end());
+      //  std::cout << "Reversed Nodes: ";
+        // for (auto &node : nodes)
+        // {
+        //     std::cout << node->GetIndex() << ", ";
+        // }
+        
+        // path will be A B C D E F D, where D is cycleRootNode. Need to trim off A B C.
+        bool foundFirst = false;
+        for (auto &node : nodes)
+        {
+            trimmedPath.push_back(node);
+            if (node->GetIndex() == cycleRootNode->GetIndex())
+            {
+                if (foundFirst == true)
+                {
+                    break;
+                }
+                foundFirst = true;
+            }
+        }
+       //auto position = TemplateGraph::find(nodes, cycleRootNode);
+        // nodes.erase(nodes.begin(), position - 1);
+        std::cout << "\nCycle Path: ";
+        for (auto &node : trimmedPath)
+        {
+            std::cout << node->GetIndex() << ", ";
+        }
+        std::cout << std::endl;
     }
 
 }// TemplateGraph namespace
