@@ -36,31 +36,29 @@ namespace TemplateGraph
 		//////////////////////////////////////////////////////////
 		//                       ACCESSOR                       //
 		//////////////////////////////////////////////////////////
-		
 		inline T* GetObjectPtr() {return objectPtr_;}
 		inline unsigned long long GetIndex() {return index_;}
 		inline bool GetIsVisited() {return is_visited_;}
 		inline std::vector<std::string> GetLabels() {return labels_;}
 		std::string GetLabel();
+		std::vector<std::shared_ptr<Edge<T>>> GetEdges();
 		inline std::vector<std::shared_ptr<Edge<T>>> GetOutEdges() {return outEdges_;}
 		//////////////////////////////////////////////////////////
         //                       MUTATOR                        //
         //////////////////////////////////////////////////////////
 		inline void SetObjectPtr(T *objectPtr) {objectPtr_ = objectPtr;}
-		//inline void AddEdge(std::shared_ptr<Edge<T>> edgePtr) {outEdges_.push_back(edgePtr);}
 		inline void SetIsVisited(bool status = false) {is_visited_ = status;}
 		inline void SetLabels(std::vector<std::string> labels) {labels_ = labels;}
 		inline void AddLabel(std::string label) {labels_.push_back(label);}
-		
 		void AddEdge(std::shared_ptr<Node<T>> targetNode, std::string label = "");
 		void AddIncomingEdge(std::shared_ptr<Edge<T>> incomingEdge);
 		//////////////////////////////////////////////////////////
-        //                       FUNCTIONS                      //
+        //                      FUNCTIONS                       //
         //////////////////////////////////////////////////////////
 		std::vector<std::shared_ptr<Node<T>>> GetNeighbors();
 		std::vector<T*> GetNodesNeighborsObjects();
 		std::vector<std::shared_ptr<Node<T>>> GetIncomingEdgeNeighbors();
-		bool CompareLabels(const Node<T>* otherNode);
+		bool CompareLabels(const std::shared_ptr<Node<T>> otherNode);
 		void RemoveEdge(std::shared_ptr<Node<T>> otherNode);
 		//////////////////////////////////////////////////////////
         //                  OPERATOR OVERLOADING                //
@@ -73,12 +71,8 @@ namespace TemplateGraph
         //                       FUNCTIONS                      //
         //////////////////////////////////////////////////////////
 		std::vector<std::shared_ptr<Edge<T>>> GetInEdges();
-		std::vector<std::shared_ptr<Edge<T>>> GetEdges(); 
-		// void RemoveEdge(std::shared_ptr<Edge<T>> edgeToDie);
 		unsigned long long GenerateNodeIndex();
 		void UpdateOutEdges();
-
-
 		//////////////////////////////////////////////////////////
         //                       ATTRIBUTES                     //
         //////////////////////////////////////////////////////////
@@ -120,6 +114,9 @@ template <typename T>
 	{
 		std::vector<std::shared_ptr<Edge<T>>> allEdges = this->GetInEdges();
 		allEdges.insert(allEdges.end(), outEdges_.begin(), outEdges_.end());
+		// std::cout << "EDGES are: \n";
+		// for (auto &edge: allEdges)
+		// 	std::cout << edge->Print() << "\n";
 		return allEdges;
 	}
 
@@ -170,6 +167,7 @@ template <typename T>
 	void Node<T>::AddIncomingEdge(std::shared_ptr<Edge<T>> incomingEdge)
 	{
 	    inEdges_.push_back(std::weak_ptr<Edge<T>>(incomingEdge));
+	    return;
 	}
 
 template <typename T>
@@ -222,16 +220,16 @@ template <typename T>
 	}
 
 template <typename T>  
-	bool Node<T>::CompareLabels(const Node<T>* otherNode)
+	bool Node<T>::CompareLabels(const std::shared_ptr<Node<T>> otherNode)
 	{ // If any label here matches any in other label, return true
 		for(auto &otherLabel : otherNode->GetLabels())
 		{
 			if (std::find(labels_.begin(), labels_.end(), otherLabel ) != labels_.end() )
 			{
-				std::cout << "Node labels match for " << this->GetLabel() << " & " << otherLabel << "\n";
+				//std::cout << "Node labels match for " << this->GetLabel() << " & " << otherLabel << "\n";
 				return true;
 			}
-			std::cout << "Node labels DONT match for " << this->GetLabel() << " & " << otherLabel << "\n";
+			//std::cout << "Node labels DONT match for " << this->GetLabel() << " & " << otherLabel << "\n";
 		}
 		return false;
 	}
