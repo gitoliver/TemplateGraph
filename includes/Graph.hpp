@@ -3,6 +3,7 @@
 
 #include <algorithm> // std::unique,sort,reverse
 #include "Edge.hpp"
+#include "Algorithms/SubGraphMatching/SubGraph.hpp"
 
 namespace TemplateGraph
 {
@@ -27,19 +28,20 @@ namespace TemplateGraph
 		//////////////////////////////////////////////////////////
         std::shared_ptr <Node<T>> GetRoot();
         std::vector<std::shared_ptr<Node<T>>> GetNodes();
-
+        unsigned int GetSize();
+        std::string Print(std::string type = "label");
+        
 		//////////////////////////////////////////////////////////
         //                       MUTATOR                        //
         //////////////////////////////////////////////////////////
         inline void SetRoot(std::shared_ptr <Node<T>> node) {rootNode_ = node;}
+        void ResetAllEdgesAndNodesToUnvisited();
+        //inline void AddEdge(std::shared_ptr <Edge<T>> edge) {edges_.push_back(edge);}
 
         //////////////////////////////////////////////////////////
         //                       FUNCTIONS                      //
         //////////////////////////////////////////////////////////
-        std::string Print(std::string type = "label");
-        void ResetAllEdgesAndNodesToUnvisited();
-
-        // std::vector<Graph<T>> SubGraphMatch(Graph<T> &subGraph);
+        //std::vector<SubGraph<T>> SubGraphMatch(Graph<T> &queryGraph);
 
         // Go look in selection.cc in gmml for the types of functionality you need.
         // class DeadEndSeeker
@@ -75,12 +77,13 @@ namespace TemplateGraph
         //                  PRIVATE FUNCTIONS                   //
         //////////////////////////////////////////////////////////
 
-        //void RecurveSubGraphMatch(Node<T>* graphNode, Node<T>* queryGraphNode, Graph<T> &matchingPartOfGraph);
+        //void RecurveSubGraphMatch(std::shared_ptr<Node<T>> graphNode, std::shared_ptr<Node<T>> queryGraphNode, SubGraph<T> &matchingPartOfGraph);
 
 		//////////////////////////////////////////////////////////
         //                       ATTRIBUTES                     //
         //////////////////////////////////////////////////////////
         std::weak_ptr<Node<T>> rootNode_;
+        //std::vector<std::weak_ptr<Edge<T>>> edges_;
 	};
 		//////////////////////////////////////////////////////////
         //                       DEFINITIONS                    //
@@ -111,85 +114,66 @@ template <typename T>
         }
         return output;
     }
+
+// // Limit on exploration limited by query, not main. Can revisit places in main.
+// // Need to account for matches with partial overlap...
 // template <typename T> // requires at least one edge in subGraph
-//     std::vector<Graph<T>> Graph<T>::SubGraphMatch(Graph<T> &subGraph) 
+//     std::vector<SubGraph<T>> Graph<T>::SubGraphMatch(Graph<T> &queryGraph) 
 //     {
-//         this->ResetAllEdgesAndNodesToUnvisited();
-//         subGraph.ResetAllEdgesAndNodesToUnvisited();
-//         std::vector<Graph<T>> matchingGraphs; // Multiple parts of Graph can match subGraph. 
-//         std::cout << "subRoot label is " << subGraph.GetRoot()->GetLabel() << " and checking against:\n";
+//         //this->ResetAllEdgesAndNodesToUnvisited();
+//         queryGraph.ResetAllEdgesAndNodesToUnvisited();
+//         std::vector<SubGraph<T>> matchingSubGraphs; // Multiple parts of Graph can match subGraph. 
 //         for(auto &node : this->GetNodes())
 //         {
 //             std::cout << node->GetLabel() << "\n";
-//             if ( node->GetLabel() == subGraph.GetRoot()->GetLabel() )
+//             if ( node->GetLabel() == queryGraph.GetRoot()->GetLabel() )
 //             {
-//                 Graph<T> matchingPartOfGraph; 
-//                 this->RecurveSubGraphMatch(node, subGraph.GetRoot(), matchingPartOfGraph);
-//                 subGraph.ResetAllEdgesAndNodesToUnvisited();
-//                 std::cout << "Finished checking that path.\nQuery size: " << subGraph.GetSize() << "\nMatch size: " << matchingPartOfGraph.GetSize() << "\n";
-//                 if (matchingPartOfGraph.GetSize() == subGraph.GetSize()) 
+//                 std::cout << "Queryroot: " << queryGraph.GetRoot()->GetLabel() << " matches " << node->GetLabel() << "\n";
+//                 SubGraph<T> matchingPartOfGraph;
+//                 this->RecurveSubGraphMatch(node, queryGraph.GetRoot(), matchingPartOfGraph);
+//                 this->ResetAllEdgesAndNodesToUnvisited();
+//                 queryGraph.ResetAllEdgesAndNodesToUnvisited();
+//                 std::cout << "Finished checking that path.\nQuery size: " << queryGraph.GetSize() << "\nMatch size: " << matchingPartOfGraph.GetSize() << "\n";
+//                 if (matchingPartOfGraph.GetSize() == queryGraph.GetSize()) 
 //                 { // After recursion, if they are the same size, they now match.
-//                     matchingGraphs.push_back(matchingPartOfGraph); // A copy, but whatever man.
+//                     matchingSubGraphs.push_back(matchingPartOfGraph); // A copy, but whatever man.
 //                 }
 //             }
 //         }
-//         this->ResetAllEdgesAndNodesToUnvisited();
-//         subGraph.ResetAllEdgesAndNodesToUnvisited();
-//         return matchingGraphs;
+//         return matchingSubGraphs;
 //     }
 
 // template <typename T>
-//     void Graph<T>::RecurveSubGraphMatch(Node<T>* graphNode, Node<T>* queryGraphNode, Graph<T> &matchingPartOfGraph)
+//     void Graph<T>::RecurveSubGraphMatch(std::shared_ptr<Node<T>> graphNode, std::shared_ptr<Node<T>> queryGraphNode, SubGraph<T> &matchingPartOfGraph)
 //     {
+//         //std::cout << "Match. EnteredRecurve. graphNode is " << graphNode->GetLabel() << ". queryGraphNode is " << queryGraphNode->GetLabel() << "\n"; 
 //         for (auto &queryEdge: queryGraphNode->GetEdges())
 //         {
-//             std::cout << "   " << queryEdge->GetLabel() << queryEdge->GetTarget()->GetLabel() << " of query, checking against edges:\n";
-//             for (auto &edge: graphNode->GetEdges())
+//             if (!queryEdge->GetIsVisited())
 //             {
-//                 if (!queryEdge->GetIsVisited() && !edge->GetIsVisited())
-//                 { // if edges are unvisited so far
-//                     queryEdge->SetIsVisited(true);
-//                     edge->SetIsVisited(true);
-//                     std::cout << "   " << edge->GetLabel() << edge->GetTarget()->GetLabel() << "\n";
-//                     if (queryEdge->CompareEdgeAndNodeLabels(edge))
-//                     {
-//                         matchingPartOfGraph.AddEdge(edge);
-//                         std::cout << "   MATCH, now recurve with target node: " << queryEdge->GetTarget()->GetLabel() << "\n";
-//                         RecurveSubGraphMatch(edge->GetTarget(), queryEdge->GetTarget(), matchingPartOfGraph);
-//                     }
+//                 queryEdge->SetIsVisited(true);
+//             //std::cout << "   " << queryEdge->GetLabel() << " of query, checking against edges:\n";
+//                 for (auto &edge: graphNode->GetEdges())
+//                 {
+//                     //std::cout << "    " << edge->GetLabel() << " of main graph\n.";
+//                     //std::cout << "    " << std::boolalpha << queryEdge->GetIsVisited() << " main is " << edge->GetIsVisited() << "\n";
+//                     // if (!edge->GetIsVisited())
+//                     // { // if edges are unvisited so far
+//                     //     edge->SetIsVisited(true);
+//                         if (queryEdge->CompareEdgeAndNodeLabels(edge))
+//                         {
+//                             matchingPartOfGraph.AddEdge(edge);
+//                             std::cout << "   Main: " << edge->GetLabel() << " matches query: " << queryEdge->GetLabel() << "\n";
+//                             RecurveSubGraphMatch(edge->GetTarget().lock(), queryEdge->GetTarget().lock(), matchingPartOfGraph);
+//                         }
+//                     // }
+//                 //edge->SetIsVisited(false);    
 //                 }
 //             }
+//             //queryEdge->SetIsVisited(false);
 //         }
 //         return;
 //     }
-        // if(std::any_of(nodes.cbegin(), nodes.cend(), [rootNode](Node<T>* a) {return a->GetLabel() == rootNode->GetLabel();} ) )
-        // {
-        //     std::cout << "Matches one of these ";
-        // }
-        // auto nodeMatch = (std::find_if(nodes.cbegin(), nodes.cend(), [rootNode](Node<T>* a) {return a->GetLabel() == rootNode->GetLabel();} ) );+
-
-        //     for(auto &node : this->GetNodes())
-        //     {
-        //         if(node->GetLabel() == subGraph.GetRoot()->GetLabel())
-        //         {
-        //             for(auto &queryEdge)
-        //         }
-        // }
-
-        // for (auto &neighbor : subGraph.GetRoot()->GetNeighbors());
-
-        //     for(auto &queryEdge : rootNode.GetEdges())
-        //     {
-
-        //         for(auto &edge : this->GetEdges())
-        //     {   // Can pass a function to std::if_any instead of a string to match.
-        //         std::vector<std::string> edgeLabels = edge->GetLabels();
-        //         if (std::find(edgeLabels.begin(), edgeLabels.end(), queryEdge->GetLabel() ) != edgeLabels.end()) 
-        //         {   // If label in subgraph edge matches any of labels in graph
-        //             std::cout << "Edges " << queryEdge->GetId() << " & " << edge->GetId() << " matcheted!\n";
-        //         }
-        //     }
-        // }
 
 template <typename T>
     std::vector<std::shared_ptr<Edge<T>>> Graph<T>::GetEdges() 
@@ -202,7 +186,7 @@ template <typename T>
             {
                 outEdge->SetIsVisited(false);
                 edgesInGraph.push_back(outEdge);
-                //std::cout << outEdge->GetLabel() << "\n";
+                //std::cout << " " << outEdge->GetLabel() << " set to unvisited.\n";
             }
         }
         return edgesInGraph;
@@ -242,5 +226,12 @@ template <typename T>
            edge->SetIsVisited(false);
         }
     }
+
+template <typename T> 
+    unsigned int Graph<T>::GetSize()
+    {
+        return this->GetNodes().size() + this->GetEdges().size();
+    }
+
 }
 #endif // T_GRAPH_HPP
