@@ -32,6 +32,8 @@ namespace TemplateGraph
 		inline bool GetIsVisited() {return is_visited_;}
 		std::string GetLabel();
 		std::string GetId();
+		inline std::weak_ptr<Node<T>> GetSource() {return source_;}
+		inline std::weak_ptr<Node<T>> GetTarget() {return target_;}
 
 		//////////////////////////////////////////////////////////
         //                       MUTATOR                        //
@@ -42,8 +44,8 @@ namespace TemplateGraph
 		//////////////////////////////////////////////////////////
         //                       FUNCTIONS                      //
         //////////////////////////////////////////////////////////
-		bool CompareLabels(Edge<T>* otherEdge);
-		bool CompareEdgeAndNodeLabels(Edge<T>* otherEdge);
+		bool CompareLabels(std::shared_ptr<Edge<T>> otherEdge);
+		bool CompareEdgeAndNodeLabels(std::shared_ptr<Edge<T>> otherEdge);
 		std::string Print(std::string type = "label");
 		//////////////////////////////////////////////////////////
         //                  OPERATOR OVERLOADING                //
@@ -65,8 +67,7 @@ namespace TemplateGraph
 		//////////////////////////////////////////////////////////
 		//                       ACCESSOR                       //
 		//////////////////////////////////////////////////////////
-		inline std::weak_ptr<Node<T>> GetSource() {return source_;}
-		inline std::weak_ptr<Node<T>> GetTarget() {return target_;}
+		
 		//////////////////////////////////////////////////////////
         //                       MUTATOR                        //
         //////////////////////////////////////////////////////////
@@ -127,27 +128,27 @@ template <typename T>
 	}
 
 template <typename T>  
-	bool Edge<T>::CompareLabels(Edge<T>* otherEdge)
+	bool Edge<T>::CompareLabels(std::shared_ptr<Edge<T>> otherEdge)
 	{ // If any label here matches any in other label, return true
 		for(auto &otherLabel : otherEdge->GetLabels())
 		{
 			std::string tempOtherLabel = otherLabel;
 			if (std::find(labels_.begin(), labels_.end(), tempOtherLabel ) != labels_.end() )
 			{
-				std::cout << "Edge labels match for " << this->GetLabel() << " & " << otherLabel << "\n";
+				//std::cout << "Edge labels match for " << this->GetLabel() << " & " << otherLabel << "\n";
 				return true;
 			}
-			std::cout << "Edge DONT labels match for " << this->GetLabel() << " & " << otherLabel << "\n";
+			//std::cout << "Edge labels DONT match for " << this->GetLabel() << " & " << otherLabel << "\n";
 		}
 		return false;
 	}
 
 template <typename T>  
-	bool Edge<T>::CompareEdgeAndNodeLabels(Edge<T>* otherEdge)
+	bool Edge<T>::CompareEdgeAndNodeLabels(std::shared_ptr<Edge<T>> otherEdge)
 	{ // If any label here matches any in other label, return true
 		if(this->CompareLabels(otherEdge) 
-			&& this->GetSource()->CompareLabels(otherEdge->GetSource())
-			&& this->GetTarget()->CompareLabels(otherEdge->GetTarget()) )
+			&& this->GetSource().lock()->CompareLabels(otherEdge->GetSource().lock())
+			&& this->GetTarget().lock()->CompareLabels(otherEdge->GetTarget().lock()) )
 				return true;
 		return false;
 	}
