@@ -2,6 +2,8 @@
 #include "../includes/Edge.hpp"
 #include "../includes/Graph.hpp"
 #include "../includes/Algorithms/CycleDetector/CycleDetector.hpp"
+#include "../includes/Algorithms/SubGraphMatching/SubGraphMatcher.hpp"
+
 using namespace TemplateGraph;
 class Atom
 {
@@ -28,6 +30,8 @@ int main ()
     Atom *atom4 = new Atom("Marsh");
     Atom *atom5 = new Atom("Delux");
     Atom *atom6 = new Atom("Frank");
+    Atom *atom7 = new Atom("Bingo");
+    Atom *atom8 = new Atom("Marsh");
     atom0->AddBond(atom1);
     atom1->AddBond(atom2);
     atom2->AddBond(atom3);
@@ -37,7 +41,10 @@ int main ()
     atom5->AddBond(atom6);
     atom2->AddBond(atom5);
     atom2->AddBond(atom6);
-    
+    atom5->AddBond(atom3);
+    atom2->AddBond(atom7);
+    atom7->AddBond(atom8);
+
     Graph<Atom> atomGraph(atom0->GetNode()); // Bad idea. What if atom1 gets deleted?
     std::cout << "Graph:\n" << atomGraph.Print() << "\n\n";
     std::cout << "Graph:\n" << atomGraph.Print("ID") << "\n\n";
@@ -47,7 +54,7 @@ int main ()
     cycleDetector.DetectCyclesInDFSGraph();
 
     // std::cout << "Deleting " << atom2->GetName() << "\n";
-    delete atom2;
+    //delete atom6;
     // std::cout << "Graph:\n" << atomGraph.Print() << "\n\n";
     // std::cout << "Deleting bonds: \n";
     //atom1->RemoveBond(atom6);
@@ -61,6 +68,44 @@ int main ()
     // delete atom6;
     std::cout << "Graph:\n" << atomGraph.Print() << "\n\n";
     std::cout << "Finished atom section\n\n";
+
+
+    // SUBGRAPH MATCH TESTING
+
+    Atom *atomA = new Atom("Ronne");
+    Atom *atomB = new Atom("Bingo");
+    Atom *atomC = new Atom("Marsh");
+    //Atom *atomD = new Atom("Delux");
+
+
+    atomA->AddBond(atomB);
+    atomB->AddBond(atomC);
+    // atomC->AddBond(atomD);
+    // atomA->AddBond(atomD);
+    // atomD->AddBond(atomB);
+
+
+    Graph<Atom> queryAtomGraph(atomA->GetNode());
+    std::cout << "queryGraph:\n" << queryAtomGraph.Print() << "\n\n";
+   // // std::vector<SubGraph<Atom>> foundSubGraphs = atomGraph.SubGraphMatch(queryAtomGraph);
+   //  std::cout << "Found these subgraphs:\n";
+   //  for (auto &subGraph : foundSubGraphs)
+   //  {
+   //      std::cout << "SubGraph:\n" << subGraph.Print() << "\n\n";
+   //  }
+
+    std::cout << "********************************************\n";
+
+    SubGraphMatcher<Atom> steveTheSubGraphFinder(atomGraph, queryAtomGraph);
+    for (auto &subGraph : steveTheSubGraphFinder.GetMatches())
+    {
+        std::cout << "Steve SubGraph:\n" << subGraph.Print() << "\n\n";
+    }  
+
+    std::cout << "********************************************\n";
+
+    //     std::vector<Graph<int>> matchingSubGraphs = mainGraph.SubGraphMatch(queryGraph);
+//     std::cout << "Found " << matchingSubGraphs.size() << " subgraphs that matched\n";
 
 //     //atom1.atomNodePtr_ = std::make_shared<Node<Atom>>(&atom1);
 // 	std::vector<std::shared_ptr<Node<int>> > vectorOfNodes;
