@@ -75,13 +75,13 @@ int main ()
     Atom *atomA = new Atom("Ronne");
     Atom *atomB = new Atom("Bingo");
     Atom *atomC = new Atom("Marsh");
-    //Atom *atomD = new Atom("Delux");
+    Atom *atomD = new Atom("Delux");
 
 
     atomA->AddBond(atomB);
     atomB->AddBond(atomC);
     // atomC->AddBond(atomD);
-    // atomA->AddBond(atomD);
+    atomA->AddBond(atomD);
     // atomD->AddBond(atomB);
 
 

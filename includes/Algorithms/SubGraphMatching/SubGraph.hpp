@@ -25,6 +25,8 @@ namespace TemplateGraph
         //                       MUTATOR                        //
         //////////////////////////////////////////////////////////
         inline void AddEdge(std::shared_ptr <Edge<T>> edge) {edges_.push_back(edge);}
+        inline void PopEdge() {edges_.pop_back();}
+        void RemoveEdge(std::shared_ptr <Edge<T>> edge);
         void ResetAllEdgesAndNodesToUnvisited();
 
         //////////////////////////////////////////////////////////
@@ -70,6 +72,13 @@ template <typename T>
                 returnNodes.push_back(target);
         }
         return returnNodes;
+    }
+
+template <typename T>
+    void SubGraph<T>::RemoveEdge(std::shared_ptr <Edge<T>> edge)
+    {
+        edges_.erase(std::remove(edges_.begin(), edges_.end(), edge), edges_.end());
+        return;
     }
 
 template <typename T> 
