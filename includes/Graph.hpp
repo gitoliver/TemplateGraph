@@ -20,7 +20,7 @@ namespace TemplateGraph
         Graph(std::shared_ptr<Node<T>> rootNode) 
         {   
             rootNode_ = std::weak_ptr<Node<T>>(rootNode);
-            ResetAllEdgesAndNodesToUnvisited();
+            //ResetAllEdgesAndNodesToUnvisited();
         } // convert to weak_ptr
 
 		//////////////////////////////////////////////////////////
@@ -35,7 +35,7 @@ namespace TemplateGraph
         //                       MUTATOR                        //
         //////////////////////////////////////////////////////////
         inline void SetRoot(std::shared_ptr <Node<T>> node) {rootNode_ = node;}
-        void ResetAllEdgesAndNodesToUnvisited();
+        void ResetAllEdgesAndNodesToUnvisited(std::string visitorName = "");
         //inline void AddEdge(std::shared_ptr <Edge<T>> edge) {edges_.push_back(edge);}
 
         //////////////////////////////////////////////////////////
@@ -184,7 +184,7 @@ template <typename T>
             //std::cout << "Outedges of " << node->GetLabel() << ":\n";
             for (auto &outEdge : node->GetOutEdges())
             {
-                outEdge->SetIsVisited(false);
+                //outEdge->SetIsVisited(false);
                 edgesInGraph.push_back(outEdge);
                 //std::cout << " " << outEdge->GetLabel() << " set to unvisited.\n";
             }
@@ -199,7 +199,7 @@ template <typename T>
         this->RecurveFindNodes(nodesInGraph, this->GetRoot());
         for(auto &node : nodesInGraph)
         {
-            node->SetIsVisited(false);
+            node->SetUnVisitedBy("GraphRecurveFindNodes");
         }
         return nodesInGraph;
     }
@@ -207,11 +207,11 @@ template <typename T>
 template <typename T>
     void Graph<T>::RecurveFindNodes(std::vector<std::shared_ptr<Node<T>>> &foundNodes, std::shared_ptr<Node<T>> currentNode)
     {
-        currentNode->SetIsVisited(true);
+        currentNode->SetIsVisitedBy("GraphRecurveFindNodes");
         foundNodes.push_back(currentNode);
         for (auto &neighbor : currentNode->GetNeighbors())
         {
-            if (!neighbor->GetIsVisited())
+            if (!neighbor->GetIsVisitedBy("GraphRecurveFindNodes"))
             {
                 this->RecurveFindNodes(foundNodes, neighbor);
             }
@@ -219,11 +219,11 @@ template <typename T>
     }
 
 template <typename T> 
-    void Graph<T>::ResetAllEdgesAndNodesToUnvisited()
+    void Graph<T>::ResetAllEdgesAndNodesToUnvisited(std::string visitorName)
     {
         for(auto &edge : this->GetEdges())
         {
-           edge->SetIsVisited(false);
+           edge->SetUnVisitedBy(visitorName);
         }
     }
 

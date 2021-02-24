@@ -46,7 +46,6 @@ template <class T>
 template <typename T>
     void CycleDetector<T>::DetectCyclesInDFSGraph()
     {
-        this->ResetAllEdgesAndNodesToUnvisited();
         for (auto &cyclePoint : this->GetCyclePoints())
         {
             std::cout << "Cyclepoint is " << cyclePoint->GetIndex() << "\n";
@@ -74,7 +73,6 @@ template <typename T>
             }
             std::cout << "\n";
         }
-        this->ResetAllEdgesAndNodesToUnvisited();
         return;
     }
 

@@ -38,7 +38,7 @@ namespace TemplateGraph
 		//////////////////////////////////////////////////////////
 		inline T* GetObjectPtr() {return objectPtr_;}
 		inline unsigned long long GetIndex() {return index_;}
-		inline bool GetIsVisited() {return is_visited_;}
+		bool GetIsVisitedBy(std::string visitor);
 		inline std::vector<std::string> GetLabels() {return labels_;}
 		std::string GetLabel();
 		std::vector<std::shared_ptr<Edge<T>>> GetEdges();
@@ -47,7 +47,8 @@ namespace TemplateGraph
         //                       MUTATOR                        //
         //////////////////////////////////////////////////////////
 		inline void SetObjectPtr(T *objectPtr) {objectPtr_ = objectPtr;}
-		inline void SetIsVisited(bool status = false) {is_visited_ = status;}
+		inline void SetIsVisitedBy(std::string visitor = "") {visitors_.push_back(visitor);}
+		void SetUnVisitedBy(std::string visitor);
 		inline void SetLabels(std::vector<std::string> labels) {labels_ = labels;}
 		inline void AddLabel(std::string label) {labels_.push_back(label);}
 		void AddEdge(std::shared_ptr<Node<T>> targetNode, std::string label = "");
@@ -76,8 +77,8 @@ namespace TemplateGraph
 		//////////////////////////////////////////////////////////
         //                       ATTRIBUTES                     //
         //////////////////////////////////////////////////////////
-		T* objectPtr_;
-		bool is_visited_ = false;
+		T& const objectPtr_;
+		std::vector<std::string> visitors_;
 		std::string id_ = "";
 		unsigned long long index_ ;
 		std::vector<std::string> labels_;
@@ -91,11 +92,20 @@ namespace TemplateGraph
     //                       DEFINITIONS                    //
     //////////////////////////////////////////////////////////
 
-	//////////////////////////////////////////////////////////
-    //                  OPERATOR OVERLOADING                //
-    //////////////////////////////////////////////////////////
-// template <typename T>
+template <typename T>
+	bool Node<T>::GetIsVisitedBy(std::string visitor)
+	{
+		if (std::find(visitors_.begin(), visitors_.end(), visitor ) != visitors_.end() )
+			return true;
+		return false;
+	}
 
+template <typename T>
+	void Node<T>::SetUnVisitedBy(std::string visitor)
+	{
+		visitors_.erase(std::remove(visitors_.begin(), visitors_.end(), visitor), visitors_.end());
+		return; 
+	}
 
 template <typename T>  // Need to alter type from weak to shared.
 	std::vector<std::shared_ptr<Edge<T>>> Node<T>::GetInEdges()

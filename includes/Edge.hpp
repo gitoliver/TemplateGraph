@@ -29,7 +29,7 @@ namespace TemplateGraph
 		
 		inline std::vector<std::string> GetLabels() {return labels_;}
 		inline unsigned long long GetIndex() {return index_;}
-		inline bool GetIsVisited() {return is_visited_;}
+		bool GetIsVisitedBy(std::string visitor);
 		std::string GetLabel();
 		std::string GetId();
 		inline std::weak_ptr<Node<T>> GetSource() {return source_;}
@@ -40,7 +40,8 @@ namespace TemplateGraph
         //////////////////////////////////////////////////////////
 		inline void SetLabels(std::vector<std::string> labels) {labels_ = labels;}
 		inline void AddLabel(std::string label) {labels_.push_back(label);}
-		inline void SetIsVisited(bool status = false) {is_visited_ = status;}
+		inline void SetIsVisitedBy(std::string visitor = "") {visitors_.push_back(visitor);}
+		void SetUnVisitedBy(std::string visitor);
 		//////////////////////////////////////////////////////////
         //                       FUNCTIONS                      //
         //////////////////////////////////////////////////////////
@@ -84,7 +85,7 @@ namespace TemplateGraph
 		std::weak_ptr<Node<T>> target_;
 		std::vector<std::string> labels_;
 		unsigned long long index_ ;
-		bool is_visited_ = false;
+		std::vector<std::string> visitors_;
 		//////////////////////////////////////////////////////////
         //                       FRIENDS                        //
         //////////////////////////////////////////////////////////
@@ -105,6 +106,23 @@ template <typename T>
 		//this->GetTarget()->AddIncomingEdge(this); Node will handle this.
 		index_ = this->GenerateEdgeIndex();
 		std::cout << "Edge labeled " << this->GetLabel() << ", with index " << this->GetIndex() << " constructed\n";
+	}
+
+
+template <typename T>
+	bool Edge<T>::GetIsVisitedBy(std::string visitor)
+	{
+		if (std::find(visitors_.begin(), visitors_.end(), visitor ) != visitors_.end() )
+			return true;
+		std::cout << "Not visited.\n";
+		return false;
+	}
+
+template <typename T>
+	void Edge<T>::SetUnVisitedBy(std::string visitor)
+	{
+		visitors_.erase(std::remove(visitors_.begin(), visitors_.end(), visitor), visitors_.end());
+		return; 
 	}
 
 // Should I throw an exception if the user asks for a label and none are set? Probably.
