@@ -27,15 +27,15 @@ template <class T>
     	//////////////////////////////////////////////////////////
         //                  PRIVATE FUNCTIONS                   //
         //////////////////////////////////////////////////////////
-        inline std::vector<std::vector<std::shared_ptr<Node<T>>>> GetPaths() {return paths_;}
+        inline std::vector<std::vector<std::weak_ptr<Node<T>>>> GetPaths() {return paths_;}
     	std::vector<std::shared_ptr<Node<T>>> GetCyclePoints();
-        void FindPathsToSelf(std::shared_ptr<Node<T>> cycleStartNode, std::shared_ptr<Node<T>> currentNode, std::vector<std::shared_ptr<Node<T>>> currentPath);
+        void FindPathsToSelf(std::shared_ptr<Node<T>> cycleStartNode, std::shared_ptr<Node<T>> currentNode, std::vector<std::weak_ptr<Node<T>>> currentPath);
         void TrimCyclePath(Node<T>* cycleRootNode, std::vector<Node<T>*> nodes);
 		//////////////////////////////////////////////////////////
         //                  PRIVATE VARIABLES                   //
         //////////////////////////////////////////////////////////
  
-        std::vector<std::vector<std::shared_ptr<Node<T>>>> paths_;
+        std::vector<std::vector<std::weak_ptr<Node<T>>>> paths_;
 
         //////////////////////////////////////////////////////////
         //                       FRIENDS                        //
@@ -49,7 +49,7 @@ template <typename T>
         for (auto &cyclePoint : this->GetCyclePoints())
         {
             std::cout << "Cyclepoint is " << cyclePoint->GetIndex() << "\n";
-            std::vector<std::shared_ptr<Node<T>>> currentPath;
+            std::vector<std::weak_ptr<Node<T>>> currentPath;
             currentPath.push_back(cyclePoint);
             for (auto &neighbor : cyclePoint->GetIncomingEdgeNeighbors())
             {
@@ -69,7 +69,7 @@ template <typename T>
         {
             for (auto &node : currentPath)
             {
-                std::cout << node->GetIndex() << ", ";
+                std::cout << node.lock()->GetIndex() << ", ";
             }
             std::cout << "\n";
         }
@@ -97,7 +97,7 @@ template <typename T>
     }
 
 template <typename T>
-    void CycleDetector<T>::FindPathsToSelf(std::shared_ptr<Node<T>> cycleStartNode, std::shared_ptr<Node<T>> currentNode, std::vector<std::shared_ptr<Node<T>>> currentPath)
+    void CycleDetector<T>::FindPathsToSelf(std::shared_ptr<Node<T>> cycleStartNode, std::shared_ptr<Node<T>> currentNode, std::vector<std::weak_ptr<Node<T>>> currentPath)
     {
         currentPath.push_back(currentNode);
         auto allNodeNeighbors = currentNode->GetNeighbors();
@@ -108,7 +108,7 @@ template <typename T>
             std::cout << "Found the cyclePoint!, current currentPath is: ";
             for (auto &node : currentPath)
             {
-                std::cout << node->GetIndex() << ", ";
+                std::cout << node.lock()->GetIndex() << ", ";
             }
             paths_.push_back(currentPath);
             //currentPath.pop_back();
