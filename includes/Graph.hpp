@@ -17,7 +17,7 @@ namespace TemplateGraph
 		//                       CONSTRUCTOR                    //
 		//////////////////////////////////////////////////////////
 		Graph() {};
-        Graph(std::shared_ptr<Node<T>> rootNode) 
+        Graph(std::weak_ptr<Node<T>> rootNode) 
         {   
             rootNode_ = std::weak_ptr<Node<T>>(rootNode);
             //ResetAllEdgesAndNodesToUnvisited();
@@ -199,7 +199,7 @@ template <typename T>
         this->RecurveFindNodes(nodesInGraph, this->GetRoot());
         for(auto &node : nodesInGraph)
         {
-            node->SetUnVisitedBy("GraphRecurveFindNodes");
+            node->RemoveVisitor("GraphRecurveFindNodes");
         }
         return nodesInGraph;
     }
@@ -207,7 +207,7 @@ template <typename T>
 template <typename T>
     void Graph<T>::RecurveFindNodes(std::vector<std::shared_ptr<Node<T>>> &foundNodes, std::shared_ptr<Node<T>> currentNode)
     {
-        currentNode->SetIsVisitedBy("GraphRecurveFindNodes");
+        currentNode->AddVisitor("GraphRecurveFindNodes");
         foundNodes.push_back(currentNode);
         for (auto &neighbor : currentNode->GetNeighbors())
         {
@@ -223,7 +223,7 @@ template <typename T>
     {
         for(auto &edge : this->GetEdges())
         {
-           edge->SetUnVisitedBy(visitorName);
+           edge->RemoveVisitor(visitorName);
         }
     }
 

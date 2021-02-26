@@ -30,14 +30,14 @@ int main ()
     Atom *atom4 = new Atom("Marsh");
     Atom *atom5 = new Atom("Delux");
     Atom *atom6 = new Atom("Frank");
-    Atom *atom7 = new Atom("Bingo");
-    Atom *atom8 = new Atom("Marsh");
+    Atom *atom7 = new Atom("Bingo1");
+    Atom *atom8 = new Atom("Marsh1");
     atom0->AddBond(atom1);
     atom1->AddBond(atom2);
     atom2->AddBond(atom3);
     atom3->AddBond(atom4);
     atom4->AddBond(atom5);
-   // atom1->AddBond(atom6);
+    atom1->AddBond(atom6);
     atom5->AddBond(atom6);
     atom2->AddBond(atom5);
     atom2->AddBond(atom6);
@@ -45,20 +45,24 @@ int main ()
     atom2->AddBond(atom7);
     atom7->AddBond(atom8);
 
+    std::cout << "Deleting " << atom6->GetName() << "\n";
+    delete atom6;
+
     Graph<Atom> atomGraph(atom0->GetNode()); // Bad idea. What if atom1 gets deleted?
+    std::cout << "Deleting " << atom4->GetName() << "\n";
+    delete atom4;
     std::cout << "Graph:\n" << atomGraph.Print() << "\n\n";
     std::cout << "Graph:\n" << atomGraph.Print("ID") << "\n\n";
     std::cout << "Visualize the graph here:\nhttps://dreampuf.github.io/GraphvizOnline/#digraph%20G%20%7B%0ABobie-%3ESteve%0A%7D\n";
-    //atomGraph.DetectCyclesInDFSGraph();
     CycleDetector<Atom> cycleDetector(atom0->GetNode());
     cycleDetector.DetectCyclesInDFSGraph();
 
-    // std::cout << "Deleting " << atom2->GetName() << "\n";
-    //delete atom6;
-    // std::cout << "Graph:\n" << atomGraph.Print() << "\n\n";
-    // std::cout << "Deleting bonds: \n";
+    std::cout << "Deleting " << atom5->GetName() << "\n";
+    delete atom5;
+    std::cout << "Graph:\n" << atomGraph.Print() << "\n\n";
+    std::cout << "Deleting bonds: \n";
     //atom1->RemoveBond(atom6);
-    // atom4->RemoveBond(atom3);
+    atom1->RemoveBond(atom2);
     // atom3->RemoveBond(atom4);
     //  std::cout << "Graph:\n" << atomGraph.Print() << "\n\n";
     // std::cout << "Deleting atoms.\n";

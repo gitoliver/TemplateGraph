@@ -89,7 +89,7 @@ template <typename T>
         {
             if (!queryEdge->GetIsVisitedBy(this->GetFunctionName()))
             {
-                queryEdge->SetIsVisitedBy(this->GetFunctionName());
+                queryEdge->AddVisitor(this->GetFunctionName());
             //std::cout << "   " << queryEdge->GetLabel() << " of query, checking against edges:\n";
                 for (auto &edge: graphNode->GetEdges())
                 {
