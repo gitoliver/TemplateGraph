@@ -12,6 +12,13 @@ Uses Templates in C++. The design goals are:
 ## GraphClassConcept
 ![GraphClass](documentation/GraphClassConcept.png)
 
+## Interitance Concept
+![GraphClass](documentation/InheritanceConcept.png)
+This inheritance concept was replaced by:
+## Generic Object Interitance Concept
+![GraphClass](documentation/GenericObjectInheritanceConcept.png)
+
+
 ### Notes
 Project is under development as of Sept 2020, contact olgrant "at" uga.edu with queries. 
 Written by Oliver Grant as he learned how to use templates, smart pointers and some OOP concepts.
