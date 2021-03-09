@@ -37,18 +37,17 @@ namespace Abstract
 		//////////////////////////////////////////////////////////
         //                       FUNCTIONS                      //
         //////////////////////////////////////////////////////////
-        unsigned long long GenerateIndex();
+        inline unsigned long long GenerateIndex()
+        {
+			static unsigned long long s_NodeIndex = 0; // static keyword means it is created only once and persists beyond scope of code block.
+			return s_NodeIndex++; // makes copy of index, increments the real index, then returns the value in the copy
+		}
 		//////////////////////////////////////////////////////////
         //                       ATTRIBUTES                     //
         //////////////////////////////////////////////////////////
 		unsigned long long index_;
 		
 	};
-
-	unsigned long long Index::GenerateIndex() 
-	{
-		static unsigned long long s_NodeIndex = 0; // static keyword means it is created only once and persists beyond scope of code block.
-		return s_NodeIndex++; // makes copy of index, increments the real index, then returns the value in the copy
-	} 
+	 
 }
 #endif // INDEX_HPP
