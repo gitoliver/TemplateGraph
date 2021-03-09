@@ -7,7 +7,7 @@
 #include <memory>
 #include <algorithm>
 
-#include "GenericObject.hpp"
+#include "Abstract/GenericObject.hpp"
 
 
 namespace TemplateGraph
@@ -72,7 +72,6 @@ namespace TemplateGraph
         //                       ATTRIBUTES                     //
         //////////////////////////////////////////////////////////
 		T* objectPtr_;
-		std::string id_ = "";
 		std::vector<std::shared_ptr<Edge<T>>> outEdges_;
 		std::vector<std::weak_ptr<Edge<T>>> inEdges_;
 		//std::vector<Edge<T>*> outEdges_;
