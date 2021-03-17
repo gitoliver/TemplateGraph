@@ -18,8 +18,7 @@ namespace TemplateGraph
 	// std::ostream& operator << (std::ostream& out, const Node<T>& nodeObj);
 	// template <class T> class Edge;
 	template <class T>
-	class Node : public std::enable_shared_from_this<Node<T>>, 
-				 public Abstract::GenericObject
+	class Node : public Abstract::GenericObject
 	{
 	public:
 		//////////////////////////////////////////////////////////
@@ -33,7 +32,7 @@ namespace TemplateGraph
 		{
 			for(auto& inNeighbor: this->GetIncomingEdgeNeighbors())
 			{
-			  	inNeighbor->UpdateOutEdges();
+			  	inNeighbor->RemoveOutEdgeToNode(this);
 			}
 			std::cout << "Node labelled " << this->GetLabel() << " destroyed\n";
 		}
@@ -41,21 +40,23 @@ namespace TemplateGraph
 		//                       ACCESSOR                       //
 		//////////////////////////////////////////////////////////
 		inline T* GetObjectPtr() {return objectPtr_;}
-		std::vector<std::shared_ptr<Edge<T>>> GetEdges();
-		inline std::vector<std::shared_ptr<Edge<T>>> GetOutEdges() {return outEdges_;}
+		std::vector<Edge<T>*> GetEdges();
+		std::vector<Edge<T>*> GetOutEdges();
+		std::vector<Edge<T>*> GetInEdges();
+
 		//////////////////////////////////////////////////////////
         //                       MUTATOR                        //
         //////////////////////////////////////////////////////////
-		inline void SetObjectPtr(T *objectPtr) {objectPtr_ = objectPtr;}
-		void AddEdge(std::shared_ptr<Node<T>> targetNode, std::string label = "");
+		//inline void SetObjectPtr(T *objectPtr) {objectPtr_ = objectPtr;}
+		void AddEdge(Node<T>* targetNode, std::string label = "");
 		void AddIncomingEdge(std::shared_ptr<Edge<T>> incomingEdge);
 		//////////////////////////////////////////////////////////
         //                      FUNCTIONS                       //
         //////////////////////////////////////////////////////////
-		std::vector<std::shared_ptr<Node<T>>> GetNeighbors();
+		std::vector<Node<T>*> GetNeighbors();
 		std::vector<T*> GetNodesNeighborsObjects();
-		std::vector<std::shared_ptr<Node<T>>> GetIncomingEdgeNeighbors();
-		void RemoveEdge(std::shared_ptr<Node<T>> otherNode);
+		std::vector<Node<T>*> GetIncomingEdgeNeighbors();
+		void RemoveEdge(Node<T>* otherNode);
 		//////////////////////////////////////////////////////////
         //                  OPERATOR OVERLOADING                //
         //////////////////////////////////////////////////////////
@@ -66,8 +67,9 @@ namespace TemplateGraph
 		//////////////////////////////////////////////////////////
         //                       FUNCTIONS                      //
         //////////////////////////////////////////////////////////
-		std::vector<std::shared_ptr<Edge<T>>> GetInEdges();
-		void UpdateOutEdges();
+        inline std::vector<std::shared_ptr<Edge<T>>> GetSharedOutEdges() {return outEdges_;}
+        inline std::vector<std::weak_ptr<Edge<T>>> GetWeakInEdges() {return inEdges_;}
+		void RemoveOutEdgeToNode(Node<T>* otherNode);
 		//////////////////////////////////////////////////////////
         //                       ATTRIBUTES                     //
         //////////////////////////////////////////////////////////
@@ -84,21 +86,32 @@ namespace TemplateGraph
 
 
 template <typename T>  // Need to alter type from weak to shared.
-	std::vector<std::shared_ptr<Edge<T>>> Node<T>::GetInEdges()
+	std::vector<Edge<T>*> Node<T>::GetInEdges()
 	{
-		std::vector<std::shared_ptr<Edge<T>>> returnEdges;
-		for (auto &edge : inEdges_)
+		std::vector<Edge<T>*> returnEdges;
+		for (auto &edge : this->GetWeakInEdges())
 		{   // if able to lock, i.e. underlying thing still exists
-			if(auto sharedEdge = edge.lock())
-				returnEdges.push_back(sharedEdge);
+			if(auto sharedEdge = edge.lock()) // is this unnecessary given ownership rules?
+				returnEdges.push_back(sharedEdge.get());
+		}
+		return returnEdges;
+	}
+
+template <typename T>  // Need to alter type from weak to shared.
+	std::vector<Edge<T>*> Node<T>::GetOutEdges()
+	{
+		std::vector<Edge<T>*> returnEdges;
+		for (auto &edge : this->GetSharedOutEdges())
+		{   
+			returnEdges.push_back(edge.get());
 		}
 		return returnEdges;
 	}
 
 template <typename T>
-	std::vector<std::shared_ptr<Edge<T>>> Node<T>::GetEdges()
+	std::vector<Edge<T>*> Node<T>::GetEdges()
 	{
-		std::vector<std::shared_ptr<Edge<T>>> allEdges = this->GetInEdges();
+		auto allEdges = this->GetInEdges();
 		allEdges.insert(allEdges.end(), outEdges_.begin(), outEdges_.end());
 		// std::cout << "EDGES are: \n";
 		// for (auto &edge: allEdges)
@@ -107,12 +120,12 @@ template <typename T>
 	}
 
 template <typename T>  
-	void Node<T>::RemoveEdge(std::shared_ptr<Node<T>> otherNode)
+	void Node<T>::RemoveEdge(Node<T>* otherNode)
 	{
-		for(auto &edge : this->GetOutEdges())
+		for(auto &edge : this->GetSharedOutEdges())
 		{   // Can I be my own neighbor? Maybe!
-			if (edge->GetTarget().lock() == otherNode)
-			{ // Is this a bad idea in this loop?
+			if (edge->GetTarget() == otherNode)
+			{ 
 				outEdges_.erase(std::remove(outEdges_.begin(), outEdges_.end(), edge), outEdges_.end());
 			}
 		} 
@@ -120,20 +133,20 @@ template <typename T>
 		// But need to go remove it from the otherNode's out
 		for(auto &edge : this->GetInEdges())
 		{   
-			if (edge->GetSource().lock() == otherNode)
+			if (edge->GetSource() == otherNode)
 			{	
-				otherNode->RemoveEdge(this->shared_from_this());
+				otherNode->RemoveEdge(this);
 			}
 		}
 		return;
 	}
 
 template <typename T>  
-	void Node<T>::UpdateOutEdges()
+	void Node<T>::RemoveOutEdgeToNode(Node<T>* otherNode)
 	{
-		for(auto &edge : this->GetOutEdges())
+		for(auto &edge : this->GetSharedOutEdges())
 		{   
-			if (!edge->GetTarget().lock()) // If you cannot lock the weak pointer, get rid of this edge.
+			if (edge->GetTarget() == otherNode) 
 			{ 
 				outEdges_.erase(std::remove(outEdges_.begin(), outEdges_.end(), edge), outEdges_.end());
 			}
@@ -142,9 +155,9 @@ template <typename T>
 	}
 
 template <typename T>  
-	void Node<T>::AddEdge(std::shared_ptr<Node<T>> targetNode, std::string label)
+	void Node<T>::AddEdge(Node<T>* targetNode, std::string label)
 	{ // assumes adding outEdge. Constructor of Edge calls targetNode.AddIncomingEdge
-	    outEdges_.emplace_back(std::make_shared<Edge<T>>(this->shared_from_this(), targetNode, label));
+	    outEdges_.push_back(std::make_shared<Edge<T>>(this, targetNode, label));
 	    targetNode->AddIncomingEdge(outEdges_.back());
 	    return;
 	} 
@@ -157,29 +170,27 @@ template <typename T>
 	}
 
 template <typename T>
-	std::vector<std::shared_ptr<Node<T>>> Node<T>::GetNeighbors()
+	std::vector<Node<T>*> Node<T>::GetNeighbors()
 	{
-		std::vector<std::shared_ptr<Node<T>>> neighbors;
+		std::vector<Node<T>*> neighbors;
 		for(auto &edge : this->GetOutEdges())
 		{   // Can I be my own neighbor? No!
-			if(!edge->GetTarget().expired())
-				neighbors.push_back(edge->GetTarget().lock());
+			neighbors.push_back(edge->GetTarget());
 		}
 		for(auto &edge : this->GetInEdges())
 		{   
-			if(!edge->GetSource().expired())
-				neighbors.push_back(edge->GetSource().lock());
+			neighbors.push_back(edge->GetSource());
 		}
 		return neighbors;
 	}
 
 template <typename T>
-	std::vector<std::shared_ptr<Node<T>>> Node<T>::GetIncomingEdgeNeighbors()
+	std::vector<Node<T>*> Node<T>::GetIncomingEdgeNeighbors()
 	{
-		std::vector<std::shared_ptr<Node<T>>> neighbors;
+		std::vector<Node<T>*> neighbors;
 		for(auto &edge : this->GetInEdges())
 		{   // Incoming Edges only
-			neighbors.push_back(edge->GetSource().lock());
+			neighbors.push_back(edge->GetSource());
 		}
 		return neighbors;
 	}

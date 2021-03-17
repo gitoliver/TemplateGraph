@@ -9,11 +9,11 @@ class Atom
 {
 public:
     Atom(std::string name) : name_ (name) {atomNodePtr_ = std::make_shared<Node<Atom>>(this, name);} // default node label is atom name 
-    inline void AddBond(Atom *otherAtom) {atomNodePtr_->AddEdge(otherAtom->GetNode(), this->GetName() + "->" + otherAtom->GetName());}
-    inline void RemoveBond(Atom *otherAtom) {atomNodePtr_->RemoveEdge(otherAtom->GetNode());}
+    inline void AddBond(Atom *otherAtom) {this->GetNode()->AddEdge(otherAtom->GetNode(), this->GetName() + "->" + otherAtom->GetName());}
+    inline void RemoveBond(Atom *otherAtom) {this->GetNode()->RemoveEdge(otherAtom->GetNode());}
     inline std::vector<Atom*> GetNeighbors() {return this->GetNode()->GetNodesNeighborsObjects();}
     inline std::string GetName() {return name_;}
-    inline const std::shared_ptr<Node<Atom>> GetNode() {return atomNodePtr_;}
+    inline Node<Atom>* GetNode() {return atomNodePtr_.get();}
 private:
     //friend std::shared_ptr<Node<Atom>> Graph<Atom>::GetNodeGraph(const Atom& atom);
     //inline std::shared_ptr<Node<Atom>> GetNode() {return atomNodePtr_;}
@@ -48,18 +48,18 @@ int main ()
     std::cout << "Deleting " << atom6->GetName() << "\n";
     delete atom6;
 
-    Graph<Atom> atomGraph(atom0->GetNode()); // Bad idea. What if atom1 gets deleted?
+  //  Graph<Atom> atomGraph(atom0->GetNode()); // Bad idea. What if atom1 gets deleted?
     std::cout << "Deleting " << atom4->GetName() << "\n";
     delete atom4;
-    std::cout << "Graph:\n" << atomGraph.Print() << "\n\n";
-    std::cout << "Graph:\n" << atomGraph.Print("ID") << "\n\n";
+    //std::cout << "Graph:\n" << atomGraph.Print() << "\n\n";
+    //std::cout << "Graph:\n" << atomGraph.Print("ID") << "\n\n";
     std::cout << "Visualize the graph here:\nhttps://dreampuf.github.io/GraphvizOnline/#digraph%20G%20%7B%0ABobie-%3ESteve%0A%7D\n";
-    CycleDetector<Atom> cycleDetector(atom0->GetNode());
-    cycleDetector.DetectCyclesInDFSGraph();
+    //CycleDetector<Atom> cycleDetector(atom0->GetNode());
+    //cycleDetector.DetectCyclesInDFSGraph();
 
     std::cout << "Deleting " << atom5->GetName() << "\n";
     delete atom5;
-    std::cout << "Graph:\n" << atomGraph.Print() << "\n\n";
+  //  std::cout << "Graph:\n" << atomGraph.Print() << "\n\n";
     std::cout << "Deleting bonds: \n";
     //atom1->RemoveBond(atom6);
     atom1->RemoveBond(atom2);
@@ -70,7 +70,7 @@ int main ()
     // delete atom4;
     // delete atom5;
     // delete atom6;
-    std::cout << "Graph:\n" << atomGraph.Print() << "\n\n";
+   // std::cout << "Graph:\n" << atomGraph.Print() << "\n\n";
     std::cout << "Finished atom section\n\n";
 
 
@@ -89,8 +89,8 @@ int main ()
     // atomD->AddBond(atomB);
 
 
-    Graph<Atom> queryAtomGraph(atomA->GetNode());
-    std::cout << "queryGraph:\n" << queryAtomGraph.Print() << "\n\n";
+    // Graph<Atom> queryAtomGraph(atomA->GetNode());
+    // std::cout << "queryGraph:\n" << queryAtomGraph.Print() << "\n\n";
    // // std::vector<SubGraph<Atom>> foundSubGraphs = atomGraph.SubGraphMatch(queryAtomGraph);
    //  std::cout << "Found these subgraphs:\n";
    //  for (auto &subGraph : foundSubGraphs)
@@ -100,13 +100,13 @@ int main ()
 
     std::cout << "********************************************\n";
 
-    SubGraphMatcher<Atom> steveTheSubGraphFinder(atomGraph, queryAtomGraph);
-    for (auto &subGraph : steveTheSubGraphFinder.GetMatches())
-    {
-        std::cout << "Steve SubGraph:\n" << subGraph.Print() << "\n\n";
-    }  
+    // SubGraphMatcher<Atom> steveTheSubGraphFinder(atomGraph, queryAtomGraph);
+    // for (auto &subGraph : steveTheSubGraphFinder.GetMatches())
+    // {
+    //     std::cout << "Steve SubGraph:\n" << subGraph.Print() << "\n\n";
+    // }  
 
-    std::cout << "********************************************\n";
+    // std::cout << "********************************************\n";
 
     //     std::vector<Graph<int>> matchingSubGraphs = mainGraph.SubGraphMatch(queryGraph);
 //     std::cout << "Found " << matchingSubGraphs.size() << " subgraphs that matched\n";
