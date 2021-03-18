@@ -41,11 +41,11 @@ namespace Abstract
         //////////////////////////////////////////////////////////
 		// Labels
 		inline bool CompareLabels(const std::vector<std::string> otherLabels) {return labels_.CompareLabels(otherLabels);}
-
 		//////////////////////////////////////////////////////////
         //                  OPERATOR OVERLOADING                //
         //////////////////////////////////////////////////////////
- 		
+        bool operator== ( GenericObject& rhs)  { return (this->GetIndex() == rhs.GetIndex());}
+        bool operator!= ( GenericObject& rhs)  { return (this->GetIndex() != rhs.GetIndex());}
 	private:
 		//////////////////////////////////////////////////////////
         //                       ATTRIBUTES                     //

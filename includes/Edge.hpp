@@ -20,7 +20,6 @@ namespace TemplateGraph
 		Edge() : GenericObject {} {};
 		Edge(Node<T>* source, Node<T>* target, std::string label = ""); // Only Node should call this. How to enforce?
 		~Edge() { std::cout << "Edge labeled " << this->GetLabel() << ", with index " << this->GetIndex() << " destroyed\n";}
-		//	Edge(Node *source, Node *target) : source_(source), target_(target){};
 		//////////////////////////////////////////////////////////
 		//                       ACCESSOR                       //
 		//////////////////////////////////////////////////////////	
@@ -34,12 +33,6 @@ namespace TemplateGraph
         //////////////////////////////////////////////////////////
 		bool CompareEdgeAndNodeLabels(Edge<T>* otherEdge);
 		inline std::string Print() {return this->GetLabel();}
-		//////////////////////////////////////////////////////////
-        //                  OPERATOR OVERLOADING                //
-        //////////////////////////////////////////////////////////
-        bool operator== ( Edge<T>& rhs) { return (this->GetIndex() == rhs.GetIndex());}
-        bool operator!= ( Edge<T>& rhs) { return (this->GetIndex() != rhs.GetIndex());}
-        
 	private:
 		//////////////////////////////////////////////////////////
         //                       MUTATOR                        //

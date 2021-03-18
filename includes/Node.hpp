@@ -54,11 +54,6 @@ namespace TemplateGraph
 		std::vector<T*> GetNodesNeighborsObjects();
 		std::vector<Node<T>*> GetIncomingEdgeNeighbors();
 		void RemoveEdge(Node<T>* otherNode);
-		//////////////////////////////////////////////////////////
-        //                  OPERATOR OVERLOADING                //
-        //////////////////////////////////////////////////////////
-        bool operator== ( Node<T>& rhs)  { return (this->GetIndex() == rhs.GetIndex());}
-        bool operator!= ( Node<T>& rhs)  { return (this->GetIndex() != rhs.GetIndex());}
 	private:
 		//////////////////////////////////////////////////////////
         //                       FUNCTIONS                      //
@@ -72,7 +67,6 @@ namespace TemplateGraph
 		T* objectPtr_;
 		std::vector<std::shared_ptr<Edge<T>>> outEdges_;
 		std::vector<std::weak_ptr<Edge<T>>> inEdges_;
-		//std::vector<Edge<T>*> outEdges_;
 	};
 
 // Template classes are easier if it's all in one header file, so consider this next bit the equivalent to the cc file:

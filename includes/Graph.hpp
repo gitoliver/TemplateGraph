@@ -17,14 +17,12 @@ namespace TemplateGraph
 		//////////////////////////////////////////////////////////
 		Graph() {};
         Graph(Node<T>* rootNode) : root_ (rootNode) {};
-        
 		//////////////////////////////////////////////////////////
 		//                       ACCESSOR                       //
 		//////////////////////////////////////////////////////////
         std::vector<Node<T>*> GetNodes();
         unsigned int GetSize();
         std::string Print();
-        
 		//////////////////////////////////////////////////////////
         //                       MUTATOR                        //
         //////////////////////////////////////////////////////////
@@ -46,12 +44,6 @@ namespace TemplateGraph
         //     int current_depth_;
         //     AtomNodeVector path_;
         // };
-        //////////////////////////////////////////////////////////
-        //                  OPERATOR OVERLOADING                //
-        //////////////////////////////////////////////////////////
-        bool operator== (const Node<T>& rhs) const { return (this->GetIndex() == rhs.GetIndex());}
-        bool operator!= (const Node<T>& rhs) const { return (this->GetIndex() != rhs.GetIndex());}
-
 	private:
         //////////////////////////////////////////////////////////
         //                       ACCESSOR                       //

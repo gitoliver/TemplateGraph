@@ -29,12 +29,6 @@ namespace Abstract
         //                      FUNCTIONS                       //
         //////////////////////////////////////////////////////////
 		bool CompareLabels(const std::vector<std::string> otherLabels);
-		//////////////////////////////////////////////////////////
-        //                  OPERATOR OVERLOADING                //
-        //////////////////////////////////////////////////////////
-        // bool operator== (const Node<T>& rhs) const { return (this->GetIndex() == rhs.GetIndex());}
-        // bool operator!= (const Node<T>& rhs) const { return (this->GetIndex() != rhs.GetIndex());}
- 		
 	private:
 		//////////////////////////////////////////////////////////
         //                       ATTRIBUTES                     //
