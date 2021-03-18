@@ -28,5 +28,5 @@ Has been tested on linux, but should work on both Mac and Windows with appropria
 See compiling.sh, or just run that file.
 
 ### Usage
-See main.cpp for examples
+See testDriver.cpp for examples
 
