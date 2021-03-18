@@ -22,17 +22,6 @@ namespace Abstract
         //                       MUTATOR                        //
         //////////////////////////////////////////////////////////
 		inline void SetIndex(unsigned long long index) {index_ = index;}
-
-		//////////////////////////////////////////////////////////
-        //                      FUNCTIONS                       //
-        //////////////////////////////////////////////////////////
-		
-		//////////////////////////////////////////////////////////
-        //                  OPERATOR OVERLOADING                //
-        //////////////////////////////////////////////////////////
-        // bool operator== (const Node<T>& rhs) const { return (this->GetIndex() == rhs.GetIndex());}
-        // bool operator!= (const Node<T>& rhs) const { return (this->GetIndex() != rhs.GetIndex());}
- 		
 	private:
 		//////////////////////////////////////////////////////////
         //                       FUNCTIONS                      //
@@ -46,7 +35,6 @@ namespace Abstract
         //                       ATTRIBUTES                     //
         //////////////////////////////////////////////////////////
 		unsigned long long index_;
-		
 	};
 	 
 }

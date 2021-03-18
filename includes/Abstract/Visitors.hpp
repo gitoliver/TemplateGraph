@@ -21,29 +21,12 @@ namespace Abstract
         //                       MUTATOR                        //
         //////////////////////////////////////////////////////////
 		inline void AddVisitor(std::string visitor = "") {visitors_.push_back(visitor);}
-		void RemoveVisitor(std::string visitor);
-
-		//////////////////////////////////////////////////////////
-        //                      FUNCTIONS                       //
-        //////////////////////////////////////////////////////////
-		
-		//////////////////////////////////////////////////////////
-        //                  OPERATOR OVERLOADING                //
-        //////////////////////////////////////////////////////////
-        // bool operator== (const Node<T>& rhs) const { return (this->GetVisited() == rhs.GetVisited());}
-        // bool operator!= (const Node<T>& rhs) const { return (this->GetVisited() != rhs.GetVisited());}
- 		
+		void RemoveVisitor(std::string visitor);		
 	private:
-		//////////////////////////////////////////////////////////
-        //                       FUNCTIONS                      //
-        //////////////////////////////////////////////////////////
-
 		//////////////////////////////////////////////////////////
         //                       ATTRIBUTES                     //
         //////////////////////////////////////////////////////////
 		std::vector<std::string> visitors_;
-		
 	};
-
 }
 #endif // VISITORS_HPP

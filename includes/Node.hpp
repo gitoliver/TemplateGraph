@@ -6,9 +6,7 @@
 #include <vector>
 #include <memory>
 #include <algorithm>
-
 #include "Abstract/GenericObject.hpp"
-
 
 namespace TemplateGraph
 {
@@ -43,7 +41,6 @@ namespace TemplateGraph
 		std::vector<Edge<T>*> GetEdges();
 		std::vector<Edge<T>*> GetOutEdges();
 		std::vector<Edge<T>*> GetInEdges();
-
 		//////////////////////////////////////////////////////////
         //                       MUTATOR                        //
         //////////////////////////////////////////////////////////
@@ -62,7 +59,6 @@ namespace TemplateGraph
         //////////////////////////////////////////////////////////
         bool operator== ( Node<T>& rhs)  { return (this->GetIndex() == rhs.GetIndex());}
         bool operator!= ( Node<T>& rhs)  { return (this->GetIndex() != rhs.GetIndex());}
- 		
 	private:
 		//////////////////////////////////////////////////////////
         //                       FUNCTIONS                      //

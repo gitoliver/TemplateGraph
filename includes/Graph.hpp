@@ -3,7 +3,6 @@
 
 #include <algorithm> // std::unique,sort,reverse
 #include "Edge.hpp"
-#include "Algorithms/SubGraphMatching/SubGraph.hpp"
 
 namespace TemplateGraph
 {
@@ -31,13 +30,9 @@ namespace TemplateGraph
         //////////////////////////////////////////////////////////
         inline void SetRoot(Node<T>* node) {root_ = node;}
         void ResetAllEdgesAndNodesToUnvisited(std::string visitorName = "");
-        //inline void AddEdge(std::shared_ptr <Edge<T>> edge) {edges_.push_back(edge);}
-
         //////////////////////////////////////////////////////////
         //                       FUNCTIONS                      //
         //////////////////////////////////////////////////////////
-        //std::vector<SubGraph<T>> SubGraphMatch(Graph<T> &queryGraph);
-
         // Go look in selection.cc in gmml for the types of functionality you need.
         // class DeadEndSeeker
         // {
@@ -45,7 +40,6 @@ namespace TemplateGraph
         //     DeadEndSeeker(AtomNode startNode, int startDepth, AtomNodeVector avoidList) : current_depth_ (startDepth), max_depth_ (startDepth), {path_.push_back(startNode); SetAvoidList(avoidList);} 
         //     inline AtomNodeVector Seek() {;}
         //     // inline void RemoveBond(Atom *otherAtom) {atomNodePtr_->RemoveEdge(otherAtom->GetNode());}
-         
         // private:
         //     inline void SetAvoidList(AtomNodeVector avoidList) {for (auto &node : avoidList) node->SetIsVisited(true);} 
         //     int max_depth_;
@@ -64,23 +58,11 @@ namespace TemplateGraph
         //////////////////////////////////////////////////////////
         void RecurveFindNodes(std::vector<Node<T>*> &foundNodes, Node<T>* currentNode);
         std::vector<Edge<T>*> GetEdges();
-        inline Node<T>* GetRoot() {return root_;}
-
-        
-        //////////////////////////////////////////////////////////
-        //                       MUTATOR                        //
-        //////////////////////////////////////////////////////////
-		//////////////////////////////////////////////////////////
-        //                  PRIVATE FUNCTIONS                   //
-        //////////////////////////////////////////////////////////
-
-        //void RecurveSubGraphMatch(Node<T>* graphNode, Node<T>* queryGraphNode, SubGraph<T> &matchingPartOfGraph);
-
+        inline Node<T>* GetRoot() {return root_;} 
 		//////////////////////////////////////////////////////////
         //                       ATTRIBUTES                     //
         //////////////////////////////////////////////////////////
         Node<T>* root_;
-        //std::vector<std::weak_ptr<Edge<T>>> edges_;
 	};
 		//////////////////////////////////////////////////////////
         //                       DEFINITIONS                    //
