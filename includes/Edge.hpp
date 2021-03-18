@@ -32,7 +32,6 @@ namespace TemplateGraph
         //                       FUNCTIONS                      //
         //////////////////////////////////////////////////////////
 		bool CompareEdgeAndNodeLabels(Edge<T>* otherEdge);
-		inline std::string Print() {return this->GetLabel();}
 	private:
 		//////////////////////////////////////////////////////////
         //                       MUTATOR                        //

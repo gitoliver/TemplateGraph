@@ -41,6 +41,7 @@ namespace Abstract
         //////////////////////////////////////////////////////////
 		// Labels
 		inline bool CompareLabels(const std::vector<std::string> otherLabels) {return labels_.CompareLabels(otherLabels);}
+		inline std::string Print() {return this->GetLabel();}
 		//////////////////////////////////////////////////////////
         //                  OPERATOR OVERLOADING                //
         //////////////////////////////////////////////////////////
