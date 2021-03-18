@@ -24,7 +24,7 @@ namespace TemplateGraph
 		//////////////////////////////////////////////////////////
         std::vector<Node<T>*> GetNodes();
         unsigned int GetSize();
-        std::string Print(std::string type = "label");
+        std::string Print();
         
 		//////////////////////////////////////////////////////////
         //                       MUTATOR                        //
@@ -87,7 +87,7 @@ namespace TemplateGraph
         //////////////////////////////////////////////////////////
 
 template <typename T> 
-    std::string Graph<T>::Print(std::string type)
+    std::string Graph<T>::Print()
     {
         std::string output;
         for (auto &edge : this->GetEdges())
