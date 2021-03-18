@@ -48,10 +48,10 @@ int main ()
     std::cout << "Deleting " << atom6->GetName() << "\n";
     delete atom6;
 
-  //  Graph<Atom> atomGraph(atom0->GetNode()); // Bad idea. What if atom1 gets deleted?
+    Graph<Atom> atomGraph(atom0->GetNode()); 
     std::cout << "Deleting " << atom4->GetName() << "\n";
     delete atom4;
-    //std::cout << "Graph:\n" << atomGraph.Print() << "\n\n";
+    std::cout << "Graph:\n" << atomGraph.Print() << "\n\n";
     //std::cout << "Graph:\n" << atomGraph.Print("ID") << "\n\n";
     std::cout << "Visualize the graph here:\nhttps://dreampuf.github.io/GraphvizOnline/#digraph%20G%20%7B%0ABobie-%3ESteve%0A%7D\n";
     //CycleDetector<Atom> cycleDetector(atom0->GetNode());
