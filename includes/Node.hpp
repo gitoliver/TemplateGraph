@@ -6,7 +6,7 @@
 #include <vector>
 #include <memory>
 #include <algorithm>
-#include "Abstract/GenericObject.hpp"
+#include "GenericObject.hpp"
 
 namespace TemplateGraph
 {
@@ -22,9 +22,9 @@ namespace TemplateGraph
 		//////////////////////////////////////////////////////////
 		//                       CONSTRUCTOR                    //
 		//////////////////////////////////////////////////////////
-	//	Node() {} // Unless needed, no.
+		//Node() {std::cout << "Ownerless Node created.\n";} // Unless needed, no.
 		Node(T *objectPtr) : objectPtr_ (objectPtr) {};
-		Node(T *objectPtr, std::string label) : GenericObject {label}, objectPtr_ (objectPtr) {}
+		Node(T *objectPtr, std::string label) : GenericObject {label}, objectPtr_ (objectPtr) {};
 		// Node(T *objectPtr, unsigned long long index) : objectPtr_ (objectPtr), index_ (index){}
 		~Node() 
 		{

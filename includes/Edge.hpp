@@ -5,7 +5,7 @@
 #include <iostream>
 #include <vector>
 #include <algorithm>
-#include "Abstract/GenericObject.hpp"
+#include "GenericObject.hpp"
 
 namespace TemplateGraph
 {
@@ -57,7 +57,7 @@ template <typename T>
 		this->SetSource(source);
 		this->SetTarget(target);
 		this->AddLabel(label);
-		std::cout << "Edge labeled " << this->GetLabel() << ", with index " << this->GetIndex() << " constructed\n";
+		//std::cout << "Edge labeled " << this->GetLabel() << ", with index " << this->GetIndex() << " constructed\n";
 	}
 
 template <typename T>  
