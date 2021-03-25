@@ -2,7 +2,7 @@
 #define T_GRAPH_HPP
 
 #include <algorithm> // std::unique,sort,reverse
-#include "Edge.hpp"
+//#include "Edge.hpp"
 
 namespace TemplateGraph
 {
