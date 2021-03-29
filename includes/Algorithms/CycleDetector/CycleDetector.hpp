@@ -265,10 +265,12 @@ void CycleDetector<T>::detectMegaCycles() {
 	{
 		for (Node<T>* n : nL.second)
 		{
-			std::cout << "~~Node: " + n->GetLabel();
+			std::cout << "Comp number: " + std::to_string(nL.first) +  "~~Node: " + n->GetLabel();
+
 		}
 		std::cout << "\nTO NEXT NODE\n";
 	}
+
 }
 
 template<class T>
@@ -283,7 +285,9 @@ std::vector<Node<T>*> TemplateGraph::CycleDetector<T>::dfsGetReachable(
 	while (!nQ.empty()) {
 		Node<T> *u = nQ.front();
 		nQ.pop();
+		//we only want to add the reachable node if it is NOT a leaf or a bridge.
 		reachableNodes.push_back(u);
+
 		//same as hitting our adjacency list, keep in mind this does not prevent dupes
 		for (Node<T> *nN : u->GetNeighbors()) {
 			if (!intVisited[indexLookUp[nN]]) {
