@@ -53,7 +53,9 @@ namespace TemplateGraph
 		std::vector<Node<T>*> GetNeighbors();
 		std::vector<T*> GetNodesNeighborsObjects();
 		std::vector<Node<T>*> GetIncomingEdgeNeighbors();
+		std::vector<T*> GetIncomingNeighborObjects();
 		void RemoveEdge(Node<T>* otherNode);
+		void SortInEdgesBySourceTObjectComparator();
 	private:
 		//////////////////////////////////////////////////////////
         //                       FUNCTIONS                      //
@@ -131,6 +133,18 @@ template <typename T>
 		return;
 	}
 
+
+// Implemented for sorting the vector of incoming edges by the source objects < operator. Uses a lambda function.
+template <typename T>
+	void Node<T>::SortInEdgesBySourceTObjectComparator()
+	{
+		std::sort(inEdges_.begin(), inEdges_.end(), [](std::weak_ptr<Edge<T>> e1, std::weak_ptr<Edge<T>> e2)
+		{ // Lambda function for doing the sort.
+			return ( *(e1.lock()->GetSource()->GetObjectPtr()) < *(e2.lock()->GetSource()->GetObjectPtr()) );
+		});
+		return;
+	}
+
 template <typename T>  
 	void Node<T>::RemoveOutEdgeToNode(Node<T>* otherNode)
 	{
@@ -183,6 +197,17 @@ template <typename T>
 			neighbors.push_back(edge->GetSource());
 		}
 		return neighbors;
+	}
+
+template <typename T>
+	std::vector<T*> Node<T>::GetIncomingNeighborObjects()
+	{
+		std::vector<T*> inNeighborObjects;
+		for(auto &inEdge : this->GetInEdges())
+		{
+			inNeighborObjects.push_back(inEdge->GetSource()->GetObjectPtr());
+		}
+		return inNeighborObjects;
 	}
 
 template <typename T>
