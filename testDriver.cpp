@@ -5,27 +5,34 @@
 //#include "../includes/Algorithms/SubGraphMatching/SubGraphMatcher.hpp"
 
 using namespace TemplateGraph;
-class Atom {
+class Atom
+{
 public:
 	Atom(std::string name) :
-			name_(name) {
+			name_(name)
+	{
 		atomNodePtr_ = std::make_shared<Node<Atom>>(this, name);
 	} // default node label is atom name
-	inline void AddBond(Atom *otherAtom) {
+	inline void AddBond(Atom *otherAtom)
+	{
 		this->GetNode()->AddEdge(otherAtom->GetNode(),
 				this->GetName() + "->" + otherAtom->GetName());
 	}
-	inline void RemoveBond(Atom *otherAtom) {
+	inline void RemoveBond(Atom *otherAtom)
+	{
 		this->GetNode()->RemoveEdge(otherAtom->GetNode());
 	}
-	inline std::vector<Atom*> GetNeighbors() {
+	inline std::vector<Atom*> GetNeighbors()
+	{
 		return this->GetNode()->GetNodesNeighborsObjects();
 	}
-	inline std::string GetName() {
+	inline std::string GetName()
+	{
 		return name_;
 	}
 
-	inline Node<Atom>* GetNode() {
+	inline Node<Atom>* GetNode()
+	{
 		return atomNodePtr_.get();
 	}
 private:
@@ -36,17 +43,17 @@ private:
 };
 //endAtom
 
-
-class Molecule {
+class Molecule
+{
 public:
 
 	//Atom(std::string name) :
-			//	name_(name) {
-		//	atomNodePtr_ = std::make_shared<Node<Atom>>(this, name);
-		//} // default node label is atom name
+	//	name_(name) {
+	//	atomNodePtr_ = std::make_shared<Node<Atom>>(this, name);
+	//} // default node label is atom name
 
-	Molecule(std::string name, Atom* atomRoot) {
-
+	Molecule(std::string name, Atom *atomRoot)
+	{
 
 		//Graph<Atom>(atomRoot->GetNode());
 		this->name = name;
@@ -57,28 +64,27 @@ public:
 		//std::cout << "our temp graph rootnode: " << tGraph.PoobGetRoot() << "\n";
 		this->graphPtr = &this->graphLol;
 
-
 	}
 
-	~Molecule() {
-		std::cout<< "Molly destructor" << "\n\n";
+	~Molecule()
+	{
+		std::cout << "Molly destructor" << "\n\n";
 	}
 
-	Graph<Atom> * getGraphPtr(){
+	Graph<Atom>* getGraphPtr()
+	{
 		return this->graphPtr;
 	}
 
 private:
 	std::string name;
-	Graph<Atom>* graphPtr;
+	Graph<Atom> *graphPtr;
 	Graph<Atom> graphLol; //prevent nuking early
 };
 //endMolecule
 
-
-
-
-int main() {
+int main()
+{
 	Atom *atom0 = new Atom("Bobie");
 	//Molecule *mol1 = new Molecule("mol1", atom0);
 	Atom *atom1 = new Atom("Steve");
@@ -89,6 +95,23 @@ int main() {
 	Atom *atom6 = new Atom("Frank");
 	Atom *atom7 = new Atom("Bingo1");
 	Atom *atom8 = new Atom("Marsh1");
+	Atom *atom9 = new Atom("Bridge1");
+	Atom *atom10 = new Atom("cycle1");
+	Atom *atom11 = new Atom("cycle2");
+	Atom *atom12 = new Atom("cycle3");
+
+	//to show our mega cycle decomp works
+	//b 1 -> cyc 1
+	atom9->AddBond(atom10);
+	//cyc 1 -> cyc 2
+	atom10->AddBond(atom11);
+	//cyc 2 -> cyc 3
+	atom11->AddBond(atom12);
+	//cyc 1 -> cyc 3
+	atom10->AddBond(atom12);
+	//our mini cycle to the normal cycle
+	atom10->AddBond(atom1);
+
 	atom0->AddBond(atom1);
 	atom1->AddBond(atom2);
 	atom2->AddBond(atom3);
@@ -107,14 +130,12 @@ int main() {
 	//std::cout <<"\n\nGraph ptr root node: " << mol1->getGraphPtr()->PoobGetRoot() << " okay \n\n"; //this is issue
 	//CycleDetector<Atom> sike("cycleOfMol1", mol1->getGraphPtr());
 
-
 	Graph<Atom> atomGraph(atom0->GetNode());
 
 	CycleDetector<Atom> sike("cycles", &atomGraph);
 
 	std::cout << "Deleting " << atom6->GetName() << "\n";
 	delete atom6;
-
 
 	std::cout << "Deleting " << atom4->GetName() << "\n";
 	delete atom4;
