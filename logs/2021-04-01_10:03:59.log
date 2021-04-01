@@ -1,0 +1,31 @@
+Deleting Frank
+Edge labeled Steve->Frank, with index 14 destroyed
+Edge labeled Delux->Frank, with index 15 destroyed
+Edge labeled Ronne->Frank, with index 17 destroyed
+Node labelled Frank destroyed
+Deleting Marsh
+Edge labeled Bingo->Marsh, with index 12 destroyed
+Node labelled Marsh destroyed
+Edge labeled Marsh->Delux, with index 13 destroyed
+Graph:
+Bobie->Steve
+Steve->Ronne
+Ronne->Bingo
+Ronne->Delux
+Ronne->Bingo1
+Delux->Bingo
+Bingo1->Marsh1
+
+
+Visualize the graph here:
+https://dreampuf.github.io/GraphvizOnline/#digraph%20G%20%7B%0ABobie-%3ESteve%0A%7D
+Deleting Delux
+Edge labeled Ronne->Delux, with index 16 destroyed
+Node labelled Delux destroyed
+Edge labeled Delux->Bingo, with index 18 destroyed
+Deleting bonds: 
+Edge labeled Steve->Ronne, with index 10 destroyed
+Finished atom section
+
+********************************************
+Finishing!
