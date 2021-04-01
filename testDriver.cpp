@@ -103,6 +103,7 @@ int main()
 	//to show our mega cycle decomp works
 	//b 1 -> cyc 1
 	atom9->AddBond(atom10);
+	atom9->AddBond(atom10);
 	//cyc 1 -> cyc 2
 	atom10->AddBond(atom11);
 	//cyc 2 -> cyc 3
