@@ -154,8 +154,6 @@ template <typename T>
 			}
 		} 
 		return;
-	}
-	return;
 }
 
 template<typename T>
@@ -228,9 +226,10 @@ template <typename T>
 		{
 			neighborObjects.push_back(node->GetObjectPtr());
 		}
+		return neighborObjects;
 	}
-	return neighborObjects;
-}
 
 }
+
+
 #endif // T_NODE_HPP
