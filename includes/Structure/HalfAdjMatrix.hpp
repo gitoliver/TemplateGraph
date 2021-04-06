@@ -14,12 +14,12 @@ class HalfAdjMatrix
 {
 public:
 	HalfAdjMatrix();
-	HalfAdjMatrix(std::vector<Node<T>*> nList);
-	HalfAdjMatrix(unsigned int nNodes);
+	HalfAdjMatrix(std::vector<Node<T>*> nodeList);
+	HalfAdjMatrix(unsigned int numberNodes);
 	///because for some reason the constructor is being annoying
 	void initializeWorkaround(const HalfAdjMatrix<T> &m);
 
-	void initializeWorkaround(std::vector<Node<T>*> nList);
+	void initializeWorkaround(std::vector<Node<T>*> nodeList);
 	//copy constructor
 	HalfAdjMatrix(const HalfAdjMatrix<T> &m);
 
@@ -28,17 +28,17 @@ public:
 		return numEdges;
 	}
 
-	void connect(unsigned int a, unsigned int b);
-	void disconnect(unsigned int a, unsigned int b);
-	bool isConnected(unsigned int a, unsigned int b);
+	void connect(unsigned int nodeAIndex, unsigned int nodeBIndex);
+	void disconnect(unsigned int nodeAIndex, unsigned int nodeBIndex);
+	bool isConnected(unsigned int nodeAIndex, unsigned int nodeBIndex);
 
 	//to validate matricies when doing cycle stuff
 	bool validateCycleMatrix(HalfAdjMatrix<T> &m);
 
 	//operator overloads
-	inline bool operator()(int a, int b)
+	inline bool operator()(unsigned int nodeAIndex, unsigned int nodeBIndex)
 	{
-		return isConnected(a, b);
+		return isConnected(nodeAIndex, nodeBIndex);
 	}
 
 	inline HalfAdjMatrix<T> operator^(const HalfAdjMatrix<T> &rhs) const
@@ -52,12 +52,13 @@ public:
 		}
 		else
 		{
-			for (unsigned int i = 0; i < bitList.size(); i++)
+			for (unsigned int bitListIndex = 0; bitListIndex < bitList.size();
+					bitListIndex++)
 			{
-				if ((bitList[i] || rhs.bitList[i])
-						&& (bitList[i] != rhs.bitList[i]))
+				if ((bitList[bitListIndex] || rhs.bitList[bitListIndex])
+						&& (bitList[bitListIndex] != rhs.bitList[bitListIndex]))
 				{
-					result.bitList[i] = 1;
+					result.bitList[bitListIndex] = 1;
 					++result.numEdges;
 				}
 			}
@@ -73,16 +74,17 @@ public:
 					<< "\n\n~~~~~~~\nWARNING NUMBER OF NODES NOT EQUAL XOREQUALS\n~~~~~~~~~~~~~\n\n";
 		}
 		numEdges = 0;
-		for (unsigned int i = 0; i < bitList.size(); i++)
+		for (unsigned int bitListIndex = 0; bitListIndex < bitList.size();
+				bitListIndex++)
 		{
-			if ((bitList[i] || rhs.bitList[i])
-					&& (bitList[i] != rhs.bitList[i]))
+			if ((bitList[bitListIndex] || rhs.bitList[bitListIndex])
+					&& (bitList[bitListIndex] != rhs.bitList[bitListIndex]))
 			{
-				bitList[i] = 1;
+				bitList[bitListIndex] = 1;
 				numEdges++;
 			}
 			else
-				bitList[i] = 0;
+				bitList[bitListIndex] = 0;
 		}
 		return *this;
 	}
@@ -101,7 +103,7 @@ public:
 
 private:
 	//proper index lookup since we are dealing with a half adj matrix
-	int index(const int a, const int b);
+	int index(const unsigned int nodeAIndex, const unsigned int nodeBIndex);
 	//actual connections present within the adj matrix
 	std::vector<bool> bitList;
 	//may need to worry regarding our systems bits 64 or 32
@@ -124,9 +126,9 @@ HalfAdjMatrix<T>::HalfAdjMatrix()
 }
 
 template<class T>
-HalfAdjMatrix<T>::HalfAdjMatrix(std::vector<Node<T>*> nList)
+HalfAdjMatrix<T>::HalfAdjMatrix(std::vector<Node<T>*> nodeList)
 {
-	unsigned int nNodes = nList.size();
+	unsigned int nNodes = nodeList.size();
 	this->bitList.assign(((nNodes * (nNodes - 1)) / 2), 0);
 	this->numNodes = nNodes;
 	this->numEdges = 0;
@@ -134,12 +136,12 @@ HalfAdjMatrix<T>::HalfAdjMatrix(std::vector<Node<T>*> nList)
 }
 
 template<class T>
-HalfAdjMatrix<T>::HalfAdjMatrix(unsigned int nNodes)
+HalfAdjMatrix<T>::HalfAdjMatrix(unsigned int numberNodes)
 {
-	this->bitList.assign(((nNodes * (nNodes - 1)) / 2), 0);
-	this->numNodes = nNodes;
+	this->bitList.assign(((numberNodes * (numberNodes - 1)) / 2), 0);
+	this->numNodes = numberNodes;
 	this->numEdges = 0;
-	this->indexFactor = (1 + 2 * (nNodes - 2));
+	this->indexFactor = (1 + 2 * (numberNodes - 2));
 }
 
 //because constructors are being annoying. Wanted to avoid
@@ -153,9 +155,9 @@ void HalfAdjMatrix<T>::initializeWorkaround(const HalfAdjMatrix<T> &m)
 }
 
 template<class T>
-void HalfAdjMatrix<T>::initializeWorkaround(std::vector<Node<T>*> nList)
+void HalfAdjMatrix<T>::initializeWorkaround(std::vector<Node<T>*> nodeList)
 {
-	unsigned int nNodes = nList.size();
+	unsigned int nNodes = nodeList.size();
 	this->bitList.assign(((nNodes * (nNodes - 1)) / 2), 0);
 	this->numNodes = nNodes;
 	this->numEdges = 0;
@@ -172,42 +174,58 @@ HalfAdjMatrix<T>::HalfAdjMatrix(const HalfAdjMatrix<T> &m)
 }
 
 template<class T>
-void HalfAdjMatrix<T>::connect(unsigned int a, unsigned int b)
+void HalfAdjMatrix<T>::connect(unsigned int nodeAIndex, unsigned int nodeBIndex)
 {
-	if (bitList[index(a, b)])
+	if (bitList[index(nodeAIndex, nodeBIndex)])
 	{
 		std::cout << "Trying to add a connection that was already there\n";
 	}
 	else
 	{
-		bitList[index(a, b)] = true;
+		bitList[index(nodeAIndex, nodeBIndex)] = true;
 		numEdges++;
 	}
 }
 
 template<class T>
-void HalfAdjMatrix<T>::disconnect(unsigned int a, unsigned int b)
+void HalfAdjMatrix<T>::disconnect(unsigned int nodeAIndex,
+		unsigned int nodeBIndex)
 {
-	if (!bitList[index(a, b)])
+	if (!bitList[index(nodeAIndex, nodeBIndex)])
 	{
 		std::cout << "Trying to remove a connection that was not there\n";
 	}
 	else
 	{
-		bitList[index(a, b)] = false;
+		bitList[index(nodeAIndex, nodeBIndex)] = false;
 		numEdges--;
 	}
 }
+
 template<class T>
-int HalfAdjMatrix<T>::index(const int a, const int b)
+bool HalfAdjMatrix<T>::isConnected(unsigned int nodeAIndex,
+		unsigned int nodeBIndex)
 {
-	if ((a < numNodes) && (b < numNodes) && (a != b))
+	if (nodeAIndex == nodeBIndex)
+		return false;
+	return bitList[index(nodeAIndex, nodeBIndex)];
+}
+
+template<class T>
+int HalfAdjMatrix<T>::index(const unsigned int nodeAIndex,
+		const unsigned int nodeBIndex)
+{
+	if ((nodeAIndex < numNodes) && (nodeBIndex < numNodes)
+			&& (nodeAIndex != nodeBIndex))
 	{
-		long long la = a, lb = b;
-		if (a < b)
-			return (lb - la * (la - indexFactor) / 2) - 1;
+		//have to convert to longs so we can do our math
+		long long aLongIndex = nodeAIndex, bLongIndex = nodeBIndex;
+		if (nodeAIndex < nodeBIndex)
+			return (bLongIndex - aLongIndex * (aLongIndex - indexFactor) / 2)
+					- 1;
 		else
-			return (la - lb * (lb - indexFactor) / 2) - 1;
+			return (aLongIndex - bLongIndex * (bLongIndex - indexFactor) / 2)
+					- 1;
 	}
 	else
 	{
@@ -216,56 +234,63 @@ int HalfAdjMatrix<T>::index(const int a, const int b)
 	}
 }
 
-template<class T>
-bool HalfAdjMatrix<T>::isConnected(unsigned int a, unsigned int b)
-{
-	if (a == b)
-		return false;
-	return bitList[index(a, b)];
-}
 //to validate a cycle matrix, wanted to hide this away into this class.
 template<class T>
-bool HalfAdjMatrix<T>::validateCycleMatrix(HalfAdjMatrix<T> &m)
+bool HalfAdjMatrix<T>::validateCycleMatrix(HalfAdjMatrix<T> &matrixToValidate)
 {
-	int pathL = 0;
-	for (unsigned int i = 0; i < numNodes; i++)
+	int pathLength = 0;
+	for (unsigned int nodeAIndex = 0; nodeAIndex < numNodes; nodeAIndex++)
 	{
-		for (unsigned int j = 0; j < numNodes; j++)
+		for (unsigned int nodeBIndex = 0; nodeBIndex < numNodes; nodeBIndex++)
 		{
-			if (m.isConnected(j, i))
+			if (matrixToValidate.isConnected(nodeBIndex, nodeAIndex))
 			{
-				++pathL;
+				++pathLength;
 				std::set<int> isVisited;
-				isVisited.insert(i);
-				validateCycleMatrixRec(m, pathL, j, i, isVisited);
-				return (pathL + 1) == m.getNumEdges();
+				isVisited.insert(nodeAIndex);
+				validateCycleMatrixRec(matrixToValidate, pathLength, nodeBIndex,
+						nodeAIndex, isVisited);
+				//the +1 is for our connecting edge that hits back to our original node
+				return (pathLength + 1) == matrixToValidate.getNumEdges();
 			}
 		}
 	}
 	std::cout << "\n\n~~~~~~~~~~~~~~~~~~~~~~~~WARNING: NO EDGES\n\n";
+	return false;
 }
+
 template<class T>
-void HalfAdjMatrix<T>::validateCycleMatrixRec(HalfAdjMatrix<T> &m, int &pathL,
-		const int i, int prevNode, std::set<int> &aVisited)
+void HalfAdjMatrix<T>::validateCycleMatrixRec(
+		HalfAdjMatrix<T> &matrixToValidate, int &currentPathLength,
+		const int interestingNode, int prevNodeIndex, std::set<int> &aVisited)
 {
-	if (pathL > 750)
+	if (currentPathLength > 750)
 	{
 		std::cout << "\n\n~~~~~~~~~~~~~~~~~~~~~~~~WARNING: TOO LONG PATH\n\n";
 	}
 	else
 	{
-		for (unsigned int j = 0; j < numNodes; j++)
+		//next connecting to the node we find interesting
+		for (unsigned int possiblyInterestingNodeIndex = 0;
+				possiblyInterestingNodeIndex < numNodes;
+				possiblyInterestingNodeIndex++)
 		{
-			if (m.isConnected(i, j) && j != prevNode)
+			if (matrixToValidate.isConnected(interestingNode,
+					possiblyInterestingNodeIndex)
+					&& possiblyInterestingNodeIndex != prevNodeIndex)
 			{
-				auto ppVisited = aVisited.find(j);
-				if (ppVisited != aVisited.end())
+				//check if visited
+				auto possiblyVisited = aVisited.find(
+						possiblyInterestingNodeIndex);
+				if (possiblyVisited != aVisited.end())
 				{
 					return;
 				}
-				++pathL;
-				aVisited.insert(i);
-				validateCycleMatrixRec(m, pathL, j, i, aVisited);
+				++currentPathLength;
+				aVisited.insert(interestingNode);
+				validateCycleMatrixRec(matrixToValidate, currentPathLength,
+						possiblyInterestingNodeIndex, interestingNode,
+						aVisited);
 				return;
 			}
 		}
