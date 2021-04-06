@@ -5,7 +5,7 @@
 #include <iostream>
 #include <vector>
 #include <algorithm>
-#include "GenericObject.hpp"
+#include "../GenericObject/includes/GenericObject.hpp"
 
 namespace TemplateGraph
 {

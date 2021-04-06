@@ -1,6 +1,6 @@
-#include "../includes/Node.hpp"
-#include "../includes/Edge.hpp"
-#include "../includes/Graph.hpp"
+#include "./includes/Node.hpp"
+#include "./includes/Edge.hpp"
+#include "./includes/Graph.hpp"
 //#include "../includes/Algorithms/CycleDetector/CycleDetector.hpp"
 //#include "../includes/Algorithms/SubGraphMatching/SubGraphMatcher.hpp"
 

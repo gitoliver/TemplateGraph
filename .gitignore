@@ -1,0 +1,8 @@
+.project
+.cproject
+**/.settings
+**.o
+**.d
+**.swp
+**.mk
+**/Debug
