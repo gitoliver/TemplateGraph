@@ -1,6 +1,6 @@
 #include <algorithm>
 #include <iostream>
-#include "../../includes/Abstract/Labels.hpp"
+#include "../includes/Labels.hpp"
 
 using Abstract::Labels;
 

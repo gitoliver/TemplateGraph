@@ -6,7 +6,7 @@
 #include <vector>
 #include <memory>
 #include <algorithm>
-#include "Abstract/GenericObject.hpp"
+#include "../GenericObject/includes/GenericObject.hpp"
 
 namespace TemplateGraph {
 template<class T> class Edge;
