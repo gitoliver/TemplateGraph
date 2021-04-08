@@ -1,8 +1,8 @@
 #include "./includes/Node.hpp"
 #include "./includes/Edge.hpp"
 #include "./includes/Graph.hpp"
-#include "includes/Algorithms/CycleDetector/CycleDetector.hpp"
-//#include "../includes/Algorithms/SubGraphMatching/SubGraphMatcher.hpp"
+#include "./includes/Algorithms/CycleDetector/CycleDetector.hpp"
+#include "./includes/Algorithms/SubGraphMatching/SubGraphMatcher.hpp"
 
 using namespace TemplateGraph;
 class Atom
@@ -135,6 +135,23 @@ int main()
 
 	CycleDetector<Atom> sike("cycles", &atomGraph);
 
+	// SUBGRAPH MATCH TESTING
+
+	Atom *atomA = new Atom("Ronne");
+	Atom *atomB = new Atom("Bingo");
+	Atom *atomC = new Atom("Marsh");
+	Atom *atomD = new Atom("Delux");
+
+	atomA->AddBond(atomB);
+	atomB->AddBond(atomC);
+	// atomC->AddBond(atomD);
+	atomA->AddBond(atomD);
+	// atomD->AddBond(atomB);
+
+	Graph<Atom> queryGraph(atomA->GetNode());
+
+	SubGraphMatcher<Atom> sumthin(&atomGraph, &queryGraph);
+
 	std::cout << "Deleting " << atom6->GetName() << "\n";
 	delete atom6;
 
@@ -162,18 +179,7 @@ int main()
 	// std::cout << "Graph:\n" << atomGraph.Print() << "\n\n";
 	std::cout << "Finished atom section\n\n";
 
-	// SUBGRAPH MATCH TESTING
 
-	Atom *atomA = new Atom("Ronne");
-	Atom *atomB = new Atom("Bingo");
-	Atom *atomC = new Atom("Marsh");
-	Atom *atomD = new Atom("Delux");
-
-	atomA->AddBond(atomB);
-	atomB->AddBond(atomC);
-	// atomC->AddBond(atomD);
-	atomA->AddBond(atomD);
-	// atomD->AddBond(atomB);
 
 	// Graph<Atom> queryAtomGraph(atomA->GetNode());
 	// std::cout << "queryGraph:\n" << queryAtomGraph.Print() << "\n\n";
