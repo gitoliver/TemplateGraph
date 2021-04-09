@@ -40,7 +40,7 @@ private:
 	void populateLookups();
 
 	//our entry for our search function
-	void searchEntry(std::vector<std::string> &searchResults);
+	void searchEntry(std::vector<Node<T>*> &searchResults);
 
 	/* To prevent having to do a custom enum or something because lazy just keeping track with ints
 	 *
@@ -52,13 +52,13 @@ private:
 	 */
 	int searchForPatterns(int counter,
 			std::map<std::string, std::vector<std::string>> patterns,
-			std::vector<std::string> &results,
+			std::vector<Node<T>*> &results,
 			std::unordered_set<Node<T>*> &visitedKeys);
 
 	//search matches
 	void searchMatches(std::vector<Node<T>*> matches,
 			std::map<std::string, std::vector<std::string>> patterns,
-			std::vector<std::string> &results,
+			std::vector<Node<T>*> &results,
 			std::unordered_set<Node<T>*> &visitedKeys);
 
 	//to find our pattern set, note that we will have to change return types depending on what we want for key and our value signifier
@@ -105,7 +105,7 @@ SubgraphMatcher<T>::SubgraphMatcher(Graph<T> *mainGraph, Graph<T> *queryGraph)
 	}
 	std::cout << "\n";
 
-	std::vector<std::string> resultsLol;
+	std::vector<Node<T>*> resultsLol;
 	this->searchEntry(resultsLol);
 }
 
@@ -220,34 +220,40 @@ void SubgraphMatcher<T>::populateLookups()
 }
 
 template<class T>
-void SubgraphMatcher<T>::searchEntry(std::vector<std::string> &results)
+void SubgraphMatcher<T>::searchEntry(std::vector<Node<T>*> &results)
 {
 	results.clear();
+	std::map<std::string, std::vector<std::string> > ogPatterns =
+				this->patternExtraction(1);
+
 	std::map<std::string, std::vector<std::string> > subgraphPatterns =
 			this->patternExtraction(1);
 	std::unordered_set<Node<T>*> keyVisitTracker;
 
-	//stores each cycle our root node found, int is index of node in the main graph
-	std::map<int, std::vector<std::string>> trueResults;
+	//node was our entry node
+	std::unordered_map<Node<T>*, std::vector<Node<T>*>> trueResults;
 
 	for (unsigned int i = 0; i < this->mainAllNodes.size(); i++)
 	{
 		//probably need to pass results by ref but right now dont care
 		this->searchForPatterns(i, subgraphPatterns, results, keyVisitTracker);
 
-		//if (results.size() != 0)
-		//{
-		//	std::cout
-		//			<< "\n\n11111111111111111111111\n RESULTS FOR I VALUE OF: <"
-		//					+ std::to_string(i) + "> aka Node:"
-		//					+ this->mainNodeLookup[i]->GetLabel() + "\n";
-		//	for (std::string s : results)
-		//	{
-		//		std::cout << s + ", ";
-		//	}
-		//	std::cout << "\n11111111111111111111111\n\n";
-		//}
-		//results.clear();
+		if (results.size() != 0)
+		{
+			std::cout
+					<< "\n\n11111111111111111111111\n RESULTS FOR I VALUE OF: <"
+							+ std::to_string(i) + "> aka Node:"
+							+ this->mainNodeLookup[i]->GetLabel() + "\n";
+			for (Node<T>* cN : results)
+			{
+				std::cout << cN->GetLabel() + ", ";
+			}
+			std::cout << "\n11111111111111111111111\n\n";
+			trueResults.insert({this->mainNodeLookup[i], results});
+			results.clear();
+		}
+		keyVisitTracker.clear();
+
 	}
 
 	/* FIGURED IT OUT, NEED TO HAVE SOMETHING TO KEEP TRACK OF WHAT OUR
@@ -265,7 +271,7 @@ void SubgraphMatcher<T>::searchEntry(std::vector<std::string> &results)
 template<class T>
 int SubgraphMatcher<T>::searchForPatterns(int counter,
 		std::map<std::string, std::vector<std::string> > patterns,
-		std::vector<std::string> &results,
+		std::vector<Node<T>*> &results,
 		std::unordered_set<Node<T>*> &visitedKeys)
 {
 	Node<T> *nodeA = this->mainNodeLookup[counter];
@@ -283,7 +289,7 @@ int SubgraphMatcher<T>::searchForPatterns(int counter,
 			//TODO: HERE IS ISSUE
 			bool isInterestingInResults =
 					(std::find(results.begin(), results.end(),
-							interestingNode->GetLabel()) != results.end());
+							interestingNode) != results.end());
 			//we do NOT currently have our interesting node in our results so we want to check it and see if we are in the needed pattern
 			//if (!isInterestingInResults )
 			//if (!(visitedKeys.count(interestingNode)) &&  !isInterestingInResults)
@@ -327,7 +333,7 @@ int SubgraphMatcher<T>::searchForPatterns(int counter,
 			//now they null out the key but i am unsure if total erasure destroys algo efficacy
 			patterns.erase(nodeA->GetLabel());
 
-			results.push_back(nodeA->GetLabel());
+			results.push_back(nodeA);
 
 			this->searchMatches(foundMatches, patterns, results, visitedKeys);
 
@@ -348,7 +354,7 @@ int SubgraphMatcher<T>::searchForPatterns(int counter,
 			//now they null out the key but i am unsure if total erasure destroys algo efficacy
 			patterns.erase(nodeA->GetLabel());
 
-			results.push_back(nodeA->GetLabel());
+			results.push_back(nodeA);
 
 			//try printing results here
 
@@ -367,7 +373,7 @@ int SubgraphMatcher<T>::searchForPatterns(int counter,
 template<class T>
 void SubgraphMatcher<T>::searchMatches(std::vector<Node<T>*> matches,
 		std::map<std::string, std::vector<std::string> > patterns,
-		std::vector<std::string> &results,
+		std::vector<Node<T>*> &results,
 		std::unordered_set<Node<T>*> &visitedKeys)
 {
 	for (Node<T> *currMatch : matches)
@@ -376,7 +382,7 @@ void SubgraphMatcher<T>::searchMatches(std::vector<Node<T>*> matches,
 
 		//TODO: HERE IS ISSUE
 		bool isMatchInResults = (std::find(results.begin(), results.end(),
-				currMatch->GetLabel()) != results.end());
+				currMatch) != results.end());
 		//if (!(isMatchInResults))
 		if (!(visitedKeys.count(currMatch)) && !isMatchInResults)
 		{
