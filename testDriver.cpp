@@ -102,7 +102,7 @@ int main()
 
 	//to show our mega cycle decomp works
 	//b 1 -> cyc 1
-	atom9->AddBond(atom10);
+	//atom9->AddBond(atom10);
 	atom9->AddBond(atom10);
 	//cyc 1 -> cyc 2
 	atom10->AddBond(atom11);
@@ -150,7 +150,7 @@ int main()
 
 	Graph<Atom> queryGraph(atomA->GetNode());
 
-	SubGraphMatcher<Atom> sumthin(&atomGraph, &queryGraph);
+	SubgraphMatcher<Atom> sumthin(&atomGraph, &queryGraph);
 
 	std::cout << "Deleting " << atom6->GetName() << "\n";
 	delete atom6;

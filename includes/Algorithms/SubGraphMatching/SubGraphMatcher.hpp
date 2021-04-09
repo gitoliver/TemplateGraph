@@ -4,611 +4,468 @@
 #include "../../Graph.hpp"
 #include "../../Node.hpp"
 #include "../../Edge.hpp"
+#include "../../Structure/HalfAdjMatrix.hpp"
 
-#include <vector>
 #include <unordered_set>
 #include <unordered_map>
-#include <queue>
 #include <map>
-#include <set>
-#include <list>
 
 namespace TemplateGraph
 {
 template<class T>
-class SubGraphMatcher
+class SubgraphMatcher
 {
 public:
-	SubGraphMatcher();
-	SubGraphMatcher(Graph<T> *mainGraph, Graph<T> *queryGraph);
-
-	std::vector<std::unordered_set<Node<T>*>> findSubgraphs();
+	SubgraphMatcher();
+	SubgraphMatcher(Graph<T> *mainGraph, Graph<T> *queryGraph);
 
 private:
-
-	//all the other search functions are hit by what this calls
-	void searchEntry(Graph<T> *subgraphToMatch,
-			std::unordered_set<Node<T>*> &resultHolder,
-			std::vector<std::vector<int>> mainAdjMatrix,
-			std::vector<std::vector<int> > queryAdjMatrix);
-
-	/* 0 = NONE
-	 * 1 = LEAF
-	 * 2 = TRAVERSE
-	 */
-	//maybe just return an unordered set for our current result how do we put it back into our total result
-	int searchForPatterns(Graph<T> *subgraphToMatch, int counter,
-			std::pair<std::string, std::set<std::string>> currPattern,
-			std::map<std::string, std::set<std::string>> &patterns,
-			std::unordered_set<Node<T>*> &resultHolder,
-			std::vector<std::vector<int>> mainAdjMatrix);
-	//	std::map<int, std::unordered_set<Node<T>*>> &resultHolder
-
-	void searchMatches(Graph<T> *subgraphToMatch,
-			std::vector<Node<T>*> nodeVector,
-			std::map<std::string, std::set<std::string>> &patterns,
-			std::unordered_set<Node<T>*> &resultHolder,
-			std::vector<std::vector<int>> mainAdjMatrix, int counter);
-
-	//will eventuall use some good comparator, gets patterns from the query graph
-	std::map<std::string, std::set<std::string>> extractPaterns(
-			std::vector<std::vector<int>> adjMat, bool isQuery);
-
-	//this is our graph we are searching in
+	//our graphs themselves
 	Graph<T> *mainGraph;
-	//this is our subgraph
 	Graph<T> *queryGraph;
 
-	/*std::vector<Node<T>*> subgraphPairDFSWalk(int subgraphNumber,
-	 std::vector<int> &intMainHasVisited,
-	 std::vector<int> &intQueryHasVisited, Node<T> *interestingMainNode,
-	 Node<T> *interestingQueryNode);
-	 */
-	//lookup table stuff
+	//all of our main graph relationships
 	std::unordered_map<Node<T>*, int> mainIndexLookup;
 	std::unordered_map<int, Node<T>*> mainNodeLookup;
+	std::vector<Node<T>*> mainAllNodes;
+	HalfAdjMatrix<T> mainAdjMatrix;
 
-	//lookup table stuff for query graph
+	//all of our query graph relationships
 	std::unordered_map<Node<T>*, int> queryIndexLookup;
 	std::unordered_map<int, Node<T>*> queryNodeLookup;
-
-	//because why not, make life easier for now to prove logic.
-	std::vector<Node<T>*> mainAllNodes;
 	std::vector<Node<T>*> queryAllNodes;
+	HalfAdjMatrix<T> queryAdjMatrix;
 
-	//also populates our lists of all nodes.
+	//as of now we just popualte all our lookups at the same time. Eventually worry about seping this out
 	void populateLookups();
 
-	void lookUpPrinter();
+	//our entry for our search function
+	void searchEntry(std::vector<std::string> &searchResults);
+
+	/* To prevent having to do a custom enum or something because lazy just keeping track with ints
+	 *
+	 * 0 = NONE
+	 * 1 = LEAF
+	 * 2 = TRAVERSE
+	 *
+	 * NOTE: May need to change and do pass by reference, furthermore: Do I need to track specific pattern I am looking at
+	 */
+	int searchForPatterns(int counter,
+			std::map<std::string, std::vector<std::string>> patterns,
+			std::vector<std::string> &results);
+
+	//search matches
+	void searchMatches(std::vector<Node<T>*> matches,
+			std::map<std::string, std::vector<std::string>> patterns,
+			std::vector<std::string> &results);
+
+	//to find our pattern set, note that we will have to change return types depending on what we want for key and our value signifier
+	std::map<std::string, std::vector<std::string>> patternExtraction(
+			bool forQuery);
+
+	//some printing stuff to help us out
+	void lookupPrinter();
+	void printAdjMatrix();
 
 };
 
-//idea, we traverse through the subgraph. Each step we even think about making we
-//make sure that we can make the step in main graph.
-
-/*	Build spanning tree on tiny graph, and keep track of the steps we took to get there
- * 		aka i.e. use a q. Then we run the same algo but trying to force the steps we took
- * 		to make our spanning tree. If we can build the exact same tree then we know we
- * 		at least have a POSSIBLE candidate.
- *
- * 		How do we verify? Run iterative DFS and use it to check against our subgraph.
- * 		Basically same as above but forced? Why not just get rid of above....
- *
- *
- *		************************************************************
- * 		Ngl why dont we just find a starting node on our input graph, try to go through our
- * 		input graph & try to force the same steps we take in our input to our main graph. If
- * 		we are unable to find a valid step in the big graph then we try again on another starting
- * 		node.
- * 		************************************************************
- *
- */
-
-/* Current issue is we can be SUPER lazy. Since our nodes & strings all have
- * 	same name, why don't we just check and find all our edges & nodes and see if
- * 	they are in the graph itself. This is bad......
- *
- * 	p much regexing the labels themselves
- *
- */
-
 template<class T>
-SubGraphMatcher<T>::SubGraphMatcher()
+SubgraphMatcher<T>::SubgraphMatcher()
 {
-	std::cout << "\n\nno\n\n";
 	this->mainGraph = NULL;
 	this->queryGraph = NULL;
+	std::cout << "\n\nSTOP NO\n\n";
 }
 
 template<class T>
-SubGraphMatcher<T>::SubGraphMatcher(Graph<T> *mainGraph, Graph<T> *queryGraph)
+SubgraphMatcher<T>::SubgraphMatcher(Graph<T> *mainGraph, Graph<T> *queryGraph)
 {
+	std::cout
+			<< "\n@@@@@@@@@@@@\nENTERING SUBGRAPH MATCHER CONSTRUCTOR\n@@@@@@@@@@@@\n";
 	this->mainGraph = mainGraph;
 	this->queryGraph = queryGraph;
 	this->populateLookups();
-	//this->lookUpPrinter();
-	this->findSubgraphs();
-}
+	this->printAdjMatrix();
+	this->lookupPrinter();
 
-template<class T>
-std::vector<std::unordered_set<Node<T>*> > SubGraphMatcher<T>::findSubgraphs()
-{
-	std::vector<std::unordered_set<Node<T>*> > returnVec;
-	/*first going to try using adj matricies to match. May need to go ahead and use
-	 * Cordellas algo instead.... Need to test.....
-	 *
-	 * Worried that using half adj matrix here will cause issues. Need to understand algo better
-	 */
-	//please note our last row & column will be used for number of connections a node has
-	std::vector<std::vector<int>> mainGraphAdj(this->mainAllNodes.size() + 1,
-			std::vector<int>(this->mainAllNodes.size() + 1, 0));
-
-	for (Node<T> *currentNode : this->mainAllNodes)
+	//ugly testing
+	std::cout << "\n@@@@@@@@@@@@\nPRINTING PATTERNS\n@@@@@@@@@@@@\n";
+	std::map<std::string, std::vector<std::string> > pats =
+			this->patternExtraction(1);
+	for (std::pair<std::string, std::vector<std::string>> currP : pats)
 	{
-
-		std::vector<Node<T>*> tempNeighbors = currentNode->GetNeighbors();
-		std::unordered_set<Node<T>*> currentNodeNeighbors(tempNeighbors.begin(),
-				tempNeighbors.end());
-		for (Node<T> *currentNeighbor : currentNodeNeighbors)
+		std::cout << "\n Patterns for node <" + currP.first + ">\n\t";
+		for (std::string cS : currP.second)
 		{
-			mainGraphAdj[this->mainIndexLookup[currentNode]][this->mainIndexLookup[currentNeighbor]] =
-					1;
-			//recall we made this by using nodes size + 1 so using the og size works fine index at 1 lol
-			//puts in our number of connections
-			++mainGraphAdj[this->mainIndexLookup[currentNode]][this->mainAllNodes.size()];
-			++mainGraphAdj[this->mainAllNodes.size()][this->mainIndexLookup[currentNeighbor]];
-		}
-	}
-
-	std::vector<std::vector<int>> queryGraphAdj(this->queryAllNodes.size() + 1,
-			std::vector<int>(this->queryAllNodes.size() + 1, 0));
-	for (Node<T> *currentNode : this->queryAllNodes)
-	{
-
-		std::vector<Node<T>*> tempNeighbors = currentNode->GetNeighbors();
-		std::unordered_set<Node<T>*> currentNodeNeighbors(tempNeighbors.begin(),
-				tempNeighbors.end());
-		for (Node<T> *currentNeighbor : currentNodeNeighbors)
-		{
-			queryGraphAdj[this->queryIndexLookup[currentNode]][this->queryIndexLookup[currentNeighbor]] =
-					1;
-			//recall we made this by using nodes size + 1 so using the og size works fine index at 1 lol
-			//puts in our number of connections
-			++queryGraphAdj[this->queryIndexLookup[currentNode]][this->queryAllNodes.size()];
-			++queryGraphAdj[this->queryAllNodes.size()][this->queryIndexLookup[currentNeighbor]];
-		}
-	}
-	std::unordered_set<Node<T>*> resultsLol;
-	this->searchEntry(this->queryGraph, resultsLol, mainGraphAdj,
-			queryGraphAdj);
-
-	std::cout << "\n\n@@@@@@@@\n" + std::to_string(resultsLol.size()) + "\n";
-	for (Node<T> *currNode : resultsLol)
-	{
-		std::cout << currNode->GetLabel() + ", ";
-	}
-	std::cout << "\n@@@@@@@@\n\n";
-	//have built our adj mats
-	/*
-	 std::cout << "\n\n\n~~~OK~~~~\n\n\n";
-	 for (int i = 0; i < queryGraphAdj.size(); i++)
-	 {
-	 //checking specific dimension sizes doesnt matter
-	 for (int j = 0; j < queryGraphAdj[0].size(); j++)
-	 {
-
-	 std::cout << std::to_string(queryGraphAdj[i][j]) + " ";
-	 }
-	 std::cout << "\n";
-	 }
-	 */
-	return returnVec;
-}
-
-template<class T>
-void SubGraphMatcher<T>::searchEntry(Graph<T> *subgraphToMatch,
-		std::unordered_set<Node<T>*> &resultHolder,
-		std::vector<std::vector<int> > mainAdjMatrix,
-		std::vector<std::vector<int> > queryAdjMatrix)
-{
-	std::map<Node<T>*, std::unordered_set<Node<T>*>> allResults;
-	resultHolder.clear();
-	std::map<std::string, std::set<std::string> > queryPatterns =
-			this->extractPaterns(queryAdjMatrix, true);
-	int i = 0;
-
-	std::cout << "\n\n@@@@@@@@\n";
-	for (auto const &currPair : queryPatterns)
-	{
-		std::cout << "Key value: " + currPair.first + "\n";
-		for (std::string currString : currPair.second)
-		{
-			std::cout << currString + ", ";
+			std::cout << cS + ", ";
 		}
 		std::cout << "\n";
 	}
-	std::cout << "\n@@@@@@@@\n\n";
+	std::cout << "\n";
 
-	for (Node<T> *currNode : this->mainAllNodes)
-	{
-		//since our patterns are mutated when we run the algo, assuming we want to 
-		//keep a clean bit of our patterns so when we run subgraph match on each specific node
-		//it hits all
-		//std::map<std::string, std::set<std::string> > queryPatterns = ogQueryPatterns;
-		//dont think we need to worry about our query adj matrix. Unsure...
-
-		this->searchForPatterns(subgraphToMatch, i, *queryPatterns.begin(),
-				queryPatterns, resultHolder, mainAdjMatrix);
-		i++;
-
-		/*std::cout << "\n\n@@@@@@@@\n";
-		 for (Node<T> *lolNode : resultHolder)
-		 {
-		 std::cout << lolNode->GetLabel() + ", ";
-		 }
-		 std::cout << "\n@@@@@@@@\n\n";*/
-
-		//allResults.insert(std::pair<Node<T>*, std::unordered_set<Node<T>*>>(currNode, resultHolder));
-		//resultHolder.clear();
-	}
-}
-
-/* 0 = NONE
- * 1 = LEAF
- * 2 = TRAVERSE
- */
-// Need to pass in specific patterns?
-template<class T>
-int SubGraphMatcher<T>::searchForPatterns(Graph<T> *subgraphToMatch,
-		int counter, std::pair<std::string, std::set<std::string>> currPattern,
-		std::map<std::string, std::set<std::string> > &patterns,
-		std::unordered_set<Node<T>*> &resultHolder,
-		std::vector<std::vector<int> > mainAdjMatrix)
-{
-	Node<T> *currNode = this->mainNodeLookup[counter];
-
-	/* we want to eventually better design this. Possibly have a unique id for
-	 * each node that will be used as a key and then we have a member value that
-	 * denotes the element in our requirements?
-	 */
-	if (currPattern.first == currNode->GetLabel())
-	{
-
-		std::vector<Node<T>*> matchNodes;
-
-		for (Node<T> *interestingNode : this->mainAllNodes)
-		{
-			if (!(resultHolder.count(interestingNode)))
-			{
-
-				if (mainAdjMatrix[this->mainIndexLookup[currNode]][this->mainIndexLookup[interestingNode]])
-				{
-
-					std::set<std::string> patternReqs =
-							patterns[currNode->GetLabel()];
-					if (currPattern.second.count(interestingNode->GetLabel()))
-					{
-
-						//					if (std::find(matchNodes.begin(), matchNodes.end(),
-						//						interestingNode) != matchNodes.end())
-						//			{
-						//			std::cout
-						//				<< "\n\n@@@@ FOUND INTERESTING NODE NAMED: <"
-						//					+ interestingNode->GetLabel()
-						//					+ "> IN OUR MATCHING NODE LIST AGAIN @@@@\n\n";
-						//}
-						matchNodes.push_back(interestingNode);
-					}
-				}
-			}
-		}
-
-		if ((matchNodes.size() >= currPattern.second.size())
-				&& (matchNodes.size() > 0))
-		{
-			// note that we end up destroying our patterns. Must be able to find all.
-			// Keep track of what nodes not visited, then run algo begining on one of those nodes
-			// keep going until we run algo on all nodes.
-
-			//same as nulling out our key, change key to null
-			std::set<std::string> tempPat = patterns[currPattern.first];
-			patterns.erase(currNode->GetLabel());
-			//patterns[currPattern.first] = "NULLED";
-
-		/*	if (resultHolder.count(currNode))
-			{
-				std::cout
-						<< "\n\n@@@@ FOUND CURRENT NODE NAMED: <"
-								+ currNode->GetLabel()
-								+ "> IN OUR RESULT NODE LIST AGAIN @@@@\n\n";
-			}
-			else
-			{
-				std::cout
-						<< "\n\n@@@@ ADDING CURRENT NODE NAMED: <"
-								+ currNode->GetLabel()
-								+ "> TO OUR RESULT NODE LIST@@@@\n\n";*/
-				resultHolder.insert(currNode);
-		//	}
-			this->searchMatches(subgraphToMatch, matchNodes, patterns,
-					resultHolder, mainAdjMatrix, counter);
-			// NOTE 2 = TRAVERSE
-			return 2;
-		}
-		else if (matchNodes.size() == 0
-				&& currPattern.second.size() == 0)
-		{
-			//same idea as nulling key
-			currPattern.first = "";
-			resultHolder.insert(currNode);
-
-			//NOTE 1 = LEAF
-			return 1;
-		}
-
-	}
-
-	// done to satisfy our base case, we dont call any other funcs and just leave
-	//NOTE 0 = NONE
-	return 0;
+	std::vector<std::string> resultsLol;
+	this->searchEntry(resultsLol);
 }
 
 template<class T>
-void SubGraphMatcher<T>::searchMatches(Graph<T> *subgraphToMatch,
-		std::vector<Node<T>*> nodeVector,
-		std::map<std::string, std::set<std::string> > &patterns,
-		std::unordered_set<Node<T>*> &resultHolder,
-		std::vector<std::vector<int> > mainAdjMatrix, int counter)
+void SubgraphMatcher<T>::populateLookups()
 {
-	//note that we can do some logic shortcutting. For now just trying to implement algo
-	// same way done in paper then if it works I will alter.
-	for (Node<T> *currMatchNode : nodeVector)
-	{
-		for (std::pair<std::string, std::set<std::string>> currentPattern : patterns)
-		{
-			if (!(resultHolder.count(currMatchNode)))
-			{
-				if (currentPattern.first == currMatchNode->GetLabel())
-				{
-					//now do we need to pass in our specific found pattern? I dont think so due to current structure
-					int searchState = this->searchForPatterns(subgraphToMatch,
-							this->mainIndexLookup[currMatchNode],
-							currentPattern, patterns, resultHolder,
-							mainAdjMatrix);
-					//if we are at a leaf now.
-					if (searchState == 1)
-					{
-						break;
-					}
-				}
-			}
-		}
-	}
-}
-
-template<class T>
-std::map<std::string, std::set<std::string> > SubGraphMatcher<T>::extractPaterns(
-		std::vector<std::vector<int>> adjMat, bool isQuery)
-{
-	std::map<std::string, std::set<std::string>> patternRet;
-	if (isQuery)
-	{
-		for (int i = 0; i < this->queryAllNodes.size(); i++)
-		{
-			std::pair<std::string, std::set<std::string>> currPatternCreation;
-			currPatternCreation.first = this->queryNodeLookup[i]->GetLabel();
-			//keep in mind we are currently using label as our key
-			//patternRet.insert(
-			//{ this->queryNodeLookup[i]->GetLabel(), std::set<std::string>() });
-
-			for (int j = 0; j < this->queryAllNodes.size(); j++)
-			{
-				if (adjMat[i][j] == 1)
-				{
-					currPatternCreation.second.insert(this->queryNodeLookup[j]->GetLabel());
-				}
-			}
-			patternRet.insert(currPatternCreation);
-		}
-	}
-	/*else
-	 {
-	 for (int i = 0; i < this->mainAllNodes.size(); i++)
-	 {
-	 //add our key
-	 patternRet[this->mainNodeLookup[i]->GetLabel()];
-	 for (int j = 0; j < this->mainAllNodes.size(); j++)
-	 {
-	 if (adjMat[i][j] == 1)
-	 {
-
-	 if (patternRet.find(this->mainNodeLookup[i]->GetLabel())
-	 != patternRet.end())
-	 {
-	 std::set<std::string> tempSet =
-	 patternRet[this->mainNodeLookup[i]->GetLabel()];
-	 tempSet.insert(this->mainNodeLookup[j]->GetLabel());
-	 patternRet[this->mainNodeLookup[i]->GetLabel()] =
-	 tempSet;
-	 }
-	 else
-	 {
-	 patternRet.insert(this->mainNodeLookup[i]->GetLabel(),
-	 this->mainNodeLookup[j]->GetLabel());
-	 }
-	 }
-	 }
-	 }
-	 }*/
-
-	std::cout << "\n\n@@@@\npatterns for graph\n@@@@\n";
-	for (std::pair<std::string, std::set<std::string>> const &currPair : patternRet)
-	{
-		std::cout << "Key value: " + currPair.first + "\n";
-		for (std::string currString : currPair.second)
-		{
-			std::cout << currString + ", ";
-		}
-		std::cout << "\n";
-	}
-
-	return patternRet;
-}
-
-//may need to switch to iterative dfs to make easier on brain
-//template<class T>
-//std::vector<std::unordered_set<Node<T>*> > SubGraphMatcher<T>::findSubgraphs()
-//{
-/* need our hasvisited for both our main and our query graph
- * Keep in mind we want to use our query graph as a "leader".
- * aka look ahead, see the step we want to take, check if current
- * node on main graph can take that step. If we can take that step, take it.
- *
- * Important cases:
- * 		- when we hit a cycle, we need to ensure that the cycle (back edge)
- * 			is also present in our main graph before we say we good and travel
- * 			back up our recursion tree
- */
-
-//note our has visited contains what subgraph num
-/*std::vector<int> queryHasVisited(this->queryAllNodes.size(), 0);
-
- //what our subgraphs will be stored in
- std::unordered_map<int, std::vector<Node<T>*>> matchingSubgraphs;
-
- int subgraphNum = 0;
-
- //recall, we want our query to lead our "steps"
- for (Node<T> *currentQueryNode : this->queryAllNodes)
- {
- std::vector<int> mainHasVisited(this->mainAllNodes.size(), 0);
- //now we want to get our matching node in our all nodes list
- Node<T> *matchingMainNode = NULL;
- for (Node<T> *possibleMatch : this->mainAllNodes)
- {
- //we have found a match. we are going to want to hold multiple of our matches.
- //	will eventually throw in set? Then we loop below.
- if (possibleMatch->GetLabel() == currentQueryNode->GetLabel())
- {
- matchingMainNode = possibleMatch;
- }
- }
-
- // I guess we are good enough to try and take a step
- bool stepImpossible = (matchingMainNode == NULL) ? true : false;
- if (!(stepImpossible)
- && (queryHasVisited[this->queryIndexLookup[currentQueryNode]]
- == 0)
- && (mainHasVisited[this->mainIndexLookup[matchingMainNode]] == 0))
- {
- matchingSubgraphs[queryHasVisited[this->queryIndexLookup[currentQueryNode]]] =
- this->subgraphPairDFSWalk(subgraphNum, mainHasVisited,
- queryHasVisited, matchingMainNode,
- currentQueryNode);
- }
-
- }
-
- }
-
- template<class T>
- std::vector<Node<T>*> SubGraphMatcher<T>::subgraphPairDFSWalk(
- int subgraphNumber, std::vector<int> &intMainHasVisited,
- std::vector<int> &intQueryHasVisited, Node<T> *interestingMainNode,
- Node<T> *interestingQueryNode)
- {
- //queue for dfs to keep track of our query and main graphs
- std::queue<Node<T>*> queryNodeQ;
- std::queue<Node<T>*> mainNodeQ;
-
- queryNodeQ.push(interestingQueryNode);
- mainNodeQ.push(interestingMainNode);
-
- std::vector<Node<T>* > subgraphNodes;
- while (!queryNodeQ.empty())
- {
-
-
-
-
- }
-
-
-
-
- }*/
-
-template<class T>
-void SubGraphMatcher<T>::populateLookups()
-{
-	//since populating these we want to first clear them out.
+	//clear all query info
 	this->queryIndexLookup.clear();
 	this->queryNodeLookup.clear();
+	this->queryAdjMatrix.initializeWorkaround(this->queryAdjMatrix);
+	this->queryAllNodes.clear();
 
-	this->mainIndexLookup.clear();
-	this->mainNodeLookup.clear();
-
-	//to handle all our query lookups, prevent dupes
+	//something to hold all our nodes in & prevent dupes
 	std::unordered_set<Node<T>*> tempNodes;
-	for (Node<T> *currentQueryNode : this->queryGraph->GetNodes())
+	//something to keep track for filling in our maps
+	int indexCounter = 0;
+
+	for (Node<T> *currNode : this->queryGraph->GetNodes())
 	{
-		if (tempNodes.count(currentQueryNode))
+		if (tempNodes.count(currNode))
 		{
 			std::cout << "Warning: dupe detected\n";
 		}
 		else
 		{
-			tempNodes.insert(currentQueryNode);
+			tempNodes.insert(currNode);
 		}
 	}
-	unsigned int currIndexCount = 0;
+
 	for (Node<T> *currNode : tempNodes)
 	{
 		this->queryAllNodes.push_back(currNode);
+
 		this->queryIndexLookup.insert(
-				std::pair<Node<T>*, int>(currNode, currIndexCount));
+		{ currNode, indexCounter });
+
 		this->queryNodeLookup.insert(
-				std::pair<int, Node<T>*>(currIndexCount, currNode));
-		currIndexCount++;
+		{ indexCounter, currNode });
+
+		indexCounter++;
 	}
-	//done inserting our query lookups
-	//now finish out main lookups
+
+	//after using both tempnodes and counter reset them
 	tempNodes.clear();
-	for (Node<T> *currentMainNode : this->mainGraph->GetNodes())
+	indexCounter = 0;
+
+	//now handle our adj matrix stuff for query
+	this->queryAdjMatrix.initializeWorkaround(this->queryAllNodes);
+
+	for (Node<T> *currNode : this->queryAllNodes)
 	{
-		if (tempNodes.count(currentMainNode))
+		for (Node<T> *currNeighbor : currNode->GetNeighbors())
 		{
-			std::cout << "Warning: dupe detected main node\n";
+			if (!(this->queryAdjMatrix.isConnected(
+					this->queryIndexLookup[currNode],
+					this->queryIndexLookup[currNeighbor])))
+			{
+				this->queryAdjMatrix.connect(this->queryIndexLookup[currNode],
+						this->queryIndexLookup[currNeighbor]);
+			}
+		}
+	}
+
+	//do same as above but for main info
+
+	//clear all main info
+	this->mainIndexLookup.clear();
+	this->mainNodeLookup.clear();
+	this->mainAdjMatrix.initializeWorkaround(this->mainAllNodes);
+	this->mainAllNodes.clear();
+
+	for (Node<T> *currNode : this->mainGraph->GetNodes())
+	{
+		if (tempNodes.count(currNode))
+		{
+			std::cout << "Warning: dupe detected\n";
 		}
 		else
 		{
-			tempNodes.insert(currentMainNode);
+			tempNodes.insert(currNode);
 		}
 	}
-	currIndexCount = 0;
+
 	for (Node<T> *currNode : tempNodes)
 	{
-
 		this->mainAllNodes.push_back(currNode);
 		this->mainIndexLookup.insert(
-				std::pair<Node<T>*, int>(currNode, currIndexCount));
+		{ currNode, indexCounter });
+
 		this->mainNodeLookup.insert(
-				std::pair<int, Node<T>*>(currIndexCount, currNode));
-		currIndexCount++;
+		{ indexCounter, currNode });
+
+		indexCounter++;
 	}
-	//done inserting all into our lookups
+
+	//now handle our adj matrix stuff for main
+	this->mainAdjMatrix.initializeWorkaround(this->mainAllNodes);
+	for (Node<T> *currNode : this->mainAllNodes)
+	{
+		for (Node<T> *currNeighbor : currNode->GetNeighbors())
+		{
+			if (!(this->mainAdjMatrix.isConnected(
+					this->mainIndexLookup[currNode],
+					this->mainIndexLookup[currNeighbor])))
+			{
+				this->mainAdjMatrix.connect(this->mainIndexLookup[currNode],
+						this->mainIndexLookup[currNeighbor]);
+			}
+		}
+	}
+
 }
 
 template<class T>
-void SubGraphMatcher<T>::lookUpPrinter()
+void SubgraphMatcher<T>::searchEntry(std::vector<std::string> &results)
 {
-	for (int i = 0; i < this->mainAllNodes.size(); i++)
+	results.clear();
+	std::map<std::string, std::vector<std::string> > subgraphPatterns =
+			this->patternExtraction(1);
+	for (unsigned int i = 0; i < this->mainAllNodes.size(); i++)
 	{
-		std::cout
-				<< "Index: " + std::to_string(i) + " relates to Node "
-						+ this->mainNodeLookup[i]->GetLabel() + "\n";
+		//probably need to pass results by ref but right now dont care
+		this->searchForPatterns(i, subgraphPatterns, results);
 	}
 
+	/* FIGURED IT OUT, NEED TO HAVE SOMETHING TO KEEP TRACK OF WHAT OUR
+	 * RESULTS ARE AND WHICH KEYS WE HAVE ALREADY USED. HOW
+	 *
+	 * ONE FOR VISITED KEYS ->
+	 *
+	 *
+	 */
+
+
+}
+
+template<class T>
+int SubgraphMatcher<T>::searchForPatterns(int counter,
+		std::map<std::string, std::vector<std::string> > patterns,
+		std::vector<std::string> &results)
+{
+	Node<T> *nodeA = this->mainNodeLookup[counter];
+
+	//unsure if this breaks the algo, if it does then there is a uniqueness in how specifc patterns are used against specific indicies
+	//our key matches our current node, aka there is a pattern which means its in querygraph also
+	if (patterns.count(nodeA->GetLabel()))
+	{
+		std::vector<Node<T>*> foundMatches;
+
+		for (Node<T> *interestingNode : this->mainAllNodes)
+		{
+			//her is our issue
+			bool isInterestingInResults = false;
+					//(std::find(results.begin(), results.end(),
+					//		interestingNode->GetLabel()) != results.end());
+			//we do NOT currently have our interesting node in our results so we want to check it and see if we are in the needed pattern
+			if (!(isInterestingInResults))
+			{
+				int aNodeIndex = this->mainIndexLookup[nodeA];
+				int interestingNodeIndex =
+						this->mainIndexLookup[interestingNode];
+
+				if (this->mainAdjMatrix.isConnected(aNodeIndex,
+						interestingNodeIndex))
+				{
+					//now lets check that our interesting node is a pattern requiremnt for nodeA seperating out code because want to make verbose
+					std::vector<std::string> tempPatternReqs =
+							patterns[nodeA->GetLabel()];
+					bool isInterestingInReqs = (std::find(
+							tempPatternReqs.begin(), tempPatternReqs.end(),
+							interestingNode->GetLabel())
+							!= tempPatternReqs.end());
+					if (isInterestingInReqs)
+					{
+						foundMatches.push_back(interestingNode);
+					}
+				}
+			}
+		} //end for loop
+
+
+		//to make algo readability easier
+		int aNodeReqLength = patterns[nodeA->GetLabel()].size();
+
+		if ((foundMatches.size() >= aNodeReqLength)
+				&& (foundMatches.size() > 0))
+		{
+			//now they null out the key but i am unsure if total erasure destroys algo efficacy
+			patterns.erase(nodeA->GetLabel());
+
+			results.push_back(nodeA->GetLabel());
+
+			this->searchMatches(foundMatches, patterns, results);
+
+			//try printing results here
+			std::cout
+								<< "\n@@@@@@@@@@@@\nTraverse results curr length <"+ std::to_string(results.size()) +">\n";
+			for (std::string s : results)
+			{
+				std::cout << s +", ";
+			}
+			std::cout << "\n@@@@@@@@@@@@\n\n";
+
+			//traverse
+			return 2;
+		}
+		else if (foundMatches.size() == 0 && aNodeReqLength == 0)
+		{
+			//now they null out the key but i am unsure if total erasure destroys algo efficacy
+			patterns.erase(nodeA->GetLabel());
+
+			results.push_back(nodeA->GetLabel());
+
+			//try printing results here
+
+			std::cout
+						<< "\n@@@@@@@@@@@@\nLeaf results curr length <"+ std::to_string(results.size()) +">\n@@@@@@@@@@@@\n\n";
+			//return leaf
+			return 1;
+		}
+
+	}
+
+	//return none, done to break recursion
+	return 0;
+}
+
+template<class T>
+void SubgraphMatcher<T>::searchMatches(std::vector<Node<T>*> matches,
+		std::map<std::string, std::vector<std::string> > patterns,
+		std::vector<std::string> &results)
+{
+	for(Node<T>* currMatch : matches)
+	{
+		//this may be where we need to use something else to keep track of what nodes we have run our pattern match on.
+
+		bool isMatchInResults =
+							(std::find(results.begin(), results.end(),
+									currMatch->GetLabel()) != results.end());
+		if (!(isMatchInResults))
+		{
+			int searchState = this->searchForPatterns(this->mainIndexLookup[currMatch], patterns, results);
+
+			//if leaf
+			if (searchState == 1)
+			{
+				break;
+			}
+
+		}
+	}
+}
+
+template<class T>
+std::map<std::string, std::vector<std::string> > SubgraphMatcher<T>::patternExtraction(
+		bool forQuery)
+{
+	std::map<std::string, std::vector<std::string> > foundPatterns;
+	if (forQuery)
+	{
+		for (unsigned int i = 0; i < this->queryAllNodes.size(); i++)
+		{
+			std::pair<std::string, std::vector<std::string>> growingPattern;
+			//set our key as the label of node <---> i
+			growingPattern.first = this->queryNodeLookup[i]->GetLabel();
+
+			for (unsigned int j = 0; j < this->queryAllNodes.size(); j++)
+			{
+				if (this->queryAdjMatrix.isConnected(j, i))
+				{
+					//add in our requirement, as of now this is our nodes label, we could eventually do a element signifier or something that we check
+					growingPattern.second.push_back(
+							this->queryNodeLookup[j]->GetLabel());
+				}
+			}
+			foundPatterns.insert(growingPattern);
+		}
+	}
+	return foundPatterns;
+}
+
+template<class T>
+void SubgraphMatcher<T>::lookupPrinter()
+{
+	std::cout << "\n@@@@@@@@@@@@\nPrinting lookups of query\n@@@@@@@@@@@@\n";
+	for (Node<T> *currNode : this->queryAllNodes)
+	{
+		int indexTemp = this->queryIndexLookup[currNode];
+		std::cout
+				<< "Using node <" + currNode->GetLabel()
+						+ "> as key, int value <" + std::to_string(indexTemp)
+						+ ">\n";
+		std::cout
+				<< "Using index <" + std::to_string(indexTemp)
+						+ "> as key, node value <"
+						+ this->queryNodeLookup[indexTemp]->GetLabel() + ">\n";
+	}
+	std::cout
+			<< "@@@@@@@@@@@@\nQuery lookups printing complete\n@@@@@@@@@@@@\n";
+	std::cout << "\n@@@@@@@@@@@@\nPrinting lookups of main\n@@@@@@@@@@@@\n";
+	for (Node<T> *currNode : this->mainAllNodes)
+	{
+		int indexTemp = this->mainIndexLookup[currNode];
+		std::cout
+				<< "Using node <" + currNode->GetLabel()
+						+ "> as key, int value <" + std::to_string(indexTemp)
+						+ ">\n";
+		std::cout
+				<< "Using index <" + std::to_string(indexTemp)
+						+ "> as key, node value <"
+						+ this->mainNodeLookup[indexTemp]->GetLabel() + ">\n";
+	}
+	std::cout
+			<< "@@@@@@@@@@@@\nMain lookups printing complete\n@@@@@@@@@@@@\n\n";
+
+}
+
+template<class T>
+void SubgraphMatcher<T>::printAdjMatrix()
+{
+	std::cout << "\n\n@@@@@@@@@@@@\nPrinting Adj list of query\n@@@@@@@@@@@@";
+	for (unsigned int currentNodeIndex = 0;
+			currentNodeIndex < queryAllNodes.size(); currentNodeIndex++)
+	{
+		std::cout
+				<< "\n!!!! PRINTING ADJ of Node-> "
+						+ queryNodeLookup[currentNodeIndex]->GetLabel()
+						+ ", connections: \t";
+		for (unsigned int otherNodeIndex = 0;
+				otherNodeIndex < queryAllNodes.size(); otherNodeIndex++)
+		{
+			if (this->queryAdjMatrix.isConnected(otherNodeIndex,
+					currentNodeIndex))
+			{
+				std::cout << queryNodeLookup[otherNodeIndex]->GetLabel() + ", ";
+			}
+		}
+
+	}
+	std::cout
+			<< "\n@@@@@@@@@@@@\nQuery adj list printing complete\n@@@@@@@@@@@@\n";
+	std::cout << "\n@@@@@@@@@@@@\nPrinting Adj list of main\n@@@@@@@@@@@@";
+	for (unsigned int currentNodeIndex = 0;
+			currentNodeIndex < mainAllNodes.size(); currentNodeIndex++)
+	{
+		std::cout
+				<< "\n!!!! PRINTING ADJ of Node-> "
+						+ mainNodeLookup[currentNodeIndex]->GetLabel()
+						+ ", connections: \t";
+		for (unsigned int otherNodeIndex = 0;
+				otherNodeIndex < mainAllNodes.size(); otherNodeIndex++)
+		{
+			if (this->mainAdjMatrix.isConnected(otherNodeIndex,
+					currentNodeIndex))
+			{
+				std::cout << mainNodeLookup[otherNodeIndex]->GetLabel() + ", ";
+			}
+		}
+
+	}
+	std::cout
+			<< "\n@@@@@@@@@@@@\nMain adj list printing complete\n@@@@@@@@@@@@\n\n";
 }
 
 } // TemplateGraph namespace
