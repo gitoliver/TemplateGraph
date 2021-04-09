@@ -52,12 +52,14 @@ private:
 	 */
 	int searchForPatterns(int counter,
 			std::map<std::string, std::vector<std::string>> patterns,
-			std::vector<std::string> &results);
+			std::vector<std::string> &results,
+			std::unordered_set<Node<T>*> &visitedKeys);
 
 	//search matches
 	void searchMatches(std::vector<Node<T>*> matches,
 			std::map<std::string, std::vector<std::string>> patterns,
-			std::vector<std::string> &results);
+			std::vector<std::string> &results,
+			std::unordered_set<Node<T>*> &visitedKeys);
 
 	//to find our pattern set, note that we will have to change return types depending on what we want for key and our value signifier
 	std::map<std::string, std::vector<std::string>> patternExtraction(
@@ -223,10 +225,29 @@ void SubgraphMatcher<T>::searchEntry(std::vector<std::string> &results)
 	results.clear();
 	std::map<std::string, std::vector<std::string> > subgraphPatterns =
 			this->patternExtraction(1);
+	std::unordered_set<Node<T>*> keyVisitTracker;
+
+	//stores each cycle our root node found, int is index of node in the main graph
+	std::map<int, std::vector<std::string>> trueResults;
+
 	for (unsigned int i = 0; i < this->mainAllNodes.size(); i++)
 	{
 		//probably need to pass results by ref but right now dont care
-		this->searchForPatterns(i, subgraphPatterns, results);
+		this->searchForPatterns(i, subgraphPatterns, results, keyVisitTracker);
+
+		//if (results.size() != 0)
+		//{
+		//	std::cout
+		//			<< "\n\n11111111111111111111111\n RESULTS FOR I VALUE OF: <"
+		//					+ std::to_string(i) + "> aka Node:"
+		//					+ this->mainNodeLookup[i]->GetLabel() + "\n";
+		//	for (std::string s : results)
+		//	{
+		//		std::cout << s + ", ";
+		//	}
+		//	std::cout << "\n11111111111111111111111\n\n";
+		//}
+		//results.clear();
 	}
 
 	/* FIGURED IT OUT, NEED TO HAVE SOMETHING TO KEEP TRACK OF WHAT OUR
@@ -244,14 +265,17 @@ void SubgraphMatcher<T>::searchEntry(std::vector<std::string> &results)
 template<class T>
 int SubgraphMatcher<T>::searchForPatterns(int counter,
 		std::map<std::string, std::vector<std::string> > patterns,
-		std::vector<std::string> &results)
+		std::vector<std::string> &results,
+		std::unordered_set<Node<T>*> &visitedKeys)
 {
 	Node<T> *nodeA = this->mainNodeLookup[counter];
 
 	//unsure if this breaks the algo, if it does then there is a uniqueness in how specifc patterns are used against specific indicies
 	//our key matches our current node, aka there is a pattern which means its in querygraph also
-	if (patterns.count(nodeA->GetLabel()))
+	if (patterns.count(nodeA->GetLabel()) && !visitedKeys.count(nodeA))
 	{
+		visitedKeys.insert(nodeA);
+
 		std::vector<Node<T>*> foundMatches;
 
 		for (Node<T> *interestingNode : this->mainAllNodes)
@@ -261,7 +285,9 @@ int SubgraphMatcher<T>::searchForPatterns(int counter,
 					(std::find(results.begin(), results.end(),
 							interestingNode->GetLabel()) != results.end());
 			//we do NOT currently have our interesting node in our results so we want to check it and see if we are in the needed pattern
-			if (!(isInterestingInResults))
+			//if (!isInterestingInResults )
+			//if (!(visitedKeys.count(interestingNode)) &&  !isInterestingInResults)
+			if (!(visitedKeys.count(interestingNode) && !isInterestingInResults))
 			{
 				int aNodeIndex = this->mainIndexLookup[nodeA];
 				int interestingNodeIndex =
@@ -280,11 +306,17 @@ int SubgraphMatcher<T>::searchForPatterns(int counter,
 					if (isInterestingInReqs)
 					{
 						foundMatches.push_back(interestingNode);
+
+						//std::cout << "\n\n00000000000000000000000\nfoundMatches push back \n";
+						//for (Node<T>* n : foundMatches)
+						//{
+						//	std::cout << n->GetLabel() + ", ";
+						//}
+						//std::cout << "\n11111111111111111111111111111111111111111\n";
 					}
 				}
 			}
 		} //end for loop
-
 
 		//to make algo readability easier
 		int aNodeReqLength = patterns[nodeA->GetLabel()].size();
@@ -297,16 +329,16 @@ int SubgraphMatcher<T>::searchForPatterns(int counter,
 
 			results.push_back(nodeA->GetLabel());
 
-			this->searchMatches(foundMatches, patterns, results);
+			this->searchMatches(foundMatches, patterns, results, visitedKeys);
 
 			//try printing results here
-			std::cout
-								<< "\n@@@@@@@@@@@@\nTraverse results curr length <"+ std::to_string(results.size()) +">\n";
-			for (std::string s : results)
-			{
-				std::cout << s +", ";
-			}
-			std::cout << "\n@@@@@@@@@@@@\n\n";
+			//std::cout
+			//					<< "\n@@@@@@@@@@@@\nTraverse results curr length <"+ std::to_string(results.size()) +">\n";
+			//for (std::string s : results)
+			//{
+			//	std::cout << s +", ";
+			//}
+			//std::cout << "\n@@@@@@@@@@@@\n\n";
 
 			//traverse
 			return 2;
@@ -320,8 +352,8 @@ int SubgraphMatcher<T>::searchForPatterns(int counter,
 
 			//try printing results here
 
-			std::cout
-						<< "\n@@@@@@@@@@@@\nLeaf results curr length <"+ std::to_string(results.size()) +">\n@@@@@@@@@@@@\n\n";
+			//std::cout
+			//			<< "\n@@@@@@@@@@@@\nLeaf results curr length <"+ std::to_string(results.size()) +">\n@@@@@@@@@@@@\n\n";
 			//return leaf
 			return 1;
 		}
@@ -335,19 +367,22 @@ int SubgraphMatcher<T>::searchForPatterns(int counter,
 template<class T>
 void SubgraphMatcher<T>::searchMatches(std::vector<Node<T>*> matches,
 		std::map<std::string, std::vector<std::string> > patterns,
-		std::vector<std::string> &results)
+		std::vector<std::string> &results,
+		std::unordered_set<Node<T>*> &visitedKeys)
 {
-	for(Node<T>* currMatch : matches)
+	for (Node<T> *currMatch : matches)
 	{
 		//this may be where we need to use something else to keep track of what nodes we have run our pattern match on.
 
 		//TODO: HERE IS ISSUE
-		bool isMatchInResults =
-							(std::find(results.begin(), results.end(),
-									currMatch->GetLabel()) != results.end());
-		if (!(isMatchInResults))
+		bool isMatchInResults = (std::find(results.begin(), results.end(),
+				currMatch->GetLabel()) != results.end());
+		//if (!(isMatchInResults))
+		if (!(visitedKeys.count(currMatch)) && !isMatchInResults)
 		{
-			int searchState = this->searchForPatterns(this->mainIndexLookup[currMatch], patterns, results);
+			int searchState = this->searchForPatterns(
+					this->mainIndexLookup[currMatch], patterns, results,
+					visitedKeys);
 
 			//if leaf
 			if (searchState == 1)
