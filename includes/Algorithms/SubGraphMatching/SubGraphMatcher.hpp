@@ -232,11 +232,12 @@ void SubgraphMatcher<T>::searchEntry(std::vector<std::string> &results)
 	/* FIGURED IT OUT, NEED TO HAVE SOMETHING TO KEEP TRACK OF WHAT OUR
 	 * RESULTS ARE AND WHICH KEYS WE HAVE ALREADY USED. HOW
 	 *
-	 * ONE FOR VISITED KEYS ->
+	 * ONE FOR VISITED KEYS -> USE SET W/MEMORY ADDRESSES AS KEYS TO BE UNIQUE
 	 *
-	 *
+	 *	BASICALLY ANYWHERE WE CHECK IF THE CURRENT NODE IS IN RESULTS IS WHERE ISSUE IS.
+	 *	QUESTION: WHEN DO WE CHECK IF SOMETHING IS IN OUR RESULTS VS WHEN SOMETHING IS IN OUR
+	 *				VISITED KEYS? POSSIBLY NO NEED FOR FORMER, ONLY LATTER.
 	 */
-
 
 }
 
@@ -255,10 +256,10 @@ int SubgraphMatcher<T>::searchForPatterns(int counter,
 
 		for (Node<T> *interestingNode : this->mainAllNodes)
 		{
-			//her is our issue
-			bool isInterestingInResults = false;
-					//(std::find(results.begin(), results.end(),
-					//		interestingNode->GetLabel()) != results.end());
+			//TODO: HERE IS ISSUE
+			bool isInterestingInResults =
+					(std::find(results.begin(), results.end(),
+							interestingNode->GetLabel()) != results.end());
 			//we do NOT currently have our interesting node in our results so we want to check it and see if we are in the needed pattern
 			if (!(isInterestingInResults))
 			{
@@ -340,6 +341,7 @@ void SubgraphMatcher<T>::searchMatches(std::vector<Node<T>*> matches,
 	{
 		//this may be where we need to use something else to keep track of what nodes we have run our pattern match on.
 
+		//TODO: HERE IS ISSUE
 		bool isMatchInResults =
 							(std::find(results.begin(), results.end(),
 									currMatch->GetLabel()) != results.end());
