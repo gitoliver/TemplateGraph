@@ -40,15 +40,13 @@ private:
 	void populateLookups();
 
 	//our entry for our search function
-	void searchEntry(std::vector<Node<T>*> &searchResults);
+	void searchEntry(std::unordered_map<Node<T>*, std::vector<Node<T>*>> &searchResults);
 
 	/* To prevent having to do a custom enum or something because lazy just keeping track with ints
 	 *
 	 * 0 = NONE
 	 * 1 = LEAF
 	 * 2 = TRAVERSE
-	 *
-	 * NOTE: May need to change and do pass by reference, furthermore: Do I need to track specific pattern I am looking at
 	 */
 	int searchForPatterns(int counter,
 			std::map<std::string, std::vector<std::string>> patterns,
@@ -90,25 +88,23 @@ SubgraphMatcher<T>::SubgraphMatcher(Graph<T> *mainGraph, Graph<T> *queryGraph)
 	this->printAdjMatrix();
 	this->lookupPrinter();
 
-	//ugly testing
-	std::cout << "\n@@@@@@@@@@@@\nPRINTING PATTERNS\n@@@@@@@@@@@@\n";
-	std::map<std::string, std::vector<std::string> > pats =
-			this->patternExtraction(1);
-	for (std::pair<std::string, std::vector<std::string>> currP : pats)
+	std::unordered_map<Node<T>*, std::vector<Node<T>*>> resultsLol;
+	this->searchEntry(resultsLol);
+
+	std::cout
+				<< "\n@@@@@@@@@@@@\nPLEASE NOTE THAT IF WE OBSERVE OUR MEMORY OR SOMETHING THAT WILL ACTUALLY SHOW OUR UNIQUE NODE WE CAN SEE ALL ARE DIFFERENT.\n@@@@@@@@@@@@\n";
+	for (std::pair<Node<T>*, std::vector<Node<T>*>> currPair : resultsLol)
 	{
-		std::cout << "\n Patterns for node <" + currP.first + ">\n\t";
-		for (std::string cS : currP.second)
+		std::cout << "Subgraphs (Node Collections) that match query with Node <" + currPair.first->GetLabel() + "> \n";
+		for (Node<T>* currNode : currPair.second)
 		{
-			std::cout << cS + ", ";
+			std::cout << "<" + currNode->GetLabel() + "> ";
 		}
 		std::cout << "\n";
 	}
-	std::cout << "\n";
-
-	std::vector<Node<T>*> resultsLol;
-	this->searchEntry(resultsLol);
 }
 
+//this will eventually be used within the final graph class, dupe code of whats in cyc detect
 template<class T>
 void SubgraphMatcher<T>::populateLookups()
 {
@@ -219,8 +215,9 @@ void SubgraphMatcher<T>::populateLookups()
 
 }
 
+//TODO: Need to figure out a way to sep out multiple subgraphs that are kinda close to being same
 template<class T>
-void SubgraphMatcher<T>::searchEntry(std::vector<Node<T>*> &results)
+void SubgraphMatcher<T>::searchEntry(std::unordered_map<Node<T>*, std::vector<Node<T>*>> &results)
 {
 	results.clear();
 	std::map<std::string, std::vector<std::string> > ogPatterns =
@@ -229,43 +226,31 @@ void SubgraphMatcher<T>::searchEntry(std::vector<Node<T>*> &results)
 	std::map<std::string, std::vector<std::string> > subgraphPatterns =
 			this->patternExtraction(1);
 	std::unordered_set<Node<T>*> keyVisitTracker;
-
-	//node was our entry node
-	std::unordered_map<Node<T>*, std::vector<Node<T>*>> trueResults;
+	//std::unordered_map<Node<T>*, std::vector<Node<T>*>> trueResults;
+	std::vector<Node<T>*> currentNodeResults;
 
 	for (unsigned int i = 0; i < this->mainAllNodes.size(); i++)
 	{
 		//probably need to pass results by ref but right now dont care
-		this->searchForPatterns(i, subgraphPatterns, results, keyVisitTracker);
+		this->searchForPatterns(i, subgraphPatterns, currentNodeResults, keyVisitTracker);
 
-		if (results.size() != 0)
+		if (currentNodeResults.size() != 0)
 		{
-			std::cout
+			/*std::cout
 					<< "\n\n11111111111111111111111\n RESULTS FOR I VALUE OF: <"
 							+ std::to_string(i) + "> aka Node:"
 							+ this->mainNodeLookup[i]->GetLabel() + "\n";
-			for (Node<T>* cN : results)
+			for (Node<T>* cN : currentNodeResults)
 			{
 				std::cout << cN->GetLabel() + ", ";
 			}
-			std::cout << "\n11111111111111111111111\n\n";
-			trueResults.insert({this->mainNodeLookup[i], results});
-			results.clear();
+			std::cout << "\n11111111111111111111111\n\n";*/
+			results.insert({this->mainNodeLookup[i], currentNodeResults});
+			currentNodeResults.clear();
 		}
 		keyVisitTracker.clear();
 
 	}
-
-	/* FIGURED IT OUT, NEED TO HAVE SOMETHING TO KEEP TRACK OF WHAT OUR
-	 * RESULTS ARE AND WHICH KEYS WE HAVE ALREADY USED. HOW
-	 *
-	 * ONE FOR VISITED KEYS -> USE SET W/MEMORY ADDRESSES AS KEYS TO BE UNIQUE
-	 *
-	 *	BASICALLY ANYWHERE WE CHECK IF THE CURRENT NODE IS IN RESULTS IS WHERE ISSUE IS.
-	 *	QUESTION: WHEN DO WE CHECK IF SOMETHING IS IN OUR RESULTS VS WHEN SOMETHING IS IN OUR
-	 *				VISITED KEYS? POSSIBLY NO NEED FOR FORMER, ONLY LATTER.
-	 */
-
 }
 
 template<class T>
@@ -275,22 +260,18 @@ int SubgraphMatcher<T>::searchForPatterns(int counter,
 		std::unordered_set<Node<T>*> &visitedKeys)
 {
 	Node<T> *nodeA = this->mainNodeLookup[counter];
-
-	//unsure if this breaks the algo, if it does then there is a uniqueness in how specifc patterns are used against specific indicies
 	//our key matches our current node, aka there is a pattern which means its in querygraph also
 	if (patterns.count(nodeA->GetLabel()) && !visitedKeys.count(nodeA))
 	{
 		visitedKeys.insert(nodeA);
-
 		std::vector<Node<T>*> foundMatches;
-
 		for (Node<T> *interestingNode : this->mainAllNodes)
 		{
-			//TODO: HERE IS ISSUE
 			bool isInterestingInResults =
 					(std::find(results.begin(), results.end(),
 							interestingNode) != results.end());
-			//we do NOT currently have our interesting node in our results so we want to check it and see if we are in the needed pattern
+			//we do NOT currently have our interesting node in our results and have not used it as a
+			//entry point to check our algos yet so we want to check it and see if we are in the needed pattern
 			//if (!isInterestingInResults )
 			//if (!(visitedKeys.count(interestingNode)) &&  !isInterestingInResults)
 			if (!(visitedKeys.count(interestingNode) && !isInterestingInResults))
@@ -312,13 +293,6 @@ int SubgraphMatcher<T>::searchForPatterns(int counter,
 					if (isInterestingInReqs)
 					{
 						foundMatches.push_back(interestingNode);
-
-						//std::cout << "\n\n00000000000000000000000\nfoundMatches push back \n";
-						//for (Node<T>* n : foundMatches)
-						//{
-						//	std::cout << n->GetLabel() + ", ";
-						//}
-						//std::cout << "\n11111111111111111111111111111111111111111\n";
 					}
 				}
 			}
@@ -330,42 +304,20 @@ int SubgraphMatcher<T>::searchForPatterns(int counter,
 		if ((foundMatches.size() >= aNodeReqLength)
 				&& (foundMatches.size() > 0))
 		{
-			//now they null out the key but i am unsure if total erasure destroys algo efficacy
 			patterns.erase(nodeA->GetLabel());
-
 			results.push_back(nodeA);
-
 			this->searchMatches(foundMatches, patterns, results, visitedKeys);
-
-			//try printing results here
-			//std::cout
-			//					<< "\n@@@@@@@@@@@@\nTraverse results curr length <"+ std::to_string(results.size()) +">\n";
-			//for (std::string s : results)
-			//{
-			//	std::cout << s +", ";
-			//}
-			//std::cout << "\n@@@@@@@@@@@@\n\n";
-
-			//traverse
 			return 2;
 		}
 		else if (foundMatches.size() == 0 && aNodeReqLength == 0)
 		{
-			//now they null out the key but i am unsure if total erasure destroys algo efficacy
 			patterns.erase(nodeA->GetLabel());
-
 			results.push_back(nodeA);
-
-			//try printing results here
-
-			//std::cout
-			//			<< "\n@@@@@@@@@@@@\nLeaf results curr length <"+ std::to_string(results.size()) +">\n@@@@@@@@@@@@\n\n";
 			//return leaf
 			return 1;
 		}
 
 	}
-
 	//return none, done to break recursion
 	return 0;
 }
@@ -378,9 +330,6 @@ void SubgraphMatcher<T>::searchMatches(std::vector<Node<T>*> matches,
 {
 	for (Node<T> *currMatch : matches)
 	{
-		//this may be where we need to use something else to keep track of what nodes we have run our pattern match on.
-
-		//TODO: HERE IS ISSUE
 		bool isMatchInResults = (std::find(results.begin(), results.end(),
 				currMatch) != results.end());
 		//if (!(isMatchInResults))
@@ -389,7 +338,6 @@ void SubgraphMatcher<T>::searchMatches(std::vector<Node<T>*> matches,
 			int searchState = this->searchForPatterns(
 					this->mainIndexLookup[currMatch], patterns, results,
 					visitedKeys);
-
 			//if leaf
 			if (searchState == 1)
 			{
@@ -424,6 +372,10 @@ std::map<std::string, std::vector<std::string> > SubgraphMatcher<T>::patternExtr
 			}
 			foundPatterns.insert(growingPattern);
 		}
+	}
+	else
+	{
+		std::cout << "\n@@@@@@@@@@@@\nHey now we dont need to find patterns for our main graph but in our alpha version of finalized structure this will not matter.\n\tThis whole function will work for any graph we pass in\n@@@@@@@@@@@@\n";
 	}
 	return foundPatterns;
 }
