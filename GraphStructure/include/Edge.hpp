@@ -67,6 +67,7 @@ private:
 	 * 			From my understanding, this would assist in breaking encapsulation.
 	 */
 
+
 };
 
 template<class T>
@@ -82,6 +83,7 @@ Edge<T>::Edge(std::string name, std::shared_ptr<Node<T>> sourceNode,
 	this->setName(name);
 	this->setSourceNode(sourceNode);
 	this->setSinkNode(sinkNode);
+	lazyInfo(__LINE__, __func__, "Created edge with source node <" + this->sourceNode.get()->getName() + "> with sink node <"+this->sinkNode.get()->getName()+">\n\tWith edge name <" +this->getName()+">");
 }
 
 template<class T>
@@ -98,6 +100,8 @@ Edge<T>::Edge(std::string name, std::vector<std::string> labels,
 template<class T>
 Edge<T>::~Edge()
 {
+	this->sinkNode.get()->removeInEdge(this);
+	//have our edge destructor remove itself from our inList then let die
 	lazyInfo(__LINE__, __func__,
 			"Edge with name <" + this->getName() + "> deleted");
 }

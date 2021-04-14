@@ -39,6 +39,7 @@ public:
 	}
 	~GenericObject()
 	{
+		lazyInfo(__LINE__, __func__, "Destructing generic object for name <"+this->getName()+">");
 	}
 
 	/************************************************

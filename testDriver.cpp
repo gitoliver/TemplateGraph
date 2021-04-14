@@ -2,12 +2,8 @@
 #include "./GraphStructure/include/Node.hpp"
 #include "./GraphStructure/include/Graph.hpp"
 
-/*#include "./includes/Node.hpp"
- #include "./includes/Edge.hpp"
- #include "./includes/Graph.hpp"
- #include "./includes/Algorithms/CycleDetector/CycleDetector.hpp"
- #include "./includes/Algorithms/SubGraphMatching/SubGraphMatcher.hpp"
- */
+#include "./LazyPrints/LazyPrinters.hpp"
+
 using namespace TemplateGraph;
 class Atom
 {
@@ -16,39 +12,47 @@ public:
 			name_(name)
 	{
 		atomNodePtr_ = std::make_shared<Node<Atom>>(name);
-	} // default node label is atom name
+	} // default node name is atom name
+	~Atom()
+	{
+		//This is to actually force our full delete
+		//this->GetNode()::~Node<Atom>;
+	}
 	inline void AddBond(Atom *otherAtom)
 	{
 		this->GetNode().get()->addNeighbor(
 				this->GetName() + "->" + otherAtom->GetName(),
 				otherAtom->GetNode());
-		//this->GetNode()->addNeighbor(
-		//		this->GetName() + "->" + otherAtom->GetName(),
-		//		std::make_shared<Node<Atom>>(otherAtom->GetNode()));
-
 	}
 	inline void RemoveBond(Atom *otherAtom)
 	{
-		//this->GetNode()->RemoveEdge(otherAtom->GetNode());
+		this->GetNode().get()->removeEdgeBetween(otherAtom->GetNode());
 	}
-	/*inline std::vector<Atom*> GetNeighbors()
-	 {
-	 std::vector<Atom*> vecToReturn;
-	 for (std::weak_ptr<Node<Atom>*> currAtom : this->GetNode()->getNeighbors())
-	 {
-	 std::shared_ptr<Node<Atom>*> lockedPtr = currAtom.lock();
-	 if (lockedPtr)
-	 {
-	 vecToReturn.push_back(lockedPtr.get());
-	 }
-	 else
-	 {
-	 std::cout <<"\n\n@@@@@\nARGH BAD LOCK\n@@@@@@@@\n\n";
-	 }
-	 }
-	 return vecToReturn;
-	 //return this->GetNode()->GetNodesNeighborsObjects();
-	 }*/
+	/*std::vector<Atom*> getNeighbors()
+	{
+		std::vector<Atom*> v2Ret;
+		for (std::weak_ptr<Node<Atom>> currN : this->GetNode().get()->getNeighbors())
+		{
+			std::shared_ptr<Atom> cnl = currN.lock();
+			if (cnl)
+			{
+				//v2Ret.push_back(cnl.get());
+			}
+			else
+			{
+				badBehavior(__LINE__, __func__, "couldnt lock atom neighbor");
+			}
+		}
+
+		return v2Ret;
+	}*/
+
+	//inline std::vector<Atom*> GetNeighbors()
+	//{
+	//	std::vector<Atom*> vecToReturn;
+	//	for (std::weak_ptr<Node<Atom>> currN)
+	//}
+
 	inline std::string GetName()
 	{
 		return name_;
@@ -192,7 +196,13 @@ int main()
 //  std::cout << "Graph:\n" << atomGraph.Print() << "\n\n";
 	std::cout << "Deleting bonds: \n";
 //atom1->RemoveBond(atom6);
+	std::string neighMsg =
+			(atom1->GetNode().get()->isNeighbor(atom2->GetNode())) ?
+					"is Neighbor" : "is not neighbor";
 	atom1->RemoveBond(atom2);
+
+	lazyInfo(__LINE__, __func__, neighMsg);
+
 // atom3->RemoveBond(atom4);
 //  std::cout << "Graph:\n" << atomGraph.Print() << "\n\n";
 // std::cout << "Deleting atoms.\n";

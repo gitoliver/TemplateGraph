@@ -20,11 +20,7 @@ public:
 	 ***********************************************/
 	//TODO: Check if we need the default constructors. I feel that they should never be called
 	Node();
-	Node(std::string inName) :
-			GenericObject{ inName }
-	{
-	}
-	;
+	Node(std::string inName);
 	Node(std::string name, std::string label);
 
 	~Node();
@@ -55,8 +51,11 @@ public:
 
 	//add on check to make sure we are only adding 1 connection between our nodes. Do we want to worry about adding a parent?
 	void addChild(std::string edgeName, std::shared_ptr<Node<T>> childNode);
-	//NOTE: We MUST remove the edge from out "child" node BEFORE deleting the edge by deleting the unique_ptr that owns it.
+	//NOTE: We MUST remove the edge from out "child" node BEFORE deleting the edge by deleting the unique_ptr that owns it. This is handled in edge's destructor, all we have to worry about is deleting the unique ptr that owns our edge
 	void removeEdgeBetween(std::shared_ptr<Node<T>> otherNode);
+
+	void removeInEdge(Edge<T> *edgeToRemove);
+	void removeOutEdge(Edge<T> *edgeToRemove);
 
 	/************************************************
 	 *  FUNCTIONS
@@ -71,8 +70,12 @@ private:
 	 * 			Also we may want to switch to unordered_set or something since order does not matter and
 	 * 			lookup times are faster. For now I will leave as vector but this must be discussed.
 	 */
-	std::vector<std::unique_ptr<Edge<T>*>> outEdges;
+	std::vector<std::unique_ptr<Edge<T>>> outEdges;
 	std::vector<Edge<T>*> inEdges;
+
+	//TODO: I disagree with past self regarding leaving out obj ptr
+
+	//TODO:
 
 	/************************************************
 	 *  FUNCTIONS
@@ -102,28 +105,50 @@ Node<T>::Node()
 }
 
 template<class T>
+Node<T>::Node(std::string name)
+{
+	this->setName(name);
+	lazyInfo(__LINE__, __func__,
+			"Created node with name <" + this->getName() + ">");
+}
+
+template<class T>
 Node<T>::Node(std::string name, std::string label)
 {
 	this->setName(name);
 	this->setLabels(label);
+
+	lazyInfo(__LINE__, __func__, "Created ");
 }
 
 template<class T>
 Node<T>::~Node()
 {
-	lazyInfo(__LINE__, __func__, "Taking care of raw ptrs");
-	for (std::unique_ptr<Edge<T>*> const &currOutEdge : this->outEdges)
+
+	lazyInfo(__LINE__, __func__,
+			"Running destructor on node <" + this->getName() + ">");
+	std::vector<Edge<T>*> tempInEdge = this->inEdges;
+
+	for (Edge<T> *currInEdge : tempInEdge)
 	{
-		lazyInfo(__LINE__, __func__, "Okay lol");
-		//currOutEdge->getSinkNode();
-		//currOutEdge.get()->getSinkNode();
-		//std::weak_ptr<Node<T>> *childNode = currOutEdge.get()->getSinkNode();
-		//childNode->inEdges.erase(
-		//		std::remove(childNode->inEdges.begin(),
-		//				childNode->inEdges.end(), currOutEdge.get()));
+		std::shared_ptr<Node<T>> sourceLock =
+				currInEdge->getSourceNode().lock();
+
+		if (sourceLock)
+		{
+			sourceLock.get()->removeOutEdge(currInEdge);
+		}
+		else
+		{
+			badBehavior(__LINE__, __func__, "Could not lock our source node");
+		}
 	}
 	lazyInfo(__LINE__, __func__,
-			"Done with raw ptrs, now just let naturally destruct");
+			"Finishing destructor on node <" + this->getName() + ">");
+	//lazyInfo(__LINE__, __func__,
+	//			"In edge size <" + std::to_string(this->inEdges.size()) + ">");
+	//lazyInfo(__LINE__, __func__,
+	//				"Out edge size <" + std::to_string(this->outEdges.size()) + ">");
 }
 
 template<class T>
@@ -174,18 +199,22 @@ void Node<T>::addNeighbor(std::string edgeName,
 }
 
 template<class T>
-void Node<T>::addChild(std::string edgeName,
-		std::shared_ptr<Node<T>> childNode)
+void Node<T>::addChild(std::string edgeName, std::shared_ptr<Node<T>> childNode)
 {
 	if (this->isNeighbor(childNode))
 	{
 		badBehavior(__LINE__, __func__,
 				"Trying to make create an edge between two nodes that are already neighbors");
 	}
+	else if (this == childNode.get())
+	{
+		badBehavior(__LINE__, __func__,
+				"Trying to add self as child, stop that!");
+	}
 	else
 	{
 		this->outEdges.push_back(
-				std::make_unique<Edge<T>*>(edgeName, this->shared_from_this(),
+				std::make_unique<Edge<T>>(edgeName, this->shared_from_this(),
 						childNode));
 		childNode.get()->inEdges.push_back(this->outEdges.back().get());
 	}
@@ -199,23 +228,12 @@ void Node<T>::removeEdgeBetween(std::shared_ptr<Node<T>> otherNode)
 		if (this->isChildOf(otherNode))
 		{
 			Edge<T> *edgeToRemove = this->getConnectingEdge(otherNode);
-			this->inEdges.erase(
-					std::remove(this->inEdges.begin(), this->inEdges.end(),
-							edgeToRemove), this->inEdges.end());
 			//TODO: Decide if we would like to switch over to sets...Timing tests are comming.
-			unsigned int currOutIndex = 0;
-			for (std::unique_ptr<Edge<T>*> const &currOtherOutEdge : otherNode.get()->outEdges)
-			{
-				if (currOtherOutEdge.get() == edgeToRemove)
-					otherNode.get()->outEdges.erase(
-							otherNode.get()->outEdges.erase.begin
-									+ currOutIndex);
-				currOutIndex++;
-			}
+			otherNode.get()->removeOutEdge(edgeToRemove);
 		}
 		else if (this->isParentOf(otherNode))
 		{
-			otherNode.get()->removeEdge(this);
+			otherNode.get()->removeEdgeBetween(this->shared_from_this());
 		}
 		else
 		{
@@ -226,7 +244,8 @@ void Node<T>::removeEdgeBetween(std::shared_ptr<Node<T>> otherNode)
 	else
 	{
 		badBehavior(__LINE__, __func__,
-				"Tried to remove an edge between two nodes that are not connected");
+				"Tried to remove an edge between node <" + this->getName()
+						+ "> and node <" + otherNode.get()->getName() + ">");
 	}
 }
 
@@ -241,9 +260,18 @@ bool Node<T>::isChildOf(std::shared_ptr<Node<T>> possibleParent)
 {
 	for (Edge<T> *currInEdge : this->inEdges)
 	{
-		if (currInEdge->sourceNode.get() == possibleParent.get())
+		std::shared_ptr<Node<T>> sourceNodeLock =
+				currInEdge->getSourceNode().lock();
+		if (sourceNodeLock)
 		{
-			return true;
+			if (sourceNodeLock.get() == possibleParent.get())
+			{
+				return true;
+			}
+		}
+		else
+		{
+			badBehavior(__LINE__, __func__, "Could not lock our parent");
 		}
 	}
 	return false;
@@ -252,10 +280,21 @@ bool Node<T>::isChildOf(std::shared_ptr<Node<T>> possibleParent)
 template<class T>
 bool Node<T>::isParentOf(std::shared_ptr<Node<T>> possibleChild)
 {
-	for (std::unique_ptr<Edge<T>*> const &currOutEdge : this->outEdges)
+	for (std::unique_ptr<Edge<T>> const &currOutEdge : this->outEdges)
 	{
-		if (currOutEdge.get()->sinkNode.get() == possibleChild.get())
-			return true;
+		std::shared_ptr<Node<T>> sinkNodeLock =
+				currOutEdge.get()->getSinkNode().lock();
+		if (sinkNodeLock)
+		{
+			if (sinkNodeLock.get() == possibleChild.get())
+			{
+				return true;
+			}
+		}
+		else
+		{
+			badBehavior(__LINE__, __func__, "Could not lock our child");
+		}
 	}
 	return false;
 }
@@ -277,9 +316,52 @@ std::vector<std::shared_ptr<Node<T>> > Node<T>::getParents()
 	std::vector<std::shared_ptr<Node<T>>> parentsVecToReturn;
 	for (Edge<T> *currInEdge : this->inEdges)
 	{
-		parentsVecToReturn.insert(currInEdge->sourceNode);
+		std::shared_ptr<Node<T>> lockedSource =
+				currInEdge->getSourceNode().lock();
+		if (lockedSource)
+		{
+			parentsVecToReturn.push_back(lockedSource);
+		}
+		else
+		{
+			badBehavior(__LINE__, __func__, "Couldnt lock our source node");
+		}
 	}
 	return parentsVecToReturn;
+}
+
+template<class T>
+void Node<T>::removeInEdge(Edge<T> *edgeToRemove)
+{
+	lazyInfo(__LINE__, __func__,
+			"removing in edge <" + edgeToRemove->getName()
+					+ "> from node named <" + this->getName() + ">");
+	this->inEdges.erase(
+			std::remove(this->inEdges.begin(), this->inEdges.end(),
+					edgeToRemove), this->inEdges.end());
+}
+
+template<class T>
+inline void Node<T>::removeOutEdge(Edge<T> *edgeToRemove)
+{
+	lazyInfo(__LINE__, __func__,
+			"removing out edge <" + edgeToRemove->getName()
+					+ "> from node named <" + this->getName() + ">");
+
+	for (int outIndex = 0, ogSize = this->outEdges.size(); outIndex != ogSize;
+			outIndex++)
+	{
+		if (this->outEdges[outIndex].get() == edgeToRemove)
+		{
+			this->outEdges.erase(this->outEdges.begin() + outIndex);
+		}
+		/*for (std::unique_ptr<Edge<T>> const &currOutEdge : this->outEdges)
+		{
+			if (currOutEdge.get() == edgeToRemove)
+				this->outEdges.erase(this->outEdges.begin() + currOutIndex);
+			currOutIndex++;
+		}*/
+	}
 }
 
 template<class T>
@@ -290,18 +372,43 @@ Edge<T>* TemplateGraph::Node<T>::getConnectingEdge(
 	{
 		if (this->isChildOf(otherNode))
 		{
-			for (Edge<T> *currEdge : this->inEdges)
+			for (Edge<T> *currInEdge : this->inEdges)
 			{
-				if (currEdge->sourceNode.get() == otherNode.get())
-					return currEdge;
+
+				std::shared_ptr<Node<T>> sourceNodeLock =
+						currInEdge->getSourceNode().lock();
+				if (sourceNodeLock)
+				{
+					if (sourceNodeLock.get() == otherNode.get())
+					{
+						return currInEdge;
+					}
+				}
+				else
+				{
+					badBehavior(__LINE__, __func__,
+							"Could not lock our source node");
+				}
 			}
 		}
 		else
 		{
-			for (std::unique_ptr<Edge<T>*> const &currOutEdge : this->outEdges)
+			for (std::unique_ptr<Edge<T>> const &currOutEdge : this->outEdges)
 			{
-				if (currOutEdge.get()->sinkNode.get() == otherNode.get())
-					return currOutEdge.get();
+				std::shared_ptr<Node<T>> sinkNodeLock =
+						currOutEdge->getSinkNode().lock();
+				if (sinkNodeLock)
+				{
+					if (sinkNodeLock.get() == otherNode.get())
+					{
+						return currOutEdge.get();
+					}
+				}
+				else
+				{
+					badBehavior(__LINE__, __func__,
+							"Could not lock our sink node");
+				}
 			}
 		}
 		// NOTE: Should never hit here
@@ -314,6 +421,7 @@ Edge<T>* TemplateGraph::Node<T>::getConnectingEdge(
 				"Tried to get a connecting edge whene the two nodes are not connected");
 		return NULL;
 	}
+	return NULL;
 }
 
 }
