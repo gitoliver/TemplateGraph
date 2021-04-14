@@ -1,9 +1,13 @@
-#include "./includes/Node.hpp"
-#include "./includes/Edge.hpp"
-#include "./includes/Graph.hpp"
-#include "./includes/Algorithms/CycleDetector/CycleDetector.hpp"
-#include "./includes/Algorithms/SubGraphMatching/SubGraphMatcher.hpp"
+#include "./GraphStructure/include/Edge.hpp"
+#include "./GraphStructure/include/Node.hpp"
+#include "./GraphStructure/include/Graph.hpp"
 
+/*#include "./includes/Node.hpp"
+ #include "./includes/Edge.hpp"
+ #include "./includes/Graph.hpp"
+ #include "./includes/Algorithms/CycleDetector/CycleDetector.hpp"
+ #include "./includes/Algorithms/SubGraphMatching/SubGraphMatcher.hpp"
+ */
 using namespace TemplateGraph;
 class Atom
 {
@@ -11,29 +15,48 @@ public:
 	Atom(std::string name) :
 			name_(name)
 	{
-		atomNodePtr_ = std::make_shared<Node<Atom>>(this, name);
+		atomNodePtr_ = std::make_shared<Node<Atom>>(name);
 	} // default node label is atom name
 	inline void AddBond(Atom *otherAtom)
 	{
-		this->GetNode()->AddEdge(otherAtom->GetNode(),
-				this->GetName() + "->" + otherAtom->GetName());
+		this->GetNode().get()->addNeighbor(
+				this->GetName() + "->" + otherAtom->GetName(),
+				otherAtom->GetNode());
+		//this->GetNode()->addNeighbor(
+		//		this->GetName() + "->" + otherAtom->GetName(),
+		//		std::make_shared<Node<Atom>>(otherAtom->GetNode()));
+
 	}
 	inline void RemoveBond(Atom *otherAtom)
 	{
-		this->GetNode()->RemoveEdge(otherAtom->GetNode());
+		//this->GetNode()->RemoveEdge(otherAtom->GetNode());
 	}
-	inline std::vector<Atom*> GetNeighbors()
-	{
-		return this->GetNode()->GetNodesNeighborsObjects();
-	}
+	/*inline std::vector<Atom*> GetNeighbors()
+	 {
+	 std::vector<Atom*> vecToReturn;
+	 for (std::weak_ptr<Node<Atom>*> currAtom : this->GetNode()->getNeighbors())
+	 {
+	 std::shared_ptr<Node<Atom>*> lockedPtr = currAtom.lock();
+	 if (lockedPtr)
+	 {
+	 vecToReturn.push_back(lockedPtr.get());
+	 }
+	 else
+	 {
+	 std::cout <<"\n\n@@@@@\nARGH BAD LOCK\n@@@@@@@@\n\n";
+	 }
+	 }
+	 return vecToReturn;
+	 //return this->GetNode()->GetNodesNeighborsObjects();
+	 }*/
 	inline std::string GetName()
 	{
 		return name_;
 	}
 
-	inline Node<Atom>* GetNode()
+	inline std::shared_ptr<Node<Atom>> GetNode()
 	{
-		return atomNodePtr_.get();
+		return atomNodePtr_;
 	}
 private:
 	//friend std::shared_ptr<Node<Atom>> Graph<Atom>::GetNodeGraph(const Atom& atom);
@@ -42,51 +65,52 @@ private:
 	std::string name_;
 };
 //endAtom
+/*
+ class Molecule
+ {
+ public:
 
-class Molecule
-{
-public:
+ //Atom(std::string name) :
+ //	name_(name) {
+ //	atomNodePtr_ = std::make_shared<Node<Atom>>(this, name);
+ //} // default node label is atom name
 
-	//Atom(std::string name) :
-	//	name_(name) {
-	//	atomNodePtr_ = std::make_shared<Node<Atom>>(this, name);
-	//} // default node label is atom name
+ Molecule(std::string name, Atom *atomRoot)
+ {
 
-	Molecule(std::string name, Atom *atomRoot)
-	{
+ //Graph<Atom>(atomRoot->GetNode());
+ this->name = name;
+ this->graphPtr = NULL;
+ std::cout << "ATOM ROOTS NODE: " << atomRoot->GetNode() << "\n\n";
+ this->graphLol = Graph<Atom>(atomRoot->GetNode());
+ //std::cout << "our temp graph: " << &tGraph << "\n";
+ //std::cout << "our temp graph rootnode: " << tGraph.PoobGetRoot() << "\n";
+ this->graphPtr = &this->graphLol;
 
-		//Graph<Atom>(atomRoot->GetNode());
-		this->name = name;
-		this->graphPtr = NULL;
-		std::cout << "ATOM ROOTS NODE: " << atomRoot->GetNode() << "\n\n";
-		this->graphLol = Graph<Atom>(atomRoot->GetNode());
-		//std::cout << "our temp graph: " << &tGraph << "\n";
-		//std::cout << "our temp graph rootnode: " << tGraph.PoobGetRoot() << "\n";
-		this->graphPtr = &this->graphLol;
+ }
 
-	}
+ ~Molecule()
+ {
+ std::cout << "Molly destructor" << "\n\n";
+ }
 
-	~Molecule()
-	{
-		std::cout << "Molly destructor" << "\n\n";
-	}
+ Graph<Atom>* getGraphPtr()
+ {
+ return this->graphPtr;
+ }
 
-	Graph<Atom>* getGraphPtr()
-	{
-		return this->graphPtr;
-	}
-
-private:
-	std::string name;
-	Graph<Atom> *graphPtr;
-	Graph<Atom> graphLol; //prevent nuking early
-};
-//endMolecule
+ private:
+ std::string name;
+ Graph<Atom> *graphPtr;
+ Graph<Atom> graphLol; //prevent nuking early
+ };
+ //endMolecule
+ */
 
 int main()
 {
 	Atom *atom0 = new Atom("Bobie");
-	//Molecule *mol1 = new Molecule("mol1", atom0);
+//Molecule *mol1 = new Molecule("mol1", atom0);
 	Atom *atom1 = new Atom("Steve");
 	Atom *atom2 = new Atom("Ronne");
 	Atom *atom3 = new Atom("Bingo");
@@ -100,17 +124,17 @@ int main()
 	Atom *atom11 = new Atom("cycle2");
 	Atom *atom12 = new Atom("cycle3");
 
-	//to show our mega cycle decomp works
-	//b 1 -> cyc 1
-	//atom9->AddBond(atom10);
+//to show our mega cycle decomp works
+//b 1 -> cyc 1
+//atom9->AddBond(atom10);
 	atom9->AddBond(atom10);
-	//cyc 1 -> cyc 2
+//cyc 1 -> cyc 2
 	atom10->AddBond(atom11);
-	//cyc 2 -> cyc 3
+//cyc 2 -> cyc 3
 	atom11->AddBond(atom12);
-	//cyc 1 -> cyc 3
+//cyc 1 -> cyc 3
 	atom10->AddBond(atom12);
-	//our mini cycle to the normal cycle
+//our mini cycle to the normal cycle
 	atom10->AddBond(atom1);
 
 	atom0->AddBond(atom1);
@@ -126,16 +150,16 @@ int main()
 	atom2->AddBond(atom7);
 	atom7->AddBond(atom8);
 
-	//std::cout <<"\n\nGraph ptr in mol: " << mol1->getGraphPtr() << " okay \n\n";
-	//std::cout <<"\n\nOur supposed roots node that it owns: " << atom0->GetNode() << " okay \n\n";
-	//std::cout <<"\n\nGraph ptr root node: " << mol1->getGraphPtr()->PoobGetRoot() << " okay \n\n"; //this is issue
-	//CycleDetector<Atom> sike("cycleOfMol1", mol1->getGraphPtr());
+//std::cout <<"\n\nGraph ptr in mol: " << mol1->getGraphPtr() << " okay \n\n";
+//std::cout <<"\n\nOur supposed roots node that it owns: " << atom0->GetNode() << " okay \n\n";
+//std::cout <<"\n\nGraph ptr root node: " << mol1->getGraphPtr()->PoobGetRoot() << " okay \n\n"; //this is issue
+//CycleDetector<Atom> sike("cycleOfMol1", mol1->getGraphPtr());
 
-	Graph<Atom> atomGraph(atom0->GetNode());
+//Graph<Atom> atomGraph(atom0->GetNode());
 
-	CycleDetector<Atom> sike("cycles", &atomGraph);
+//CycleDetector<Atom> sike("cycles", &atomGraph);
 
-	// SUBGRAPH MATCH TESTING
+// SUBGRAPH MATCH TESTING
 
 	Atom *atomA = new Atom("Ronne");
 	Atom *atomB = new Atom("Bingo");
@@ -144,63 +168,61 @@ int main()
 
 	atomA->AddBond(atomB);
 	atomB->AddBond(atomC);
-	// atomC->AddBond(atomD);
+// atomC->AddBond(atomD);
 	atomA->AddBond(atomD);
-	// atomD->AddBond(atomB);
+// atomD->AddBond(atomB);
 
-	Graph<Atom> queryGraph(atomA->GetNode());
+//Graph<Atom> queryGraph(atomA->GetNode());
 
-	SubgraphMatcher<Atom> sumthin(&atomGraph, &queryGraph);
+//SubgraphMatcher<Atom> sumthin(&atomGraph, &queryGraph);
 
 	std::cout << "Deleting " << atom6->GetName() << "\n";
 	delete atom6;
 
 	std::cout << "Deleting " << atom4->GetName() << "\n";
 	delete atom4;
-	std::cout << "Graph:\n" << atomGraph.Print() << "\n\n";
+//std::cout << "Graph:\n" << atomGraph.Print() << "\n\n";
 	std::cout
 			<< "Visualize the graph here:\nhttps://dreampuf.github.io/GraphvizOnline/#digraph%20G%20%7B%0ABobie-%3ESteve%0A%7D\n";
-	//CycleDetector<Atom> cycleDetector(atom0->GetNode());
-	//cycleDetector.DetectCyclesInDFSGraph();
+//CycleDetector<Atom> cycleDetector(atom0->GetNode());
+//cycleDetector.DetectCyclesInDFSGraph();
 
 	std::cout << "Deleting " << atom5->GetName() << "\n";
 	delete atom5;
-	//  std::cout << "Graph:\n" << atomGraph.Print() << "\n\n";
+//  std::cout << "Graph:\n" << atomGraph.Print() << "\n\n";
 	std::cout << "Deleting bonds: \n";
-	//atom1->RemoveBond(atom6);
+//atom1->RemoveBond(atom6);
 	atom1->RemoveBond(atom2);
-	// atom3->RemoveBond(atom4);
-	//  std::cout << "Graph:\n" << atomGraph.Print() << "\n\n";
-	// std::cout << "Deleting atoms.\n";
-	// // delete atom3;
-	// delete atom4;
-	// delete atom5;
-	// delete atom6;
-	// std::cout << "Graph:\n" << atomGraph.Print() << "\n\n";
+// atom3->RemoveBond(atom4);
+//  std::cout << "Graph:\n" << atomGraph.Print() << "\n\n";
+// std::cout << "Deleting atoms.\n";
+// // delete atom3;
+// delete atom4;
+// delete atom5;
+// delete atom6;
+// std::cout << "Graph:\n" << atomGraph.Print() << "\n\n";
 	std::cout << "Finished atom section\n\n";
 
-
-
-	// Graph<Atom> queryAtomGraph(atomA->GetNode());
-	// std::cout << "queryGraph:\n" << queryAtomGraph.Print() << "\n\n";
-	// // std::vector<SubGraph<Atom>> foundSubGraphs = atomGraph.SubGraphMatch(queryAtomGraph);
-	//  std::cout << "Found these subgraphs:\n";
-	//  for (auto &subGraph : foundSubGraphs)
-	//  {
-	//      std::cout << "SubGraph:\n" << subGraph.Print() << "\n\n";
-	//  }
+// Graph<Atom> queryAtomGraph(atomA->GetNode());
+// std::cout << "queryGraph:\n" << queryAtomGraph.Print() << "\n\n";
+// // std::vector<SubGraph<Atom>> foundSubGraphs = atomGraph.SubGraphMatch(queryAtomGraph);
+//  std::cout << "Found these subgraphs:\n";
+//  for (auto &subGraph : foundSubGraphs)
+//  {
+//      std::cout << "SubGraph:\n" << subGraph.Print() << "\n\n";
+//  }
 
 	std::cout << "********************************************\n";
 
-	// SubGraphMatcher<Atom> steveTheSubGraphFinder(atomGraph, queryAtomGraph);
-	// for (auto &subGraph : steveTheSubGraphFinder.GetMatches())
-	// {
-	//     std::cout << "Steve SubGraph:\n" << subGraph.Print() << "\n\n";
-	// }
+// SubGraphMatcher<Atom> steveTheSubGraphFinder(atomGraph, queryAtomGraph);
+// for (auto &subGraph : steveTheSubGraphFinder.GetMatches())
+// {
+//     std::cout << "Steve SubGraph:\n" << subGraph.Print() << "\n\n";
+// }
 
-	// std::cout << "********************************************\n";
+// std::cout << "********************************************\n";
 
-	//     std::vector<Graph<int>> matchingSubGraphs = mainGraph.SubGraphMatch(queryGraph);
+//     std::vector<Graph<int>> matchingSubGraphs = mainGraph.SubGraphMatch(queryGraph);
 //     std::cout << "Found " << matchingSubGraphs.size() << " subgraphs that matched\n";
 
 //     //atom1.atomNodePtr_ = std::make_shared<Node<Atom>>(&atom1);
@@ -296,7 +318,7 @@ int main()
 //     // {
 //     // 	auto it2 = (it1 + 1);
 //     // 	intGraph1.AddEdge(new Edge<int>(*it1, *it2));
-//     //  	if ((count % 6) == 0) 
+//     //  	if ((count % 6) == 0)
 //     // 	{
 //     // 		auto it3 = (it1 - 5);
 //     // 		intGraph1.AddEdge(new Edge<int>(*it1, *it3));
@@ -372,30 +394,30 @@ int main()
 //     //mana.~Node();
 //     std::cout << "\n\nNODE HAS BEEN DELETED\n\n" << std::endl;
 
-	// int *test2 = edgier.GetTarget()->GetObjectPtr();
+// int *test2 = edgier.GetTarget()->GetObjectPtr();
 
-	// std::cout << "Test2 is " << *test2 << std::endl;
+// std::cout << "Test2 is " << *test2 << std::endl;
 
-	// std::vector<Node<int>*> neighbors;
-	// neighbors.push_back(edgier.GetTarget());
-	// neighbors = intNode.GetNeighbors();
+// std::vector<Node<int>*> neighbors;
+// neighbors.push_back(edgier.GetTarget());
+// neighbors = intNode.GetNeighbors();
 
-	// std::vector<int*> allDaNeighborObjects = intNode.GetNodesNeighborsObjects();
-	//    std::cout << "Neighbors are: ";
-	//    for (auto & element : allDaNeighborObjects)
-	//    {
-	//     std::cout << *element << ", ";
-	//    }
-	//    std::cout << std::endl;
-	//    std::vector<std::shared_ptr<int*>> steve = intNode.GetNodesNeighborsObjects();
-	//    std::vector<std::shared_ptr<TemplateGraph::Node<int>>> steve = intNode.GetNodesNeighbors();
+// std::vector<int*> allDaNeighborObjects = intNode.GetNodesNeighborsObjects();
+//    std::cout << "Neighbors are: ";
+//    for (auto & element : allDaNeighborObjects)
+//    {
+//     std::cout << *element << ", ";
+//    }
+//    std::cout << std::endl;
+//    std::vector<std::shared_ptr<int*>> steve = intNode.GetNodesNeighborsObjects();
+//    std::vector<std::shared_ptr<TemplateGraph::Node<int>>> steve = intNode.GetNodesNeighbors();
 
-	//    Graph<Graph<Atom>> residueGraph;
+//    Graph<Graph<Atom>> residueGraph;
 
-	// Edge<int> edgeA(Node<int> intNode1(1), &intNoder);
+// Edge<int> edgeA(Node<int> intNode1(1), &intNoder);
 
-	// std::vector<Edge<int>* > vectorOfEdges = {&edger, &edgier};
-	// Graph<int> theBestGraph(vectorOfEdges);
+// std::vector<Edge<int>* > vectorOfEdges = {&edger, &edgier};
+// Graph<int> theBestGraph(vectorOfEdges);
 
 	return 0;
 }
@@ -403,3 +425,4 @@ int main()
 // bool compareLabel(TemplateGraph::Edge<int> &edge, TemplateGraph::Edge<int> &otherEdge) {
 //     return (edge.GetLabel() == otherEdge.GetLabel());
 // }
+
