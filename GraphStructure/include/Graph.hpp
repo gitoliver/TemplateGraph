@@ -6,13 +6,13 @@
 #include "../../LazyPrints/LazyPrinters.hpp"
 #include "../../GenericObject/includes/GenericObject.hpp"
 
+#include <algorithm>
 #include <unordered_map>
 #include <unordered_set>
 
 namespace TemplateGraph
 {
 
-//TODO: Do we want to have this be a generic object also so we can name it, etc.? May have to switch all keys to Node<T>* instead of shared, smh
 template<class T>
 class Graph
 {
@@ -22,8 +22,8 @@ public:
 	 ***********************************************/
 	Graph();
 	//TODO: Ensure we would like this functionality, current idea is pass root node then get all traversable from this node and store in our set
-	Graph(std::weak_ptr<Node<T>*> initialNode);
-	Graph(std::vector<std::weak_ptr<Node<T>*>> nodeList);
+	Graph(Node<T> *initialNode);
+	Graph(std::vector<Node<T>*> nodeList);
 
 	~Graph();
 
@@ -53,10 +53,10 @@ private:
 	 ***********************************************/
 	HalfAdjacencyMatrix<T> adjMatrix;
 	//TODO: Whenever we find a broken node then we can just run a refresh on all structures. Basically run bfs initializer again.
-	std::unordered_set<std::weak_ptr<Node<T>*>> allNodes;
+	std::unordered_set<Node<T>*> allNodes;
 	// TODO: Ensure the correct hashing function is being used. Must be 100% sure, am only somewhat sure.
-	std::unordered_map<unsigned int, std::weak_ptr<Node<T>*>> nodeLookup;
-	std::unordered_map<std::weak_ptr<Node<T>*>, unsigned int> indexLookup;
+	std::unordered_map<unsigned int, Node<T>*> nodeLookup;
+	std::unordered_map<Node<T>*, unsigned int> indexLookup;
 
 	/************************************************
 	 *  HELPER FUNCTIONS
@@ -64,12 +64,11 @@ private:
 	void populateAdjacencyMatrix();
 	void populateLookups();
 
-	std::vector<std::weak_ptr<Node<T>*>> getReachableNodes(
-			std::weak_ptr<Node<T>*> startingNode);
+	std::vector<Node<T>*> getReachableNodes(Node<T> *startingNode);
 	// NOTE: To be used when we are passed solely a root node.
-	void getReachableHelper(std::weak_ptr<Node<T>*> currentNode,
-			std::unordered_set<std::shared_ptr<Node<T>*>> &visistedNodeSet,
-			std::vector<std::weak_ptr<Node<T>*>> &reachableNodes);
+	void getReachableHelper(Node<T> *currentNode,
+			std::unordered_set<Node<T>*> &visistedNodeSet,
+			std::vector<Node<T>*> &reachableNodes);
 
 };
 
@@ -81,19 +80,43 @@ Graph<T>::Graph()
 }
 
 template<class T>
-Graph<T>::Graph(std::weak_ptr<Node<T>*> initialNode)
+Graph<T>::Graph(Node<T> *initialNode)
 {
+	//NOTE: Verbose for now to prevent dupes && make sure we dont screw anything up
+	std::vector<Node<T>*> tempNodeVec = this->getReachableNodes(initialNode);
+
+	for (Node<T> *currentNode : tempNodeVec)
+	{
+		this->allNodes.insert(currentNode);
+	}
+
+	this->populateLookups();
+
+	this->populateAdjacencyMatrix();
+
+	for (int i = 0; i < this->allNodes.size(); i++)
+	{
+		std::cout << this->nodeLookup[i]->getName() + "\n\t";
+		for (int j = 0; j < this->allNodes.size(); j++)
+		{
+			if (this->adjMatrix.isConnected(i, j))
+			{
+				std::cout << this->nodeLookup[j]->getName() + ", ";
+			}
+		}
+		std::cout << "\n";
+	}
 
 }
 
 template<class T>
-Graph<T>::Graph(std::vector<std::weak_ptr<Node<T>*> > nodeList)
+Graph<T>::Graph(std::vector<Node<T>*> nodeList)
 {
 	if (nodeList.size() > 0)
 	{
-		for (std::weak_ptr<Node<T>*> currNode : nodeList)
+		for (std::weak_ptr<Node<T>> currNode : nodeList)
 		{
-			std::shared_ptr<Node<T>*> lockedNode = currNode.lock();
+			std::shared_ptr<Node<T>> lockedNode = currNode.lock();
 			if (lockedNode)
 			{
 				if (!(this->allNodes.count(currNode)))
@@ -114,6 +137,9 @@ Graph<T>::Graph(std::vector<std::weak_ptr<Node<T>*> > nodeList)
 						"Was unable to lock our current node to place it in our set of nodes");
 			}
 		}
+		this->populateLookups();
+		this->populateAdjacencyMatrix();
+
 	}
 	else
 	{
@@ -131,21 +157,11 @@ template<class T>
 std::vector<Node<T>*> Graph<T>::getNodes() const
 {
 	std::vector<Node<T>*> nodesToReturn;
-	if (this->allNodes.size > 0)
+	if (this->allNodes.size() > 0)
 	{
-
-		for (std::weak_ptr<Node<T>*> currNode : this->allNodes)
+		for (Node<T> *currNode : this->allNodes)
 		{
-			std::shared_ptr<Node<T>*> lockedNode = currNode.lock();
-			if (lockedNode)
-			{
-				nodesToReturn.insert(lockedNode);
-			}
-			else
-			{
-				badBehavior(__LINE__, __func__,
-						"Was unable to lock our current node while trying to place into return vec");
-			}
+			nodesToReturn.push_back(currNode);
 		}
 	}
 	else
@@ -153,6 +169,7 @@ std::vector<Node<T>*> Graph<T>::getNodes() const
 		badBehavior(__LINE__, __func__,
 				"Tried to get nodes but allNodes is empty");
 	}
+	return nodesToReturn;
 }
 
 template<class T>
@@ -167,15 +184,25 @@ void Graph<T>::populateAdjacencyMatrix()
 	if ((this->allNodes.size() > 0) && (this->indexLookup.size()))
 	{
 		this->adjMatrix.initializeWorkaround(this->getNodes());
-		for (Node<T> *currNode : this->getNodes())
+		for (Node<T> *currNode : this->allNodes)
 		{
-			for (Node<T> *currNeighbor : currNode->getNeighbors())
+			for (std::weak_ptr<Node<T>> currNeighbor : currNode->getNeighbors())
 			{
-				if (!(this->adjMatrix.isConnected(this->indexLookup[currNode],
-						this->indexLookup[currNeighbor])))
+				std::shared_ptr<Node<T>> lockedNeighbor = currNeighbor.lock();
+				if (lockedNeighbor)
 				{
-					this->adjMatrix.connect(this->indexLookup[currNode],
-							this->indexLookup[currNeighbor]);
+					if (!(this->adjMatrix.isConnected(
+							this->indexLookup[currNode],
+							this->indexLookup[lockedNeighbor.get()])))
+					{
+						this->adjMatrix.connect(this->indexLookup[currNode],
+								this->indexLookup[lockedNeighbor.get()]);
+					}
+				}
+				else
+				{
+					badBehavior(__LINE__, __func__,
+							"Could not lock our neighbor");
 				}
 			}
 		}
@@ -188,6 +215,7 @@ void Graph<T>::populateAdjacencyMatrix()
 	}
 }
 
+//NOTE: Must call before we try to create our adj matrix
 template<class T>
 void Graph<T>::populateLookups()
 {
@@ -196,7 +224,7 @@ void Graph<T>::populateLookups()
 		this->nodeLookup.clear();
 		this->indexLookup.clear();
 		int currIndex = 0;
-		for (std::weak_ptr<Node<T>*> currNode : this->allNodes)
+		for (Node<T> *currNode : this->allNodes)
 		{
 			this->nodeLookup.insert(
 			{ currIndex, currNode });
@@ -214,52 +242,45 @@ void Graph<T>::populateLookups()
 }
 
 template<class T>
-std::vector<std::weak_ptr<Node<T>*> > Graph<T>::getReachableNodes(
-		std::weak_ptr<Node<T>*> startingNode)
+std::vector<Node<T>*> Graph<T>::getReachableNodes(Node<T> *startingNode)
 {
-	std::unordered_set<std::shared_ptr<Node<T>*>> visitedNodes;
+	std::unordered_set<Node<T>*> visitedNodes;
 	/* TODO: Please note that this current method does increase the size of our call stack a good bit due to the use of recursion.
 	 * 			Depending on how large of graphs we are dealing with this could become an issue and it may be a better
 	 * 			call to use a different method.
 	 */
-	std::vector<std::weak_ptr<Node<T>*>> reachableVecToReturn;
+
+	std::vector<Node<T>*> reachableVecToReturn;
 	this->getReachableHelper(startingNode, visitedNodes, reachableVecToReturn);
 	return reachableVecToReturn;
 }
 
 template<class T>
-void Graph<T>::getReachableHelper(std::weak_ptr<Node<T>*> currentNode,
-		std::unordered_set<std::shared_ptr<Node<T>*>> &visitedNodeSet,
-		std::vector<std::weak_ptr<Node<T>*>> &reachableNodes)
+void Graph<T>::getReachableHelper(Node<T> *currentNode,
+		std::unordered_set<Node<T>*> &visitedNodeSet,
+		std::vector<Node<T>*> &reachableNodes)
 {
-	std::shared_ptr<Node<T>*> lockedNode = currentNode.lock();
-	if (lockedNode)
+	currentNode->getNeighbors();
+	reachableNodes.push_back(currentNode);
+	visitedNodeSet.insert(currentNode);
+	for (std::weak_ptr<Node<T>> currNeighbor : currentNode->getNeighbors())
 	{
-		reachableNodes.push_back(lockedNode);
-		visitedNodeSet.insert(lockedNode);
-		for (std::weak_ptr<Node<T>*> currNeighbor : lockedNode->getNeighbors())
+		std::shared_ptr<Node<T>> lockedNeighbor = currNeighbor.lock();
+		if (lockedNeighbor)
 		{
-			std::shared_ptr<Node<T>*> lockedNeighbor = currNeighbor.lock();
-			if (lockedNeighbor)
+			if (!(visitedNodeSet.count(lockedNeighbor.get())))
 			{
-				if (!(visitedNodeSet.count(lockedNeighbor)))
-				{
-					this->getReachableHelper(lockedNeighbor, visitedNodeSet,
-							reachableNodes);
-				}
-			}
-			else
-			{
-				badBehavior(__LINE__, __func__,
-						"Could not lock neighbor when trying to traverse");
+				this->getReachableHelper(lockedNeighbor.get(), visitedNodeSet,
+						reachableNodes);
 			}
 		}
+		else
+		{
+			badBehavior(__LINE__, __func__,
+					"Could not lock neighbor when trying to traverse");
+		}
 	}
-	else
-	{
-		badBehavior(__LINE__, __func__,
-				"Could not lock node when we were traversing all nodes");
-	}
+
 }
 
 }

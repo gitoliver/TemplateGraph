@@ -19,7 +19,6 @@ public:
 	/************************************************
 	 *  CONSTRUCTORS/DESTRUCTORS
 	 ***********************************************/
-	//TODO: Check if we actually need these default constructors
 	Edge();
 	Edge(std::string name, std::shared_ptr<Node<T>> sourceNode,
 			std::shared_ptr<Node<T>> sinkNode);
@@ -29,26 +28,20 @@ public:
 
 	~Edge();
 
+	/*	Return our weak to ensure alive.
+	 *
+	 */
 	std::weak_ptr<Node<T>> getSinkNode();
 	std::weak_ptr<Node<T>> getSourceNode();
 
 	/************************************************
 	 *  GETTER/SETTER
 	 ***********************************************/
-	/* TODO: Check if we want to use std::shared_ptr<Node<T>> instead. Unsure
-	 * 			if this would impact speed much etc. Must think/read/discuss.
+	/* NOTE: Using shared pointer to get our source and sink in order to ensure
+	 * 			source and sink are good and alive.
 	 */
 	void setSourceNode(std::shared_ptr<Node<T>> source);
 	void setSinkNode(std::shared_ptr<Node<T>> sink);
-	// NOTE: Not creating getters because it will end up (from my understanding) breaking our encapsulation
-
-	/************************************************
-	 *  MUTATORS
-	 ***********************************************/
-
-	/************************************************
-	 *  FUNCTIONS
-	 ***********************************************/
 
 private:
 	/************************************************
@@ -58,15 +51,6 @@ private:
 	Node<T> *sourceNode;
 	//NOTE: Sink node = the node that has a raw pointer to this edge
 	Node<T> *sinkNode;
-
-	/************************************************
-	 *  FRIENDS
-	 ***********************************************/
-	/* TODO: Ensure this is correct usage, it seems correct but we must argue to make sure.
-	 * 			Since we are using a friend relationship we do not want a getSource/getSink from our edge.
-	 * 			From my understanding, this would assist in breaking encapsulation.
-	 */
-
 };
 
 template<class T>
@@ -84,10 +68,10 @@ Edge<T>::Edge(std::string name, std::shared_ptr<Node<T>> sourceNode,
 	this->setName(name);
 	this->sinkNode = sinkNode.get();
 	this->sourceNode = sourceNode.get();
-	lazyInfo(__LINE__, __func__,
-			"Created edge with source node <" + this->sourceNode->getName()
-					+ "> with sink node <" + this->sinkNode->getName()
-					+ ">\n\tWith edge name <" + this->getName() + ">");
+	//lazyInfo(__LINE__, __func__,
+	//		"Created edge with source node <" + this->sourceNode->getName()
+	//				+ "> with sink node <" + this->sinkNode->getName()
+	//				+ ">\n\tWith edge name <" + this->getName() + ">");
 }
 
 template<class T>
@@ -105,8 +89,8 @@ Edge<T>::~Edge()
 {
 	this->sinkNode->removeInEdge(this);
 	//have our edge destructor remove itself from our inList then let die
-	lazyInfo(__LINE__, __func__,
-			"Edge with name <" + this->getName() + "> deleted");
+	//lazyInfo(__LINE__, __func__,
+	//		"Edge with name <" + this->getName() + "> deleted");
 }
 
 template<class T>

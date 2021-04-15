@@ -22,7 +22,7 @@ public:
 	//copy constructor
 	HalfAdjacencyMatrix(const HalfAdjacencyMatrix<T> &m);
 
-	~HalfAdjacencyMatrix();
+	~HalfAdjacencyMatrix(){};
 
 	/************************************************
 	 *  GETTER/SETTER
@@ -141,6 +141,7 @@ HalfAdjacencyMatrix<T>::HalfAdjacencyMatrix()
 template<class T>
 HalfAdjacencyMatrix<T>::HalfAdjacencyMatrix(std::vector<Node<T>*> nodeList)
 {
+
 	unsigned int numNodes = nodeList.size();
 	this->bitList.assign(((numNodes * (numNodes - 1)) / 2), 0);
 	this->numNodes = numNodes;

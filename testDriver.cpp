@@ -15,8 +15,6 @@ public:
 	} // default node name is atom name
 	~Atom()
 	{
-		//This is to actually force our full delete
-		//this->GetNode()::~Node<Atom>;
 	}
 	inline void AddBond(Atom *otherAtom)
 	{
@@ -132,6 +130,7 @@ int main()
 //b 1 -> cyc 1
 //atom9->AddBond(atom10);
 	atom9->AddBond(atom10);
+	atom9->AddBond(atom9);
 //cyc 1 -> cyc 2
 	atom10->AddBond(atom11);
 //cyc 2 -> cyc 3
@@ -153,7 +152,10 @@ int main()
 	atom5->AddBond(atom3);
 	atom2->AddBond(atom7);
 	atom7->AddBond(atom8);
+	atom6->AddBond(atom3);
+	atom6->AddBond(atom4);
 
+	Graph<Atom> *g1 = new Graph<Atom>(atom1->GetNode().get());
 //std::cout <<"\n\nGraph ptr in mol: " << mol1->getGraphPtr() << " okay \n\n";
 //std::cout <<"\n\nOur supposed roots node that it owns: " << atom0->GetNode() << " okay \n\n";
 //std::cout <<"\n\nGraph ptr root node: " << mol1->getGraphPtr()->PoobGetRoot() << " okay \n\n"; //this is issue
