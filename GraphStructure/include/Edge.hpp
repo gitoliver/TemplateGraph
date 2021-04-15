@@ -55,9 +55,9 @@ private:
 	 *  ATTRIBUTES
 	 ***********************************************/
 	//NOTE: Source node = the node that has a unique_ptr to this edge
-	std::shared_ptr<Node<T>> sourceNode;
+	Node<T> *sourceNode;
 	//NOTE: Sink node = the node that has a raw pointer to this edge
-	std::shared_ptr<Node<T>> sinkNode;
+	Node<T> *sinkNode;
 
 	/************************************************
 	 *  FRIENDS
@@ -67,13 +67,14 @@ private:
 	 * 			From my understanding, this would assist in breaking encapsulation.
 	 */
 
-
 };
 
 template<class T>
 Edge<T>::Edge()
 {
 	badBehavior(__LINE__, __func__, "Warning calling default constructor");
+	this->sinkNode = NULL;
+	this->sourceNode = NULL;
 }
 
 template<class T>
@@ -81,26 +82,28 @@ Edge<T>::Edge(std::string name, std::shared_ptr<Node<T>> sourceNode,
 		std::shared_ptr<Node<T>> sinkNode)
 {
 	this->setName(name);
-	this->setSourceNode(sourceNode);
-	this->setSinkNode(sinkNode);
-	lazyInfo(__LINE__, __func__, "Created edge with source node <" + this->sourceNode.get()->getName() + "> with sink node <"+this->sinkNode.get()->getName()+">\n\tWith edge name <" +this->getName()+">");
+	this->sinkNode = sinkNode.get();
+	this->sourceNode = sourceNode.get();
+	lazyInfo(__LINE__, __func__,
+			"Created edge with source node <" + this->sourceNode->getName()
+					+ "> with sink node <" + this->sinkNode->getName()
+					+ ">\n\tWith edge name <" + this->getName() + ">");
 }
 
 template<class T>
 Edge<T>::Edge(std::string name, std::vector<std::string> labels,
-		std::shared_ptr<Node<T>> sourceNode,
-		std::shared_ptr<Node<T>> sinkNode)
+		std::shared_ptr<Node<T>> sourceNode, std::shared_ptr<Node<T>> sinkNode)
 {
 	this->setName(name);
 	this->setLabels(labels);
-	this->setSourceNode(sourceNode);
-	this->setSinkNode(sinkNode);
+	this->sinkNode = sinkNode.get();
+	this->sourceNode = sourceNode.get();
 }
 
 template<class T>
 Edge<T>::~Edge()
 {
-	this->sinkNode.get()->removeInEdge(this);
+	this->sinkNode->removeInEdge(this);
 	//have our edge destructor remove itself from our inList then let die
 	lazyInfo(__LINE__, __func__,
 			"Edge with name <" + this->getName() + "> deleted");
@@ -109,25 +112,25 @@ Edge<T>::~Edge()
 template<class T>
 void Edge<T>::setSourceNode(std::shared_ptr<Node<T>> source)
 {
-	this->sourceNode = source;
+	this->sourceNode = source.get();
 }
 
 template<class T>
 void Edge<T>::setSinkNode(std::shared_ptr<Node<T>> sink)
 {
-	this->sinkNode = sink;
+	this->sinkNode = sink.get();
 }
 
 template<class T>
 std::weak_ptr<Node<T>> Edge<T>::getSinkNode()
 {
-	return this->sinkNode;
+	return this->sinkNode->shared_from_this();
 }
 
 template<class T>
 std::weak_ptr<Node<T>> Edge<T>::getSourceNode()
 {
-	return this->sourceNode;
+	return this->sourceNode->shared_from_this();
 }
 
 }

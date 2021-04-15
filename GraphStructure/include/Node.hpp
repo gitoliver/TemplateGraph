@@ -30,10 +30,6 @@ public:
 	 ***********************************************/
 	std::vector<std::weak_ptr<Node<T>>> getNeighbors();
 
-	/* TODO: Maybe we WANT to use a shared_ptr for our edges, I am worried regarding having an easy
-	 * 			check for if returned are actually decent/usable edges. I will leave it up to divine
-	 * 			intervention to know if we must worry about this.
-	 */
 	std::vector<Edge<T>*> getEdges();
 	std::vector<Edge<T>*> getOutEdges();
 	std::vector<Edge<T>*> getInEdges();
@@ -129,6 +125,11 @@ Node<T>::~Node()
 			"Running destructor on node <" + this->getName() + ">");
 	std::vector<Edge<T>*> tempInEdge = this->inEdges;
 
+	lazyInfo(__LINE__, __func__,
+			"In edge size <" + std::to_string(this->inEdges.size()) + ">");
+	lazyInfo(__LINE__, __func__,
+			"Out edge size <" + std::to_string(this->outEdges.size()) + ">");
+
 	for (Edge<T> *currInEdge : tempInEdge)
 	{
 		std::shared_ptr<Node<T>> sourceLock =
@@ -145,10 +146,10 @@ Node<T>::~Node()
 	}
 	lazyInfo(__LINE__, __func__,
 			"Finishing destructor on node <" + this->getName() + ">");
-	//lazyInfo(__LINE__, __func__,
-	//			"In edge size <" + std::to_string(this->inEdges.size()) + ">");
-	//lazyInfo(__LINE__, __func__,
-	//				"Out edge size <" + std::to_string(this->outEdges.size()) + ">");
+	lazyInfo(__LINE__, __func__,
+			"In edge size <" + std::to_string(this->inEdges.size()) + ">");
+	lazyInfo(__LINE__, __func__,
+			"Out edge size <" + std::to_string(this->outEdges.size()) + ">");
 }
 
 template<class T>
@@ -356,11 +357,11 @@ inline void Node<T>::removeOutEdge(Edge<T> *edgeToRemove)
 			this->outEdges.erase(this->outEdges.begin() + outIndex);
 		}
 		/*for (std::unique_ptr<Edge<T>> const &currOutEdge : this->outEdges)
-		{
-			if (currOutEdge.get() == edgeToRemove)
-				this->outEdges.erase(this->outEdges.begin() + currOutIndex);
-			currOutIndex++;
-		}*/
+		 {
+		 if (currOutEdge.get() == edgeToRemove)
+		 this->outEdges.erase(this->outEdges.begin() + currOutIndex);
+		 currOutIndex++;
+		 }*/
 	}
 }
 
