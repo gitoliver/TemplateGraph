@@ -39,6 +39,8 @@ public:
 	std::vector<Node<T>*> getNodes() const;
 	HalfAdjacencyMatrix<T> getAdjMatrix() const;
 
+	unsigned int getIndexFromNode(Node<T>* queryNode);
+	Node<T>* getNodeFromIndex(unsigned int queryIndex);
 	/************************************************
 	 *  MUTATORS
 	 ***********************************************/
@@ -46,11 +48,14 @@ public:
 	/************************************************
 	 *  FUNCTIONS
 	 ***********************************************/
+	void chuckRottenTomatoes();
 
 private:
 	/************************************************
 	 *  ATTRIBUTES
 	 ***********************************************/
+	std::vector<std::weak_ptr<Node<T>>> tomatoGarden;
+
 	HalfAdjacencyMatrix<T> adjMatrix;
 	//TODO: Whenever we find a broken node then we can just run a refresh on all structures. Basically run bfs initializer again.
 	std::unordered_set<Node<T>*> allNodes;
@@ -89,6 +94,8 @@ Graph<T>::Graph(Node<T> *initialNode)
 	{
 		this->allNodes.insert(currentNode);
 	}
+
+	//populate our garden
 
 	this->populateLookups();
 
@@ -253,6 +260,40 @@ std::vector<Node<T>*> Graph<T>::getReachableNodes(Node<T> *startingNode)
 	std::vector<Node<T>*> reachableVecToReturn;
 	this->getReachableHelper(startingNode, visitedNodes, reachableVecToReturn);
 	return reachableVecToReturn;
+}
+
+template<class T>
+void Graph<T>::chuckRottenTomatoes()
+{
+	int ogGardenSize = this->tomatoGarden.size();
+	for (std::weak_ptr<Node<T>> currWeakNode : this->tomatoGarden)
+	{
+		if (currWeakNode.expired())
+		{
+			//TODO: May break when actually used. We will see.
+			this->tomatoGarden.erase(
+					std::remove(this->tomatoGarden.begin(),
+							this->tomatoGarden.end(), currWeakNode),
+					this->tomatoGarden.end());
+		}
+	}
+	if (ogGardenSize != this->tomatoGarden.size())
+	{
+		this->populateLookups();
+		this->populateAdjacencyMatrix();
+	}
+}
+
+template<class T>
+unsigned int Graph<T>::getIndexFromNode(Node<T> *queryNode)
+{
+	return this->indexLookup[queryNode];
+}
+
+template<class T>
+Node<T>* Graph<T>::getNodeFromIndex(unsigned int queryIndex)
+{
+	return this->nodeLookup[queryIndex];
 }
 
 template<class T>

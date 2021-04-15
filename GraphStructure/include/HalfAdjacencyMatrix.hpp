@@ -22,12 +22,16 @@ public:
 	//copy constructor
 	HalfAdjacencyMatrix(const HalfAdjacencyMatrix<T> &m);
 
-	~HalfAdjacencyMatrix(){};
+	~HalfAdjacencyMatrix()
+	{
+	}
+	;
 
 	/************************************************
 	 *  GETTER/SETTER
 	 ***********************************************/
 	unsigned int getNumEdges();
+	unsigned int getNumNodes();
 
 	/************************************************
 	 *  MUTATORS
@@ -224,6 +228,12 @@ bool HalfAdjacencyMatrix<T>::isConnected(unsigned int aNodeIndex,
 	if (aNodeIndex == bNodeIndex)
 		return false;
 	return this->bitList[index(aNodeIndex, bNodeIndex)];
+}
+
+template<class T>
+unsigned int HalfAdjacencyMatrix<T>::getNumNodes()
+{
+	return this->numNodes;
 }
 
 template<class T>
