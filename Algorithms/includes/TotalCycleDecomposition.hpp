@@ -52,16 +52,17 @@ std::pair<std::vector<std::unordered_set<TemplateGraph::Node<T>*>>,
 			new TreeNode[interestingGraph.getNodes().size()]);
 
 	std::stack<unsigned int> nodeStack;
+	//start randomly with our 0 node
+	nodeStack.push(0);
 
 	//copy over our matrix we are gonna be mutating. Dont want to screw
 	//	up our actual structure
-	TemplateGraph::HalfAdjacencyMatrix<T> mutatingAdjMatrix =
-			interestingGraph.getAdjMatrix();
+	TemplateGraph::HalfAdjacencyMatrix<T> mutatingAdjMatrix(interestingGraph.getAdjMatrix());
 
 	//initially have all treenodes as their own parent, will create our spanning
 	// tree while running algo
 	for (unsigned int currIndex = 0;
-			currIndex < interestingGraph.getNodes().size(); currIndex++)
+			currIndex < interestingGraph.getNodes().size(); ++currIndex)
 	{
 		aTree[currIndex].parent = &aTree[currIndex];
 		aTree[currIndex].index = currIndex;
@@ -79,7 +80,7 @@ std::pair<std::vector<std::unordered_set<TemplateGraph::Node<T>*>>,
 				anotherNodeIndex++)
 		{
 			//not connected we skip iteration
-			if (!(interestingGraph.getAdjMatrix().isConnected(currNodeIndex,
+			if (!(mutatingAdjMatrix.isConnected(currNodeIndex,
 					anotherNodeIndex)))
 			{
 				continue;

@@ -64,7 +64,7 @@ public:
 		//TODO: Figure this out, issue is not passing in our
 		//			type. Tries to pass in the int.
 		//HalfAdjacencyMatrix<T> result(this->numNodes);
-		HalfAdjacencyMatrix<T> result;
+		HalfAdjacencyMatrix<T> result(rhs);
 		result.emptyInitializeWorkaround(rhs);
 
 
@@ -76,11 +76,11 @@ public:
 		}
 		else
 		{
-			for (unsigned int bitListIndex = 0; bitListIndex < bitList.size();
+			for (unsigned int bitListIndex = 0; bitListIndex < this->bitList.size();
 					bitListIndex++)
 			{
-				if ((bitList[bitListIndex] || rhs.bitList[bitListIndex])
-						&& (bitList[bitListIndex] != rhs.bitList[bitListIndex]))
+				if ((this->bitList[bitListIndex] || rhs.bitList[bitListIndex])
+						&& (this->bitList[bitListIndex] != rhs.bitList[bitListIndex]))
 				{
 					result.bitList[bitListIndex] = 1;
 					++result.numEdges;
@@ -99,17 +99,17 @@ public:
 					"WARNING NUMBER OF NODES NOT EQUAL XOREQUALS");
 		}
 		numEdges = 0;
-		for (unsigned int bitListIndex = 0; bitListIndex < bitList.size();
+		for (unsigned int bitListIndex = 0; bitListIndex < this->bitList.size();
 				bitListIndex++)
 		{
-			if ((bitList[bitListIndex] || rhs.bitList[bitListIndex])
-					&& (bitList[bitListIndex] != rhs.bitList[bitListIndex]))
+			if ((this->bitList[bitListIndex] || rhs.bitList[bitListIndex])
+					&& (this->bitList[bitListIndex] != rhs.bitList[bitListIndex]))
 			{
-				bitList[bitListIndex] = 1;
+				this->bitList[bitListIndex] = 1;
 				numEdges++;
 			}
 			else
-				bitList[bitListIndex] = 0;
+				this->bitList[bitListIndex] = 0;
 		}
 		return *this;
 	}
