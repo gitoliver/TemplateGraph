@@ -22,7 +22,7 @@ namespace cycleDetector
 //switch to weak_ptr so we can correctly observe, now just go
 template<typename T>
 std::vector<std::unordered_set<TemplateGraph::Node<T>*>> totalCycleDetect(
-		TemplateGraph::Graph<T> const &inputGraph)
+		TemplateGraph::Graph<T>  &inputGraph)
 {
 	inputGraph.chuckRottenTomatoes();
 	std::vector<std::unordered_set<TemplateGraph::Node<T>*>> allCyclesNodeList;

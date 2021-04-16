@@ -20,11 +20,11 @@ public:
 	 *  CONSTRUCTORS/DESTRUCTORS
 	 ***********************************************/
 	Edge();
-	Edge(std::string name, std::shared_ptr<Node<T>> sourceNode,
-			std::shared_ptr<Node<T>> sinkNode);
+	Edge(std::string name, std::shared_ptr<Node<T>> const &sourceNode,
+			std::shared_ptr<Node<T>> const &sinkNode);
 	Edge(std::string name, std::vector<std::string> labels,
-			std::shared_ptr<Node<T>> sourceNode,
-			std::shared_ptr<Node<T>> sinkNode);
+			std::shared_ptr<Node<T>> const &sourceNode,
+			std::shared_ptr<Node<T>> const &sinkNode);
 
 	~Edge();
 
@@ -62,8 +62,8 @@ Edge<T>::Edge()
 }
 
 template<class T>
-Edge<T>::Edge(std::string name, std::shared_ptr<Node<T>> sourceNode,
-		std::shared_ptr<Node<T>> sinkNode)
+Edge<T>::Edge(std::string name, std::shared_ptr<Node<T>> const &sourceNode,
+		std::shared_ptr<Node<T>> const &sinkNode)
 {
 	this->setName(name);
 	this->sinkNode = sinkNode.get();
@@ -76,7 +76,7 @@ Edge<T>::Edge(std::string name, std::shared_ptr<Node<T>> sourceNode,
 
 template<class T>
 Edge<T>::Edge(std::string name, std::vector<std::string> labels,
-		std::shared_ptr<Node<T>> sourceNode, std::shared_ptr<Node<T>> sinkNode)
+		std::shared_ptr<Node<T>> const &sourceNode, std::shared_ptr<Node<T>> const &sinkNode)
 {
 	this->setName(name);
 	this->setLabels(labels);

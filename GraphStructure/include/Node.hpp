@@ -14,7 +14,6 @@ namespace TemplateGraph
 template<class T>
 class Node: public Abstract::GenericObject, public std::enable_shared_from_this<
 		Node<T>>
-
 {
 public:
 	/************************************************
@@ -44,15 +43,15 @@ public:
 	 * 			guaranteed to have both a source and sink node.
 	 */
 	void addNeighbor(std::string edgeName,
-			std::shared_ptr<Node<T>> newNeighbor);
+			std::shared_ptr<Node<T>> const &newNeighbor);
 
 	//Do we want to worry about adding a parent?
-	void addChild(std::string edgeName, std::shared_ptr<Node<T>> childNode);
+	void addChild(std::string edgeName, std::shared_ptr<Node<T>> const &childNode);
 	/* NOTE: We MUST remove the edge from out "child" node BEFORE deleting the edge by deleting the
 	 * 			unique_ptr that owns it. This is handled in edge's destructor, all we have to worry
 	 * 			about is deleting the unique ptr that owns our edge.
 	 */
-	void removeEdgeBetween(std::shared_ptr<Node<T>> otherNode);
+	void removeEdgeBetween(std::shared_ptr<Node<T>> const &otherNode);
 
 	void removeInEdge(Edge<T> *edgeToRemove);
 	void removeOutEdge(Edge<T> *edgeToRemove);
@@ -60,7 +59,7 @@ public:
 	/************************************************
 	 *  FUNCTIONS
 	 ***********************************************/
-	bool isNeighbor(std::shared_ptr<Node<T>> otherNode);
+	bool isNeighbor(std::shared_ptr<Node<T>> const &otherNode);
 
 private:
 	/************************************************
@@ -80,8 +79,8 @@ private:
 	/************************************************
 	 *  FUNCTIONS
 	 ***********************************************/
-	bool isChildOf(std::shared_ptr<Node<T>> possibleParent);
-	bool isParentOf(std::shared_ptr<Node<T>> possibleChild);
+	bool isChildOf(std::shared_ptr<Node<T>> const &possibleParent);
+	bool isParentOf(std::shared_ptr<Node<T>> const &possibleChild);
 
 	/* Separated these out incase we eventually want to worry about ownership. They could use weak_ptr instead
 	 * 		but this allows me to hold off on checking locks when putting both into our neighbors vector. Casting
@@ -91,7 +90,7 @@ private:
 	std::vector<std::shared_ptr<Node<T>>> getChildren();
 	std::vector<std::shared_ptr<Node<T>>> getParents();
 
-	Edge<T>* getConnectingEdge(std::shared_ptr<Node<T>> otherNode);
+	Edge<T>* getConnectingEdge(std::shared_ptr<Node<T>> const &otherNode);
 
 	friend class Edge<T> ;
 };
@@ -205,13 +204,13 @@ std::vector<Edge<T>*> Node<T>::getInEdges()
 
 template<class T>
 void Node<T>::addNeighbor(std::string edgeName,
-		std::shared_ptr<Node<T>> newNeighbor)
+		std::shared_ptr<Node<T>> const &newNeighbor)
 {
 	this->addChild(edgeName, newNeighbor);
 }
 
 template<class T>
-void Node<T>::addChild(std::string edgeName, std::shared_ptr<Node<T>> childNode)
+void Node<T>::addChild(std::string edgeName, std::shared_ptr<Node<T>> const &childNode)
 {
 	if (this->isNeighbor(childNode))
 	{
@@ -233,7 +232,7 @@ void Node<T>::addChild(std::string edgeName, std::shared_ptr<Node<T>> childNode)
 }
 
 template<class T>
-void Node<T>::removeEdgeBetween(std::shared_ptr<Node<T>> otherNode)
+void Node<T>::removeEdgeBetween(std::shared_ptr<Node<T>> const &otherNode)
 {
 	if (this->isNeighbor(otherNode))
 	{
@@ -261,13 +260,13 @@ void Node<T>::removeEdgeBetween(std::shared_ptr<Node<T>> otherNode)
 }
 
 template<class T>
-bool Node<T>::isNeighbor(std::shared_ptr<Node<T>> otherNode)
+bool Node<T>::isNeighbor(std::shared_ptr<Node<T>> const &otherNode)
 {
 	return (this->isChildOf(otherNode) || this->isParentOf(otherNode));
 }
 
 template<class T>
-bool Node<T>::isChildOf(std::shared_ptr<Node<T>> possibleParent)
+bool Node<T>::isChildOf(std::shared_ptr<Node<T>> const &possibleParent)
 {
 	for (Edge<T> *currInEdge : this->inEdges)
 	{
@@ -289,7 +288,7 @@ bool Node<T>::isChildOf(std::shared_ptr<Node<T>> possibleParent)
 }
 
 template<class T>
-bool Node<T>::isParentOf(std::shared_ptr<Node<T>> possibleChild)
+bool Node<T>::isParentOf(std::shared_ptr<Node<T>> const &possibleChild)
 {
 	for (std::unique_ptr<Edge<T>> const &currOutEdge : this->outEdges)
 	{
@@ -379,7 +378,7 @@ inline void Node<T>::removeOutEdge(Edge<T> *edgeToRemove)
 
 template<class T>
 Edge<T>* TemplateGraph::Node<T>::getConnectingEdge(
-		std::shared_ptr<Node<T>> otherNode)
+		std::shared_ptr<Node<T>> const &otherNode)
 {
 	if (this->isNeighbor(otherNode))
 	{
