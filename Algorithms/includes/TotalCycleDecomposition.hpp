@@ -57,7 +57,8 @@ std::pair<std::vector<std::unordered_set<TemplateGraph::Node<T>*>>,
 
 	//copy over our matrix we are gonna be mutating. Dont want to screw
 	//	up our actual structure
-	TemplateGraph::HalfAdjacencyMatrix<T> mutatingAdjMatrix(interestingGraph.getAdjMatrix());
+	TemplateGraph::HalfAdjacencyMatrix<T> mutatingAdjMatrix(
+			interestingGraph.getAdjMatrix());
 
 	//initially have all treenodes as their own parent, will create our spanning
 	// tree while running algo
@@ -80,8 +81,7 @@ std::pair<std::vector<std::unordered_set<TemplateGraph::Node<T>*>>,
 				anotherNodeIndex++)
 		{
 			//not connected we skip iteration
-			if (!(mutatingAdjMatrix.isConnected(currNodeIndex,
-					anotherNodeIndex)))
+			if (!(mutatingAdjMatrix.isConnected(currNodeIndex, anotherNodeIndex)))
 			{
 				continue;
 			}
@@ -153,14 +153,13 @@ std::pair<std::vector<std::unordered_set<TemplateGraph::Node<T>*>>,
 			funCycleSet, funCycleAdjMatrixSet);
 
 	return funCycleInfo;
-}// end compute fundamental cycles
-
+}			// end compute fundamental cycles
 
 template<class T>
 void validateCycleMatrixRecursive(
 		TemplateGraph::HalfAdjacencyMatrix<T> &matrixToValidate,
-		unsigned int &currPathLength, const int interestingNodeIndex, unsigned int prevNodeIndex,
-		std::set<unsigned int> &visitedTracker)
+		unsigned int &currPathLength, const int interestingNodeIndex,
+		unsigned int prevNodeIndex, std::set<unsigned int> &visitedTracker)
 {
 	if (currPathLength > 750)
 	{
@@ -189,7 +188,7 @@ void validateCycleMatrixRecursive(
 		badBehavior(__LINE__, __func__,
 				"Dead end when checking our cycle validation");
 	}
-}//end validate recursion
+}			//end validate recursion
 
 template<class T>
 bool validateCycleMatrix(TemplateGraph::HalfAdjacencyMatrix<T> &matrixToCheck)
@@ -214,25 +213,18 @@ bool validateCycleMatrix(TemplateGraph::HalfAdjacencyMatrix<T> &matrixToCheck)
 	}
 	badBehavior(__LINE__, __func__, "No edges");
 	return false;
-}// end validate cycle matrix
-
-
-
+}			// end validate cycle matrix
 
 } // end our anon namespace
-
 
 namespace cycleDetector
 {
 //switch to weak_ptr so we can correctly observe, now just go
 template<typename T>
 std::vector<std::unordered_set<TemplateGraph::Node<T>*>> totalCycleDetect(
-		TemplateGraph::Graph<T>  &inputGraph)
+		TemplateGraph::Graph<T> &inputGraph)
 {
 	inputGraph.chuckRottenTomatoes();
-
-	std::vector<std::unordered_set<TemplateGraph::Node<T>*>> allCyclesNodeList;
-	std::vector<TemplateGraph::HalfAdjacencyMatrix<T>> allCyclesAdj;
 
 	std::pair<std::vector<std::unordered_set<TemplateGraph::Node<T>*>>,
 			std::vector<TemplateGraph::HalfAdjacencyMatrix<T>>> funCycleInfo =
@@ -240,9 +232,13 @@ std::vector<std::unordered_set<TemplateGraph::Node<T>*>> totalCycleDetect(
 
 	std::vector<std::unordered_set<TemplateGraph::Node<T>*>> funCycleNodeSets =
 			funCycleInfo.first;
-
 	std::vector<TemplateGraph::HalfAdjacencyMatrix<T>> funCycleAdj =
 			funCycleInfo.second;
+
+	std::vector<std::unordered_set<TemplateGraph::Node<T>*>> allCyclesNodeList;
+
+	std::vector<TemplateGraph::HalfAdjacencyMatrix<T>> allCyclesAdj(
+			funCycleAdj);
 
 	std::vector<bool> combinitoricsVector(funCycleAdj.size());
 

@@ -7,6 +7,8 @@
 
 #include "./LazyPrints/LazyPrinters.hpp"
 
+//https://dreampuf.github.io/GraphvizOnline/#digraph%20G%20%7B%0A%09Bobie-%3ESteve%0A%09Steve-%3ERonne%0A%09Ronne-%3EBingo%0A%09Bingo-%3EMarsh%0A%09Marsh-%3EDelux%0A%09Steve-%3EFrank%0A%09Delux-%3EFrank%0A%09Ronne-%3EDelux%0A%09Ronne-%3EFrank%0A%09Delux-%3EBingo%0A%09Ronne-%3EBingo1%0A%09Bingo1-%3EMasrsh1%0A%09Bridge1%20-%3E%20cycle1%0A%09cycle1%20-%3E%20cycle2%0A%09cycle1%20-%3E%20cycle3%0A%09cycle2%20-%3E%20cycle3%0A%09cycle1%20-%3E%20Steve%0A%7D
+
 using namespace TemplateGraph;
 class Atom
 {
@@ -128,6 +130,7 @@ int main()
 	Atom *atom11 = new Atom("cycle2");
 	Atom *atom12 = new Atom("cycle3");
 
+	/*
 //to show our mega cycle decomp works
 //b 1 -> cyc 1
 //atom9->AddBond(atom10);
@@ -156,6 +159,33 @@ int main()
 	atom7->AddBond(atom8);
 	atom6->AddBond(atom3);
 	atom6->AddBond(atom4);
+*/
+
+	//to show our mega cycle decomp works
+		//b 1 -> cyc 1
+		//atom9->AddBond(atom10);
+		atom9->AddBond(atom10);
+		//cyc 1 -> cyc 2
+		atom10->AddBond(atom11);
+		//cyc 2 -> cyc 3
+		atom11->AddBond(atom12);
+		//cyc 1 -> cyc 3
+		atom10->AddBond(atom12);
+		//our mini cycle to the normal cycle
+		atom10->AddBond(atom1);
+
+		atom0->AddBond(atom1);
+		atom1->AddBond(atom2);
+		atom2->AddBond(atom3);
+		atom3->AddBond(atom4);
+		atom4->AddBond(atom5);
+		atom1->AddBond(atom6);
+		atom5->AddBond(atom6);
+		atom2->AddBond(atom5);
+		atom2->AddBond(atom6);
+		atom5->AddBond(atom3);
+		atom2->AddBond(atom7);
+		atom7->AddBond(atom8);
 
 	Graph<Atom> *g1 = new Graph<Atom>(atom1->GetNode().get());
 
@@ -180,15 +210,15 @@ int main()
 // atomC->AddBond(atomD);
 	atomA->AddBond(atomD);
 // atomD->AddBond(atomB);
-	Graph<Atom> *g2 = new Graph<Atom>(atomA->GetNode().get());
+	//Graph<Atom> *g2 = new Graph<Atom>(atomA->GetNode().get());
 
 	//graph all cycles
 	std::vector<std::unordered_set<Node<Atom>*>> cyclesG1 =
 			cycleDetector::totalCycleDetect(*g1);
 
-	std::unordered_map<TemplateGraph::Node<Atom>*,
-			std::vector<TemplateGraph::Node<Atom>*>> matchedSubgraphs =
-			subgraphMatcher::findSubgraphs(*g1, *g2);
+	//std::unordered_map<TemplateGraph::Node<Atom>*,
+	//		std::vector<TemplateGraph::Node<Atom>*>> matchedSubgraphs =
+	//		subgraphMatcher::findSubgraphs(*g1, *g2);
 
 //Graph<Atom> queryGraph(atomA->GetNode());
 
@@ -210,12 +240,12 @@ int main()
 //  std::cout << "Graph:\n" << atomGraph.Print() << "\n\n";
 	std::cout << "Deleting bonds: \n";
 //atom1->RemoveBond(atom6);
-	std::string neighMsg =
-			(atom1->GetNode().get()->isNeighbor(atom2->GetNode())) ?
-					"is Neighbor" : "is not neighbor";
+	//std::string neighMsg =
+	//		(atom1->GetNode().get()->isNeighbor(atom2->GetNode())) ?
+	//				"is Neighbor" : "is not neighbor";
 	atom1->RemoveBond(atom2);
 
-	lazyInfo(__LINE__, __func__, neighMsg);
+	//lazyInfo(__LINE__, __func__, neighMsg);
 
 // atom3->RemoveBond(atom4);
 //  std::cout << "Graph:\n" << atomGraph.Print() << "\n\n";

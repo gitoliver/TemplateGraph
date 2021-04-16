@@ -96,23 +96,9 @@ Graph<T>::Graph(Node<T> *const&initialNode)
 	}
 
 	//populate our garden
-
 	this->populateLookups();
 
 	this->populateAdjacencyMatrix();
-
-	for (unsigned int i = 0; i < this->allNodes.size(); i++)
-	{
-		std::cout << this->nodeLookup[i]->getName() + "\n\t";
-		for (unsigned int j = 0; j < this->allNodes.size(); j++)
-		{
-			if (this->adjMatrix.isConnected(i, j))
-			{
-				std::cout << this->nodeLookup[j]->getName() + ", ";
-			}
-		}
-		std::cout << "\n";
-	}
 
 }
 
@@ -239,6 +225,8 @@ void Graph<T>::populateLookups()
 			this->indexLookup.insert(
 			{ currNode, currIndex });
 			currIndex++;
+
+			this->tomatoGarden.push_back(currNode->shared_from_this());
 		}
 	}
 	else
@@ -273,6 +261,7 @@ void Graph<T>::chuckRottenTomatoes()
 	{
 		if (this->tomatoGarden[gardenIndex].expired())
 		{
+			lazyInfo(__LINE__,__func__, "Found rotten!");
 			this->tomatoGarden.erase(this->tomatoGarden.begin() + gardenIndex);
 		}
 	}
