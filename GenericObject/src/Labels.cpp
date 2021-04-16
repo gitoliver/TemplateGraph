@@ -111,7 +111,7 @@ bool Labels::compareLabels(const std::vector<std::string> otherLabels)
 bool Labels::compareLabels(const std::vector<std::string> otherLabels,
 		unsigned int numMatches)
 {
-	int matchCounter = 0;
+	unsigned int matchCounter = 0;
 	for (std::string currLabel : this->labels)
 	{
 		if (std::find(otherLabels.begin(), otherLabels.end(), currLabel)

@@ -18,7 +18,7 @@ public:
 	 *  CONSTRUCTORS/DESTRUCTORS
 	 ***********************************************/
 	HalfAdjacencyMatrix();
-	HalfAdjacencyMatrix(std::vector<Node<T>*> nodeList);
+	HalfAdjacencyMatrix(std::vector<Node<T>*> const &nodeList);
 	//copy constructor
 	HalfAdjacencyMatrix(const HalfAdjacencyMatrix<T> &m);
 
@@ -46,7 +46,7 @@ public:
 
 	//TODO: Actually fix our constructors so we do not have to use this initialize workaround stuff
 	void initializeWorkaround(const HalfAdjacencyMatrix<T> &m);
-	void initializeWorkaround(std::vector<Node<T>*> nodeList);
+	void initializeWorkaround(std::vector<Node<T>*> const &nodeList);
 
 	/************************************************
 	 *  OPERATOR OVERLOADS
@@ -143,7 +143,7 @@ HalfAdjacencyMatrix<T>::HalfAdjacencyMatrix()
 }
 
 template<class T>
-HalfAdjacencyMatrix<T>::HalfAdjacencyMatrix(std::vector<Node<T>*> nodeList)
+HalfAdjacencyMatrix<T>::HalfAdjacencyMatrix(std::vector<Node<T>*> const &nodeList)
 {
 
 	unsigned int numNodes = nodeList.size();
@@ -174,7 +174,7 @@ void HalfAdjacencyMatrix<T>::initializeWorkaround(
 
 template<class T>
 void HalfAdjacencyMatrix<T>::initializeWorkaround(
-		std::vector<Node<T>*> nodeList)
+		std::vector<Node<T>*> const &nodeList)
 {
 	unsigned int numNodes = nodeList.size();
 	this->bitList.assign(((numNodes * (numNodes - 1)) / 2), 0);
