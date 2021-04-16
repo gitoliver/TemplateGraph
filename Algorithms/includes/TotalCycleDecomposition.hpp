@@ -12,26 +12,27 @@
 
 #include "../../LazyPrints/LazyPrinters.hpp"
 #include "../../GraphStructure/include/Graph.hpp"
+#include "../../GraphStructure/include/Node.hpp"
 #include "../../GraphStructure/include/HalfAdjacencyMatrix.hpp"
 
-template<class T> class Node;
+//template<class T> class Node;
 
 namespace cycleDetector
 {
 //switch to weak_ptr so we can correctly observe, now just go
 template<typename T>
-std::vector<std::unordered_set<Node<T>*>> totalCycleDetect(
+std::vector<std::unordered_set<TemplateGraph::Node<T>*>> totalCycleDetect(
 		TemplateGraph::Graph<T> inputGraph)
 {
-
-	std::vector<std::unordered_set<Node<T>*>> allCyclesNodeList;
+	inputGraph.chuckRottenTomatoes();
+	std::vector<std::unordered_set<TemplateGraph::Node<T>*>> allCyclesNodeList;
 	std::vector<TemplateGraph::HalfAdjacencyMatrix<T>> allCyclesAdj;
 
-	std::pair<std::vector<std::unordered_set<Node<T>*>>,
+	std::pair<std::vector<std::unordered_set<TemplateGraph::Node<T>*>>,
 			std::vector<TemplateGraph::HalfAdjacencyMatrix<T>>> funCycleInfo =
 			computeFunCycles(inputGraph);
 
-	std::vector<std::unordered_set<Node<T>*>> funCycleNodeSets =
+	std::vector<std::unordered_set<TemplateGraph::Node<T>*>> funCycleNodeSets =
 			funCycleInfo.first;
 
 	std::vector<TemplateGraph::HalfAdjacencyMatrix<T>> funCycleAdj =
@@ -87,7 +88,7 @@ std::vector<std::unordered_set<Node<T>*>> totalCycleDetect(
 
 	for (TemplateGraph::HalfAdjacencyMatrix<T> currentCycleAdj : allCyclesAdj)
 	{
-		std::unordered_set<Node<T>*> temporaryCycleSet;
+		std::unordered_set<TemplateGraph::Node<T>*> temporaryCycleSet;
 		for (unsigned int aNodeIndex = 0;
 				aNodeIndex < inputGraph.getNodes().size(); aNodeIndex++)
 		{
@@ -112,7 +113,7 @@ std::vector<std::unordered_set<Node<T>*>> totalCycleDetect(
 			allCyclesNodeList.push_back(temporaryCycleSet);
 		}
 	}
-}
+}// end total cycle detect
 
 }
 
@@ -141,11 +142,11 @@ void unique_tree_path(TreeNode *pathNode,
 
 // to compute all of our fundamental cycles and return them as a vec
 template<class T>
-std::pair<std::vector<std::unordered_set<Node<T>*>>,
+std::pair<std::vector<std::unordered_set<TemplateGraph::Node<T>*>>,
 		std::vector<TemplateGraph::HalfAdjacencyMatrix<T>>> computeFundamentalCycles(
 		TemplateGraph::Graph<T> interestingGraph)
 {
-	std::vector<std::unordered_set<Node<T>*>> funCycleSet;
+	std::vector<std::unordered_set<TemplateGraph::Node<T>*>> funCycleSet;
 
 	std::vector<TemplateGraph::HalfAdjacencyMatrix<T>> funCycleAdjMatrixSet;
 
@@ -202,7 +203,7 @@ std::pair<std::vector<std::unordered_set<Node<T>*>>,
 				TemplateGraph::HalfAdjacencyMatrix<T> funCycleAdjMatrix(
 						currNodePath ^ anotherNodePath);
 
-				std::unordered_set<Node<T>*> funCycleNodeSet;
+				std::unordered_set<TemplateGraph::Node<T>*> funCycleNodeSet;
 
 				//TODO: Make this legitimate, slow...
 				for (unsigned int aNodeIndex = 0;
@@ -248,12 +249,12 @@ std::pair<std::vector<std::unordered_set<Node<T>*>>,
 			mutatingAdjMatrix.disconnect(currNodeIndex, anotherNodeIndex);
 		}
 	}
-	std::pair<std::vector<std::unordered_set<Node<T>*>>,
+	std::pair<std::vector<std::unordered_set<TemplateGraph::Node<T>*>>,
 			std::vector<TemplateGraph::HalfAdjacencyMatrix<T>>> funCycleInfo(
 			funCycleSet, funCycleAdjMatrixSet);
 
 	return funCycleInfo;
-}
+}// end compute fundamental cycles
 
 template<class T>
 bool validateCycleMatrix(TemplateGraph::HalfAdjacencyMatrix<T> &matrixToCheck)
@@ -268,7 +269,7 @@ bool validateCycleMatrix(TemplateGraph::HalfAdjacencyMatrix<T> &matrixToCheck)
 			if (matrixToCheck.isConnected(aNodeIndex, bNodeIndex))
 			{
 				++pathLength;
-				std::set<int> isVisited;
+				std::set<unsigned int> isVisited;
 				isVisited.insert(aNodeIndex);
 				validateCycleMatrixRecursive(matrixToCheck, pathLength,
 						bNodeIndex, aNodeIndex, isVisited);
@@ -278,7 +279,7 @@ bool validateCycleMatrix(TemplateGraph::HalfAdjacencyMatrix<T> &matrixToCheck)
 	}
 	badBehavior(__LINE__, __func__, "No edges");
 	return false;
-}
+}// end validate cycle matrix
 
 template<class T>
 void validateCycleMatrixRecursive(
@@ -298,7 +299,7 @@ void validateCycleMatrixRecursive(
 			if ((matrixToValidate.isConnected(interestingNodeIndex,
 					curiousIndex)) && (curiousIndex != prevNodeIndex))
 			{
-				int possVisited = visitedTracker.find(curiousIndex);
+				auto possVisited = visitedTracker.find(curiousIndex);
 				if (possVisited != visitedTracker.end())
 				{
 					return;
@@ -314,7 +315,7 @@ void validateCycleMatrixRecursive(
 				"Dead end when checking our cycle validation");
 	}
 
-}
+}//end validate recursion
 
 } // end our anon namespace
 

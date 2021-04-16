@@ -1,3 +1,6 @@
+#include "./Algorithms/includes/SubgraphMatching.hpp"
+#include "./Algorithms/includes/TotalCycleDecomposition.hpp"
+
 #include "./GraphStructure/include/Edge.hpp"
 #include "./GraphStructure/include/Node.hpp"
 #include "./GraphStructure/include/Graph.hpp"
