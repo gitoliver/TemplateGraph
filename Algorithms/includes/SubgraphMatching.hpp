@@ -7,6 +7,7 @@
 #include <unordered_map>
 
 #include "../../LazyPrints/LazyPrinters.hpp"
+#include "../../GraphStructure/include/Node.hpp"
 #include "../../GraphStructure/include/Graph.hpp"
 #include "../../GraphStructure/include/HalfAdjacencyMatrix.hpp"
 
@@ -48,8 +49,7 @@ void searchMatches(std::vector<TemplateGraph::Node<T>*> matches,
 		std::map<std::string, std::vector<std::string>> patterns,
 		std::vector<TemplateGraph::Node<T>*> &results,
 		std::unordered_set<TemplateGraph::Node<T>*> &visitedKeys,
-		TemplateGraph::Graph<T> const &graphSearch);
-
+		TemplateGraph::Graph<T> &graphSearch);
 
 /* As with said above regarding how our pattern extraction uses the name member
  * 		we would have to alter our search function to reflect any changes with

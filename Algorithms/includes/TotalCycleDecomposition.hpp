@@ -158,7 +158,7 @@ std::pair<std::vector<std::unordered_set<TemplateGraph::Node<T>*>>,
 template<class T>
 void validateCycleMatrixRecursive(
 		TemplateGraph::HalfAdjacencyMatrix<T> &matrixToValidate,
-		int &currPathLength, const int interestingNodeIndex, int prevNodeIndex,
+		unsigned int &currPathLength, const int interestingNodeIndex, unsigned int prevNodeIndex,
 		std::set<unsigned int> &visitedTracker)
 {
 	if (currPathLength > 750)
@@ -193,7 +193,7 @@ void validateCycleMatrixRecursive(
 template<class T>
 bool validateCycleMatrix(TemplateGraph::HalfAdjacencyMatrix<T> &matrixToCheck)
 {
-	int pathLength = 0;
+	unsigned int pathLength = 0;
 	for (unsigned int aNodeIndex = 0; aNodeIndex < matrixToCheck.getNumNodes();
 			aNodeIndex++)
 	{
@@ -229,6 +229,7 @@ std::vector<std::unordered_set<TemplateGraph::Node<T>*>> totalCycleDetect(
 		TemplateGraph::Graph<T>  &inputGraph)
 {
 	inputGraph.chuckRottenTomatoes();
+
 	std::vector<std::unordered_set<TemplateGraph::Node<T>*>> allCyclesNodeList;
 	std::vector<TemplateGraph::HalfAdjacencyMatrix<T>> allCyclesAdj;
 
@@ -256,7 +257,7 @@ std::vector<std::unordered_set<TemplateGraph::Node<T>*>> totalCycleDetect(
 			TemplateGraph::HalfAdjacencyMatrix<T> mutatingMatrix(
 					inputGraph.getNodes());
 
-			int edgeCount = 0;
+			unsigned int edgeCount = 0;
 
 			for (unsigned int anotherFunAdj = 0;
 					anotherFunAdj < funCycleAdj.size(); anotherFunAdj++)
@@ -317,6 +318,7 @@ std::vector<std::unordered_set<TemplateGraph::Node<T>*>> totalCycleDetect(
 			allCyclesNodeList.push_back(temporaryCycleSet);
 		}
 	}
+	return allCyclesNodeList;
 }// end total cycle detect
 
 }

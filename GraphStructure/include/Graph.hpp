@@ -22,7 +22,7 @@ public:
 	 ***********************************************/
 	Graph();
 	//TODO: Ensure we would like this functionality, current idea is pass root node then get all traversable from this node and store in our set
-	Graph(Node<T>* const &initialNode);
+	Graph(Node<T> *const&initialNode);
 	Graph(std::vector<Node<T>*> const &nodeList);
 
 	~Graph();
@@ -39,7 +39,7 @@ public:
 	std::vector<Node<T>*> getNodes() const;
 	HalfAdjacencyMatrix<T> getAdjMatrix() const;
 
-	unsigned int getIndexFromNode(Node<T>* const &queryNode);
+	unsigned int getIndexFromNode(Node<T> *const&queryNode);
 	Node<T>* getNodeFromIndex(unsigned int const &queryIndex);
 	/************************************************
 	 *  MUTATORS
@@ -69,9 +69,9 @@ private:
 	void populateAdjacencyMatrix();
 	void populateLookups();
 
-	std::vector<Node<T>*> getReachableNodes(Node<T>* const &startingNode);
+	std::vector<Node<T>*> getReachableNodes(Node<T> *const&startingNode);
 	// NOTE: To be used when we are passed solely a root node.
-	void getReachableHelper(Node<T>* const &currentNode,
+	void getReachableHelper(Node<T> *const&currentNode,
 			std::unordered_set<Node<T>*> &visistedNodeSet,
 			std::vector<Node<T>*> &reachableNodes);
 
@@ -85,7 +85,7 @@ Graph<T>::Graph()
 }
 
 template<class T>
-Graph<T>::Graph(Node<T>* const &initialNode)
+Graph<T>::Graph(Node<T> *const&initialNode)
 {
 	//NOTE: Verbose for now to prevent dupes && make sure we dont screw anything up
 	std::vector<Node<T>*> tempNodeVec = this->getReachableNodes(initialNode);
@@ -249,7 +249,7 @@ void Graph<T>::populateLookups()
 }
 
 template<class T>
-std::vector<Node<T>*> Graph<T>::getReachableNodes(Node<T>* const &startingNode)
+std::vector<Node<T>*> Graph<T>::getReachableNodes(Node<T> *const&startingNode)
 {
 	std::unordered_set<Node<T>*> visitedNodes;
 	/* TODO: Please note that this current method does increase the size of our call stack a good bit due to the use of recursion.
@@ -265,18 +265,34 @@ std::vector<Node<T>*> Graph<T>::getReachableNodes(Node<T>* const &startingNode)
 template<class T>
 void Graph<T>::chuckRottenTomatoes()
 {
-	int ogGardenSize = this->tomatoGarden.size();
-	for (std::weak_ptr<Node<T>> currWeakNode : this->tomatoGarden)
+	unsigned int ogGardenSize = this->tomatoGarden.size();
+	std::vector<std::weak_ptr<Node<T>>> garbageCan;
+
+	for (unsigned int gardenIndex = 0; gardenIndex < ogGardenSize;
+			gardenIndex++)
 	{
-		if (currWeakNode.expired())
+		if (this->tomatoGarden[gardenIndex].expired())
 		{
-			//TODO: May break when actually used. We will see.
-			this->tomatoGarden.erase(
-					std::remove(this->tomatoGarden.begin(),
-							this->tomatoGarden.end(), currWeakNode),
-					this->tomatoGarden.end());
+			this->tomatoGarden.erase(this->tomatoGarden.begin() + gardenIndex);
 		}
 	}
+
+	//for (std::weak_ptr<Node<T>> currWeakNode : this->tomatoGarden)
+	//{
+	//	if (currWeakNode.expired())
+	//	{
+	/*
+	 * ERROR HERE!!!
+	 *
+	 */
+
+	//TODO: May break when actually used. We will see.
+	//this->tomatoGarden.erase(
+	//		std::remove(this->tomatoGarden.begin(),
+	//				this->tomatoGarden.end(), currWeakNode),
+	//		this->tomatoGarden.end());
+	//	}
+	//}
 	if (ogGardenSize != this->tomatoGarden.size())
 	{
 		this->populateLookups();
@@ -286,7 +302,7 @@ void Graph<T>::chuckRottenTomatoes()
 
 //Should be correct. Passing pointer by reference
 template<class T>
-unsigned int Graph<T>::getIndexFromNode(Node<T>* const &queryNode)
+unsigned int Graph<T>::getIndexFromNode(Node<T> *const&queryNode)
 {
 	return this->indexLookup[queryNode];
 }
@@ -298,7 +314,7 @@ Node<T>* Graph<T>::getNodeFromIndex(unsigned int const &queryIndex)
 }
 
 template<class T>
-void Graph<T>::getReachableHelper(Node<T>* const &currentNode,
+void Graph<T>::getReachableHelper(Node<T> *const&currentNode,
 		std::unordered_set<Node<T>*> &visitedNodeSet,
 		std::vector<Node<T>*> &reachableNodes)
 {
