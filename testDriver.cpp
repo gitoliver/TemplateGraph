@@ -30,30 +30,29 @@ public:
 		this->GetNode().get()->removeEdgeBetween(otherAtom->GetNode());
 	}
 	/*std::vector<Atom*> getNeighbors()
-	{
-		std::vector<Atom*> v2Ret;
-		for (std::weak_ptr<Node<Atom>> currN : this->GetNode().get()->getNeighbors())
-		{
-			std::shared_ptr<Atom> cnl = currN.lock();
-			if (cnl)
-			{
-				//v2Ret.push_back(cnl.get());
-			}
-			else
-			{
-				badBehavior(__LINE__, __func__, "couldnt lock atom neighbor");
-			}
-		}
+	 {
+	 std::vector<Atom*> v2Ret;
+	 for (std::weak_ptr<Node<Atom>> currN : this->GetNode().get()->getNeighbors())
+	 {
+	 std::shared_ptr<Atom> cnl = currN.lock();
+	 if (cnl)
+	 {
+	 //v2Ret.push_back(cnl.get());
+	 }
+	 else
+	 {
+	 badBehavior(__LINE__, __func__, "couldnt lock atom neighbor");
+	 }
+	 }
 
-		return v2Ret;
-	}*/
+	 return v2Ret;
+	 }*/
 
 	//inline std::vector<Atom*> GetNeighbors()
 	//{
 	//	std::vector<Atom*> vecToReturn;
 	//	for (std::weak_ptr<Node<Atom>> currN)
 	//}
-
 	inline std::string GetName()
 	{
 		return name_;
@@ -159,6 +158,7 @@ int main()
 	atom6->AddBond(atom4);
 
 	Graph<Atom> *g1 = new Graph<Atom>(atom1->GetNode().get());
+
 //std::cout <<"\n\nGraph ptr in mol: " << mol1->getGraphPtr() << " okay \n\n";
 //std::cout <<"\n\nOur supposed roots node that it owns: " << atom0->GetNode() << " okay \n\n";
 //std::cout <<"\n\nGraph ptr root node: " << mol1->getGraphPtr()->PoobGetRoot() << " okay \n\n"; //this is issue
@@ -180,6 +180,15 @@ int main()
 // atomC->AddBond(atomD);
 	atomA->AddBond(atomD);
 // atomD->AddBond(atomB);
+	Graph<Atom> *g2 = new Graph<Atom>(atomA->GetNode().get());
+
+	//graph all cycles
+	std::vector<std::unordered_set<Node<Atom>*>> cyclesG1 =
+			cycleDetector::totalCycleDetect(*g1);
+
+	std::unordered_map<TemplateGraph::Node<Atom>*,
+			std::vector<TemplateGraph::Node<Atom>*>> matchedSubgraphs =
+			subgraphMatcher::findSubgraphs(*g1, *g2);
 
 //Graph<Atom> queryGraph(atomA->GetNode());
 

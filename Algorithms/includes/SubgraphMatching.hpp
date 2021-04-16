@@ -10,12 +10,13 @@
 #include "../../GraphStructure/include/Graph.hpp"
 #include "../../GraphStructure/include/HalfAdjacencyMatrix.hpp"
 
-namespace subgraphMatching
+namespace subgraphMatcher
 {
 
 template<class T>
-std::unordered_map<TemplateGraph::Node<T>*, std::vector<TemplateGraph::Node<T>*>> subgraphMatching(
-		TemplateGraph::Graph<T> mainGraph, TemplateGraph::Graph<T> queryGraph)
+std::unordered_map<TemplateGraph::Node<T>*, std::vector<TemplateGraph::Node<T>*>> findSubgraphs(
+		TemplateGraph::Graph<T> &mainGraph,
+		TemplateGraph::Graph<T> &queryGraph)
 {
 
 	mainGraph.chuckRottenTomatoes();
@@ -51,7 +52,7 @@ namespace
  */
 template<class T>
 std::map<std::string, std::vector<std::string>> patternExtractor(
-		TemplateGraph::Graph<T> graphToHunt)
+		TemplateGraph::Graph<T> const &graphToHunt)
 {
 	std::map<std::string, std::vector<std::string>> foundPatterns;
 	for (unsigned int indexA = 0; indexA < graphToHunt.getNodes().size();
@@ -82,7 +83,7 @@ int searchForPatterns(unsigned int givenIndex,
 		std::map<std::string, std::vector<std::string>> patterns,
 		std::vector<TemplateGraph::Node<T>> &results,
 		std::unordered_set<TemplateGraph::Node<T>*> &visitedKeys,
-		TemplateGraph::Graph<T> graphSearch)
+		TemplateGraph::Graph<T> const &graphSearch)
 {
 	TemplateGraph::Node<T> *givenNode = graphSearch.getNodeFromIndex(
 			givenIndex);
@@ -142,7 +143,8 @@ int searchForPatterns(unsigned int givenIndex,
 			patterns.erase(givenNode->getLabel());
 			results.push_back(givenNode);
 
-			searchMatches(foundMatches, patterns, results, visitedKeys, graphSearch);
+			searchMatches(foundMatches, patterns, results, visitedKeys,
+					graphSearch);
 
 			// Return traverse
 			return 2;
@@ -161,33 +163,30 @@ int searchForPatterns(unsigned int givenIndex,
 	return 0;
 } //end search for patterns
 
-template <class T>
+template<class T>
 void searchMatches(std::vector<TemplateGraph::Node<T>*> matches,
 		std::map<std::string, std::vector<std::string>> patterns,
 		std::vector<TemplateGraph::Node<T>> &results,
 		std::unordered_set<TemplateGraph::Node<T>*> &visitedKeys,
-		TemplateGraph::Graph<T> graphSearch)
+		TemplateGraph::Graph<T> const &graphSearch)
 {
 	for (TemplateGraph::Node<T> *currMatchNode : matches)
 	{
 		bool matchInResults = (std::find(results.begin(), results.end(),
-						currMatchNode) != results.end());
-	if (!(visitedKeys.count(currMatchNode)) && !matchInResults)
-	{
-		int searchState = searchForPatterns(graphSearch.getIndexFromNode(currMatchNode), patterns, results, visitedKeys);
-
-		//if we hit leaf
-		if (searchState == 1)
+				currMatchNode) != results.end());
+		if (!(visitedKeys.count(currMatchNode)) && !matchInResults)
 		{
-			break;
+			int searchState = searchForPatterns(
+					graphSearch.getIndexFromNode(currMatchNode), patterns,
+					results, visitedKeys);
+			//if we hit leaf
+			if (searchState == 1)
+			{
+				break;
+			}
 		}
-
 	}
-
-
-
-	}
-}
+} // end search matches
 
 }
 

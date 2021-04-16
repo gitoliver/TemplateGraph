@@ -22,7 +22,7 @@ namespace cycleDetector
 //switch to weak_ptr so we can correctly observe, now just go
 template<typename T>
 std::vector<std::unordered_set<TemplateGraph::Node<T>*>> totalCycleDetect(
-		TemplateGraph::Graph<T> inputGraph)
+		TemplateGraph::Graph<T> const &inputGraph)
 {
 	inputGraph.chuckRottenTomatoes();
 	std::vector<std::unordered_set<TemplateGraph::Node<T>*>> allCyclesNodeList;
@@ -144,7 +144,7 @@ void unique_tree_path(TreeNode *pathNode,
 template<class T>
 std::pair<std::vector<std::unordered_set<TemplateGraph::Node<T>*>>,
 		std::vector<TemplateGraph::HalfAdjacencyMatrix<T>>> computeFundamentalCycles(
-		TemplateGraph::Graph<T> interestingGraph)
+		TemplateGraph::Graph<T> const &interestingGraph)
 {
 	std::vector<std::unordered_set<TemplateGraph::Node<T>*>> funCycleSet;
 
