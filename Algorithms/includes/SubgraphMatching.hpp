@@ -176,6 +176,8 @@ std::unordered_map<TemplateGraph::Node<T>*, std::vector<TemplateGraph::Node<T>*>
 		TemplateGraph::Graph<T> &queryGraph)
 {
 
+	std::unordered_map<TemplateGraph::Node<T>*, std::vector<TemplateGraph::Node<T>*>> resultsVecToReturn;
+
 	mainGraph.chuckRottenTomatoes();
 	queryGraph.chuckRottenTomatoes();
 
@@ -195,7 +197,7 @@ std::unordered_map<TemplateGraph::Node<T>*, std::vector<TemplateGraph::Node<T>*>
 		visitedKeys.clear();
 
 	}
-
+	return resultsVecToReturn;
 } // end subgraph matching
 
 }

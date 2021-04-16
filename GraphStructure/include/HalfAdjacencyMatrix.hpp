@@ -47,6 +47,7 @@ public:
 	//TODO: Actually fix our constructors so we do not have to use this initialize workaround stuff
 	void initializeWorkaround(const HalfAdjacencyMatrix<T> &m);
 	void initializeWorkaround(std::vector<Node<T>*> const &nodeList);
+	void emptyInitializeWorkaround(const HalfAdjacencyMatrix<T> &m);
 
 	/************************************************
 	 *  OPERATOR OVERLOADS
@@ -60,7 +61,13 @@ public:
 	inline HalfAdjacencyMatrix<T> operator^(
 			const HalfAdjacencyMatrix<T> &rhs) const
 	{
-		HalfAdjacencyMatrix<T> result(numNodes);
+		//TODO: Figure this out, issue is not passing in our
+		//			type. Tries to pass in the int.
+		//HalfAdjacencyMatrix<T> result(this->numNodes);
+		HalfAdjacencyMatrix<T> result;
+		result.emptyInitializeWorkaround(rhs);
+
+
 		if (this->numNodes != rhs.numNodes)
 		{
 			badBehavior(__LINE__, __func__,
@@ -145,7 +152,6 @@ HalfAdjacencyMatrix<T>::HalfAdjacencyMatrix()
 template<class T>
 HalfAdjacencyMatrix<T>::HalfAdjacencyMatrix(std::vector<Node<T>*> const &nodeList)
 {
-
 	unsigned int numNodes = nodeList.size();
 	this->bitList.assign(((numNodes * (numNodes - 1)) / 2), 0);
 	this->numNodes = numNodes;
@@ -234,6 +240,17 @@ template<class T>
 unsigned int HalfAdjacencyMatrix<T>::getNumNodes()
 {
 	return this->numNodes;
+}
+
+template<class T>
+void HalfAdjacencyMatrix<T>::emptyInitializeWorkaround(
+		const HalfAdjacencyMatrix<T> &m)
+{
+	unsigned int numNodes = m.numNodes;
+	this->bitList.assign(((numNodes * (numNodes - 1)) / 2), 0);
+	this->numNodes = numNodes;
+	this->numEdges = 0;
+	this->indexFactor = (1 + 2 * (numNodes - 2));
 }
 
 template<class T>
