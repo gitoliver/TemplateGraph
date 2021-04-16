@@ -10,38 +10,6 @@
 #include "../../GraphStructure/include/Graph.hpp"
 #include "../../GraphStructure/include/HalfAdjacencyMatrix.hpp"
 
-namespace subgraphMatcher
-{
-
-template<class T>
-std::unordered_map<TemplateGraph::Node<T>*, std::vector<TemplateGraph::Node<T>*>> findSubgraphs(
-		TemplateGraph::Graph<T> &mainGraph,
-		TemplateGraph::Graph<T> &queryGraph)
-{
-
-	mainGraph.chuckRottenTomatoes();
-	queryGraph.chuckRottenTomatoes();
-
-	std::map<std::string, std::vector<std::string>> queryGraphPatterns =
-			patternExtractor(queryGraph);
-
-	std::unordered_set<TemplateGraph::Node<T>*> visitedKeys;
-
-	std::vector<TemplateGraph::Node<T>*> currNodeResults;
-
-	for (unsigned int currSearchIndex = 0;
-			currSearchIndex < mainGraph.getNodes().size(); currSearchIndex++)
-	{
-		searchForPatterns(currSearchIndex, queryGraphPatterns, currNodeResults,
-				visitedKeys);
-
-		visitedKeys.clear();
-
-	}
-
-} // end subgraph matching
-
-}
 
 namespace
 {
@@ -52,7 +20,7 @@ namespace
  */
 template<class T>
 std::map<std::string, std::vector<std::string>> patternExtractor(
-		TemplateGraph::Graph<T> const &graphToHunt)
+		TemplateGraph::Graph<T> &graphToHunt)
 {
 	std::map<std::string, std::vector<std::string>> foundPatterns;
 	for (unsigned int indexA = 0; indexA < graphToHunt.getNodes().size();
@@ -74,6 +42,15 @@ std::map<std::string, std::vector<std::string>> patternExtractor(
 	return foundPatterns;
 } //end pattern extraction
 
+//forward declare cause computers dumb
+template<class T>
+void searchMatches(std::vector<TemplateGraph::Node<T>*> matches,
+		std::map<std::string, std::vector<std::string>> patterns,
+		std::vector<TemplateGraph::Node<T>*> &results,
+		std::unordered_set<TemplateGraph::Node<T>*> &visitedKeys,
+		TemplateGraph::Graph<T> const &graphSearch);
+
+
 /* As with said above regarding how our pattern extraction uses the name member
  * 		we would have to alter our search function to reflect any changes with
  * 		our patterns.
@@ -81,9 +58,9 @@ std::map<std::string, std::vector<std::string>> patternExtractor(
 template<class T>
 int searchForPatterns(unsigned int givenIndex,
 		std::map<std::string, std::vector<std::string>> patterns,
-		std::vector<TemplateGraph::Node<T>> &results,
+		std::vector<TemplateGraph::Node<T>*> &results,
 		std::unordered_set<TemplateGraph::Node<T>*> &visitedKeys,
-		TemplateGraph::Graph<T> const &graphSearch)
+		TemplateGraph::Graph<T> &graphSearch)
 {
 	TemplateGraph::Node<T> *givenNode = graphSearch.getNodeFromIndex(
 			givenIndex);
@@ -122,7 +99,7 @@ int searchForPatterns(unsigned int givenIndex,
 							patterns[givenNode->getName()];
 
 					bool interestingInReqs = (std::find(tempPatternReqs.begin(),
-							tempPatternReqs.end(), interestingNode->GetLabel())
+							tempPatternReqs.end(), interestingNode->getLabel())
 							!= tempPatternReqs.end());
 
 					if (interestingInReqs)
@@ -166,9 +143,9 @@ int searchForPatterns(unsigned int givenIndex,
 template<class T>
 void searchMatches(std::vector<TemplateGraph::Node<T>*> matches,
 		std::map<std::string, std::vector<std::string>> patterns,
-		std::vector<TemplateGraph::Node<T>> &results,
+		std::vector<TemplateGraph::Node<T>*> &results,
 		std::unordered_set<TemplateGraph::Node<T>*> &visitedKeys,
-		TemplateGraph::Graph<T> const &graphSearch)
+		TemplateGraph::Graph<T> &graphSearch)
 {
 	for (TemplateGraph::Node<T> *currMatchNode : matches)
 	{
@@ -178,7 +155,7 @@ void searchMatches(std::vector<TemplateGraph::Node<T>*> matches,
 		{
 			int searchState = searchForPatterns(
 					graphSearch.getIndexFromNode(currMatchNode), patterns,
-					results, visitedKeys);
+					results, visitedKeys, graphSearch);
 			//if we hit leaf
 			if (searchState == 1)
 			{
@@ -188,6 +165,40 @@ void searchMatches(std::vector<TemplateGraph::Node<T>*> matches,
 	}
 } // end search matches
 
+}//end anon namespace
+
+namespace subgraphMatcher
+{
+
+template<class T>
+std::unordered_map<TemplateGraph::Node<T>*, std::vector<TemplateGraph::Node<T>*>> findSubgraphs(
+		TemplateGraph::Graph<T> &mainGraph,
+		TemplateGraph::Graph<T> &queryGraph)
+{
+
+	mainGraph.chuckRottenTomatoes();
+	queryGraph.chuckRottenTomatoes();
+
+	std::map<std::string, std::vector<std::string>> queryGraphPatterns =
+			patternExtractor(queryGraph);
+
+	std::unordered_set<TemplateGraph::Node<T>*> visitedKeys;
+
+	std::vector<TemplateGraph::Node<T>*> currNodeResults;
+
+	for (unsigned int currSearchIndex = 0;
+			currSearchIndex < mainGraph.getNodes().size(); currSearchIndex++)
+	{
+		searchForPatterns(currSearchIndex, queryGraphPatterns, currNodeResults,
+				visitedKeys, queryGraph);
+
+		visitedKeys.clear();
+
+	}
+
+} // end subgraph matching
+
 }
+
 
 #endif //SUBGRAPHMATCHING_HPP

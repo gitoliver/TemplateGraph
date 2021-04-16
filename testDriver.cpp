@@ -183,12 +183,12 @@ int main()
 	Graph<Atom> *g2 = new Graph<Atom>(atomA->GetNode().get());
 
 	//graph all cycles
-	//std::vector<std::unordered_set<Node<Atom>*>> cyclesG1 =
-	//		cycleDetector::totalCycleDetect(*g1);
+	std::vector<std::unordered_set<Node<Atom>*>> cyclesG1 =
+			cycleDetector::totalCycleDetect(*g1);
 
-	//std::unordered_map<TemplateGraph::Node<Atom>*,
-	//		std::vector<TemplateGraph::Node<Atom>*>> matchedSubgraphs =
-	//		subgraphMatcher::findSubgraphs(*g1, *g2);
+	std::unordered_map<TemplateGraph::Node<Atom>*,
+			std::vector<TemplateGraph::Node<Atom>*>> matchedSubgraphs =
+			subgraphMatcher::findSubgraphs(*g1, *g2);
 
 //Graph<Atom> queryGraph(atomA->GetNode());
 

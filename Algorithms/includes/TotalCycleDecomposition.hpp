@@ -15,108 +15,6 @@
 #include "../../GraphStructure/include/Node.hpp"
 #include "../../GraphStructure/include/HalfAdjacencyMatrix.hpp"
 
-//template<class T> class Node;
-
-namespace cycleDetector
-{
-//switch to weak_ptr so we can correctly observe, now just go
-template<typename T>
-std::vector<std::unordered_set<TemplateGraph::Node<T>*>> totalCycleDetect(
-		TemplateGraph::Graph<T>  &inputGraph)
-{
-	inputGraph.chuckRottenTomatoes();
-	std::vector<std::unordered_set<TemplateGraph::Node<T>*>> allCyclesNodeList;
-	std::vector<TemplateGraph::HalfAdjacencyMatrix<T>> allCyclesAdj;
-
-	std::pair<std::vector<std::unordered_set<TemplateGraph::Node<T>*>>,
-			std::vector<TemplateGraph::HalfAdjacencyMatrix<T>>> funCycleInfo =
-			computeFunCycles(inputGraph);
-
-	std::vector<std::unordered_set<TemplateGraph::Node<T>*>> funCycleNodeSets =
-			funCycleInfo.first;
-
-	std::vector<TemplateGraph::HalfAdjacencyMatrix<T>> funCycleAdj =
-			funCycleInfo.second;
-
-	std::vector<bool> combinitoricsVector(funCycleAdj.size());
-
-	for (unsigned int currFunAdj = 2; currFunAdj <= funCycleAdj.size();
-			currFunAdj++)
-	{
-		std::fill_n(combinitoricsVector.begin(), currFunAdj, 1);
-		std::fill_n(combinitoricsVector.rbegin(),
-				combinitoricsVector.size() - currFunAdj, 0);
-
-		do
-		{
-			TemplateGraph::HalfAdjacencyMatrix<T> mutatingMatrix(
-					inputGraph.getNodes());
-
-			int edgeCount = 0;
-
-			for (unsigned int anotherFunAdj = 0;
-					anotherFunAdj < funCycleAdj.size(); anotherFunAdj++)
-			{
-				if (combinitoricsVector[anotherFunAdj])
-				{
-					mutatingMatrix = mutatingMatrix
-							^ funCycleAdj[anotherFunAdj];
-					edgeCount += funCycleAdj[anotherFunAdj].getNumEdges();
-				}
-			}
-			if (currFunAdj == 2)
-			{
-				if (edgeCount > mutatingMatrix.getNumEdges())
-				{
-					allCyclesAdj.push_back(mutatingMatrix);
-				}
-			}
-			else
-			{
-				if (validateCycleMatrix(mutatingMatrix))
-				{
-					if (edgeCount > mutatingMatrix.getNumEdges())
-					{
-						allCyclesAdj.push_back(mutatingMatrix);
-					}
-				}
-			}
-
-		} while (std::prev_permutation(combinitoricsVector.begin(),
-				combinitoricsVector.end()));
-	} //end our for loop
-
-	for (TemplateGraph::HalfAdjacencyMatrix<T> currentCycleAdj : allCyclesAdj)
-	{
-		std::unordered_set<TemplateGraph::Node<T>*> temporaryCycleSet;
-		for (unsigned int aNodeIndex = 0;
-				aNodeIndex < inputGraph.getNodes().size(); aNodeIndex++)
-		{
-			for (unsigned int bNodeIndex = 0;
-					bNodeIndex < inputGraph.getNodes().size(); bNodeIndex++)
-			{
-				if (currentCycleAdj.isConnected(bNodeIndex, aNodeIndex))
-				{
-					temporaryCycleSet.insert(
-							inputGraph.getNodeFromIndex(aNodeIndex));
-					temporaryCycleSet.insert(
-							inputGraph.getNodeFromIndex(bNodeIndex));
-				}
-			}
-		}
-		if (temporaryCycleSet.size() == 0)
-		{
-			badBehavior(__LINE__, __func__, "Our found cycle is empty");
-		}
-		else
-		{
-			allCyclesNodeList.push_back(temporaryCycleSet);
-		}
-	}
-}// end total cycle detect
-
-}
-
 namespace
 {
 
@@ -144,7 +42,7 @@ void unique_tree_path(TreeNode *pathNode,
 template<class T>
 std::pair<std::vector<std::unordered_set<TemplateGraph::Node<T>*>>,
 		std::vector<TemplateGraph::HalfAdjacencyMatrix<T>>> computeFundamentalCycles(
-		TemplateGraph::Graph<T> const &interestingGraph)
+		TemplateGraph::Graph<T> &interestingGraph)
 {
 	std::vector<std::unordered_set<TemplateGraph::Node<T>*>> funCycleSet;
 
@@ -256,36 +154,12 @@ std::pair<std::vector<std::unordered_set<TemplateGraph::Node<T>*>>,
 	return funCycleInfo;
 }// end compute fundamental cycles
 
-template<class T>
-bool validateCycleMatrix(TemplateGraph::HalfAdjacencyMatrix<T> &matrixToCheck)
-{
-	int pathLength = 0;
-	for (unsigned int aNodeIndex = 0; aNodeIndex < matrixToCheck.getNumNodes();
-			aNodeIndex++)
-	{
-		for (unsigned int bNodeIndex = 0;
-				bNodeIndex < matrixToCheck.getNumNodes(); bNodeIndex++)
-		{
-			if (matrixToCheck.isConnected(aNodeIndex, bNodeIndex))
-			{
-				++pathLength;
-				std::set<unsigned int> isVisited;
-				isVisited.insert(aNodeIndex);
-				validateCycleMatrixRecursive(matrixToCheck, pathLength,
-						bNodeIndex, aNodeIndex, isVisited);
-				return ((pathLength + 1) == matrixToCheck.getNumEdges());
-			}
-		}
-	}
-	badBehavior(__LINE__, __func__, "No edges");
-	return false;
-}// end validate cycle matrix
 
 template<class T>
 void validateCycleMatrixRecursive(
 		TemplateGraph::HalfAdjacencyMatrix<T> &matrixToValidate,
 		int &currPathLength, const int interestingNodeIndex, int prevNodeIndex,
-		std::set<int> &visitedTracker)
+		std::set<unsigned int> &visitedTracker)
 {
 	if (currPathLength > 750)
 	{
@@ -314,9 +188,137 @@ void validateCycleMatrixRecursive(
 		badBehavior(__LINE__, __func__,
 				"Dead end when checking our cycle validation");
 	}
-
 }//end validate recursion
 
+template<class T>
+bool validateCycleMatrix(TemplateGraph::HalfAdjacencyMatrix<T> &matrixToCheck)
+{
+	int pathLength = 0;
+	for (unsigned int aNodeIndex = 0; aNodeIndex < matrixToCheck.getNumNodes();
+			aNodeIndex++)
+	{
+		for (unsigned int bNodeIndex = 0;
+				bNodeIndex < matrixToCheck.getNumNodes(); bNodeIndex++)
+		{
+			if (matrixToCheck.isConnected(aNodeIndex, bNodeIndex))
+			{
+				++pathLength;
+				std::set<unsigned int> isVisited;
+				isVisited.insert(aNodeIndex);
+				validateCycleMatrixRecursive(matrixToCheck, pathLength,
+						bNodeIndex, aNodeIndex, isVisited);
+				return ((pathLength + 1) == matrixToCheck.getNumEdges());
+			}
+		}
+	}
+	badBehavior(__LINE__, __func__, "No edges");
+	return false;
+}// end validate cycle matrix
+
+
+
+
 } // end our anon namespace
+
+
+namespace cycleDetector
+{
+//switch to weak_ptr so we can correctly observe, now just go
+template<typename T>
+std::vector<std::unordered_set<TemplateGraph::Node<T>*>> totalCycleDetect(
+		TemplateGraph::Graph<T>  &inputGraph)
+{
+	inputGraph.chuckRottenTomatoes();
+	std::vector<std::unordered_set<TemplateGraph::Node<T>*>> allCyclesNodeList;
+	std::vector<TemplateGraph::HalfAdjacencyMatrix<T>> allCyclesAdj;
+
+	std::pair<std::vector<std::unordered_set<TemplateGraph::Node<T>*>>,
+			std::vector<TemplateGraph::HalfAdjacencyMatrix<T>>> funCycleInfo =
+			computeFundamentalCycles(inputGraph);
+
+	std::vector<std::unordered_set<TemplateGraph::Node<T>*>> funCycleNodeSets =
+			funCycleInfo.first;
+
+	std::vector<TemplateGraph::HalfAdjacencyMatrix<T>> funCycleAdj =
+			funCycleInfo.second;
+
+	std::vector<bool> combinitoricsVector(funCycleAdj.size());
+
+	for (unsigned int currFunAdj = 2; currFunAdj <= funCycleAdj.size();
+			currFunAdj++)
+	{
+		std::fill_n(combinitoricsVector.begin(), currFunAdj, 1);
+		std::fill_n(combinitoricsVector.rbegin(),
+				combinitoricsVector.size() - currFunAdj, 0);
+
+		do
+		{
+			TemplateGraph::HalfAdjacencyMatrix<T> mutatingMatrix(
+					inputGraph.getNodes());
+
+			int edgeCount = 0;
+
+			for (unsigned int anotherFunAdj = 0;
+					anotherFunAdj < funCycleAdj.size(); anotherFunAdj++)
+			{
+				if (combinitoricsVector[anotherFunAdj])
+				{
+					mutatingMatrix = mutatingMatrix
+							^ funCycleAdj[anotherFunAdj];
+					edgeCount += funCycleAdj[anotherFunAdj].getNumEdges();
+				}
+			}
+			if (currFunAdj == 2)
+			{
+				if (edgeCount > mutatingMatrix.getNumEdges())
+				{
+					allCyclesAdj.push_back(mutatingMatrix);
+				}
+			}
+			else
+			{
+				if (validateCycleMatrix(mutatingMatrix))
+				{
+					if (edgeCount > mutatingMatrix.getNumEdges())
+					{
+						allCyclesAdj.push_back(mutatingMatrix);
+					}
+				}
+			}
+
+		} while (std::prev_permutation(combinitoricsVector.begin(),
+				combinitoricsVector.end()));
+	} //end our for loop
+
+	for (TemplateGraph::HalfAdjacencyMatrix<T> currentCycleAdj : allCyclesAdj)
+	{
+		std::unordered_set<TemplateGraph::Node<T>*> temporaryCycleSet;
+		for (unsigned int aNodeIndex = 0;
+				aNodeIndex < inputGraph.getNodes().size(); aNodeIndex++)
+		{
+			for (unsigned int bNodeIndex = 0;
+					bNodeIndex < inputGraph.getNodes().size(); bNodeIndex++)
+			{
+				if (currentCycleAdj.isConnected(bNodeIndex, aNodeIndex))
+				{
+					temporaryCycleSet.insert(
+							inputGraph.getNodeFromIndex(aNodeIndex));
+					temporaryCycleSet.insert(
+							inputGraph.getNodeFromIndex(bNodeIndex));
+				}
+			}
+		}
+		if (temporaryCycleSet.size() == 0)
+		{
+			badBehavior(__LINE__, __func__, "Our found cycle is empty");
+		}
+		else
+		{
+			allCyclesNodeList.push_back(temporaryCycleSet);
+		}
+	}
+}// end total cycle detect
+
+}
 
 #endif //TOTALCYCLEDECOMPOSITION_HPP
