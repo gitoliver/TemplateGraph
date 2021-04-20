@@ -54,7 +54,7 @@ private:
 	/************************************************
 	 *  ATTRIBUTES
 	 ***********************************************/
-	std::vector<std::weak_ptr<Node<T>>> tomatoGarden;
+	std::vector<Node<T>*> nodeVector;
 
 	HalfAdjacencyMatrix<T> adjMatrix;
 	//TODO: Whenever we find a broken node then we can just run a refresh on all structures. Basically run bfs initializer again.
@@ -149,20 +149,8 @@ Graph<T>::~Graph()
 template<class T>
 std::vector<Node<T>*> Graph<T>::getNodes() const
 {
-	std::vector<Node<T>*> nodesToReturn;
-	if (this->allNodes.size() > 0)
-	{
-		for (Node<T> *currNode : this->allNodes)
-		{
-			nodesToReturn.push_back(currNode);
-		}
-	}
-	else
-	{
-		badBehavior(__LINE__, __func__,
-				"Tried to get nodes but allNodes is empty");
-	}
-	return nodesToReturn;
+
+	return this->nodeVector;
 }
 
 template<class T>
@@ -226,7 +214,7 @@ void Graph<T>::populateLookups()
 			{ currNode, currIndex });
 			currIndex++;
 
-			this->tomatoGarden.push_back(currNode->shared_from_this());
+			this->nodeVector.push_back(currNode);
 		}
 	}
 	else
@@ -253,7 +241,7 @@ std::vector<Node<T>*> Graph<T>::getReachableNodes(Node<T> *const&startingNode)
 template<class T>
 void Graph<T>::chuckRottenTomatoes()
 {
-	unsigned int ogGardenSize = this->tomatoGarden.size();
+	/*unsigned int ogGardenSize = this->tomatoGarden.size();
 	std::vector<std::weak_ptr<Node<T>>> garbageCan;
 
 	for (unsigned int gardenIndex = 0; gardenIndex < ogGardenSize;
@@ -264,7 +252,7 @@ void Graph<T>::chuckRottenTomatoes()
 			lazyInfo(__LINE__,__func__, "Found rotten!");
 			this->tomatoGarden.erase(this->tomatoGarden.begin() + gardenIndex);
 		}
-	}
+	}*/
 
 	//for (std::weak_ptr<Node<T>> currWeakNode : this->tomatoGarden)
 	//{
@@ -282,11 +270,11 @@ void Graph<T>::chuckRottenTomatoes()
 	//		this->tomatoGarden.end());
 	//	}
 	//}
-	if (ogGardenSize != this->tomatoGarden.size())
+	/*if (ogGardenSize != this->tomatoGarden.size())
 	{
 		this->populateLookups();
 		this->populateAdjacencyMatrix();
-	}
+	}*/
 }
 
 //Should be correct. Passing pointer by reference

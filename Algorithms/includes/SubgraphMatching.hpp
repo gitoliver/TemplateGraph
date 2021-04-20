@@ -66,7 +66,7 @@ int searchForPatterns(unsigned int givenIndex,
 			givenIndex);
 
 	//Possibly also include if our current node is even in our current results
-	if (patterns.count(givenNode->getName()) && !(visitedKeys.count(givenNode)))
+	if (patterns.count(givenNode->getName()) && !visitedKeys.count(givenNode))
 	{
 		visitedKeys.insert(givenNode);
 
@@ -119,7 +119,6 @@ int searchForPatterns(unsigned int givenIndex,
 		{
 			patterns.erase(givenNode->getName());
 			results.push_back(givenNode);
-
 			searchMatches(foundMatches, patterns, results, visitedKeys,
 					graphSearch);
 
@@ -186,7 +185,7 @@ std::unordered_map<TemplateGraph::Node<T>*, std::vector<TemplateGraph::Node<T>*>
 	std::map<std::string, std::vector<std::string>> queryGraphPatterns =
 			patternExtractor(queryGraph);
 
-	std::unordered_set<TemplateGraph::Node<T>*> visitedKeys;
+	std::unordered_set<TemplateGraph::Node<T>*> keyVisitTracker;
 
 	std::vector<TemplateGraph::Node<T>*> currNodeResults;
 
@@ -196,7 +195,19 @@ std::unordered_map<TemplateGraph::Node<T>*, std::vector<TemplateGraph::Node<T>*>
 			currSearchIndex < mainGraph.getNodes().size(); currSearchIndex++)
 	{
 		searchForPatterns(currSearchIndex, queryGraphPatterns, currNodeResults,
-				visitedKeys, mainGraph);
+				keyVisitTracker, mainGraph);
+
+		if (currNodeResults.size() != 0)
+		{
+			std::cout << "\nTrying to print our our current node results\n";
+			for (TemplateGraph::Node<T>* cN : currNodeResults)
+			{
+				std::cout << cN->getName() + ", ";
+			}
+			currNodeResults.clear();
+			std::cout << "\n";
+		}
+		keyVisitTracker.clear();
 	}
 	return resultsVecToReturn;
 } // end subgraph matching
