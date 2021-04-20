@@ -11,7 +11,6 @@
 #include "../../GraphStructure/include/Graph.hpp"
 #include "../../GraphStructure/include/HalfAdjacencyMatrix.hpp"
 
-
 namespace
 {
 
@@ -29,7 +28,7 @@ std::map<std::string, std::vector<std::string>> patternExtractor(
 	{
 		std::pair<std::string, std::vector<std::string>> currPattern;
 		currPattern.first = graphToHunt.getNodeFromIndex(indexA)->getName();
-		for (unsigned int indexB; indexB < graphToHunt.getNodes().size();
+		for (unsigned int indexB = 0; indexB < graphToHunt.getNodes().size();
 				indexB++)
 		{
 			if (graphToHunt.getAdjMatrix().isConnected(indexA, indexB))
@@ -55,6 +54,7 @@ void searchMatches(std::vector<TemplateGraph::Node<T>*> matches,
  * 		we would have to alter our search function to reflect any changes with
  * 		our patterns.
  */
+
 template<class T>
 int searchForPatterns(unsigned int givenIndex,
 		std::map<std::string, std::vector<std::string>> patterns,
@@ -65,8 +65,8 @@ int searchForPatterns(unsigned int givenIndex,
 	TemplateGraph::Node<T> *givenNode = graphSearch.getNodeFromIndex(
 			givenIndex);
 
-	if (patterns.count(givenNode->getLabel())
-			&& !(visitedKeys.count(givenNode)))
+	//Possibly also include if our current node is even in our current results
+	if (patterns.count(givenNode->getName()) && !(visitedKeys.count(givenNode)))
 	{
 		visitedKeys.insert(givenNode);
 
@@ -99,7 +99,7 @@ int searchForPatterns(unsigned int givenIndex,
 							patterns[givenNode->getName()];
 
 					bool interestingInReqs = (std::find(tempPatternReqs.begin(),
-							tempPatternReqs.end(), interestingNode->getLabel())
+							tempPatternReqs.end(), interestingNode->getName())
 							!= tempPatternReqs.end());
 
 					if (interestingInReqs)
@@ -117,7 +117,7 @@ int searchForPatterns(unsigned int givenIndex,
 		if ((foundMatches.size() >= givenNodeReqLength)
 				&& (foundMatches.size() > 0))
 		{
-			patterns.erase(givenNode->getLabel());
+			patterns.erase(givenNode->getName());
 			results.push_back(givenNode);
 
 			searchMatches(foundMatches, patterns, results, visitedKeys,
@@ -128,6 +128,7 @@ int searchForPatterns(unsigned int givenIndex,
 		}
 		else if (foundMatches.size() == 0 && givenNodeReqLength == 0)
 		{
+
 			patterns.erase(givenNode->getName());
 			results.push_back(givenNode);
 			//return leaf
@@ -165,21 +166,22 @@ void searchMatches(std::vector<TemplateGraph::Node<T>*> matches,
 	}
 } // end search matches
 
-}//end anon namespace
+} //end anon namespace
 
 namespace subgraphMatcher
 {
 
+//our search entry function
 template<class T>
 std::unordered_map<TemplateGraph::Node<T>*, std::vector<TemplateGraph::Node<T>*>> findSubgraphs(
-		TemplateGraph::Graph<T> &mainGraph,
-		TemplateGraph::Graph<T> &queryGraph)
+		TemplateGraph::Graph<T> &mainGraph, TemplateGraph::Graph<T> &queryGraph)
 {
 
-	std::unordered_map<TemplateGraph::Node<T>*, std::vector<TemplateGraph::Node<T>*>> resultsVecToReturn;
+	std::unordered_map<TemplateGraph::Node<T>*,
+			std::vector<TemplateGraph::Node<T>*>> resultsVecToReturn;
 
-	mainGraph.chuckRottenTomatoes();
-	queryGraph.chuckRottenTomatoes();
+	//mainGraph.chuckRottenTomatoes();
+	//queryGraph.chuckRottenTomatoes();
 
 	std::map<std::string, std::vector<std::string>> queryGraphPatterns =
 			patternExtractor(queryGraph);
@@ -188,19 +190,17 @@ std::unordered_map<TemplateGraph::Node<T>*, std::vector<TemplateGraph::Node<T>*>
 
 	std::vector<TemplateGraph::Node<T>*> currNodeResults;
 
+	std::unordered_map<TemplateGraph::Node<T>*, std::vector<TemplateGraph::Node<T>*>> allResults;
+
 	for (unsigned int currSearchIndex = 0;
 			currSearchIndex < mainGraph.getNodes().size(); currSearchIndex++)
 	{
 		searchForPatterns(currSearchIndex, queryGraphPatterns, currNodeResults,
-				visitedKeys, queryGraph);
-
-		visitedKeys.clear();
-
+				visitedKeys, mainGraph);
 	}
 	return resultsVecToReturn;
 } // end subgraph matching
 
 }
-
 
 #endif //SUBGRAPHMATCHING_HPP

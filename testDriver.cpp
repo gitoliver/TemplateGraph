@@ -131,18 +131,47 @@ int main()
 	Atom *atom12 = new Atom("cycle3");
 
 	/*
-//to show our mega cycle decomp works
-//b 1 -> cyc 1
-//atom9->AddBond(atom10);
+	 //to show our mega cycle decomp works
+	 //b 1 -> cyc 1
+	 //atom9->AddBond(atom10);
+	 atom9->AddBond(atom10);
+	 atom9->AddBond(atom9);
+	 //cyc 1 -> cyc 2
+	 atom10->AddBond(atom11);
+	 //cyc 2 -> cyc 3
+	 atom11->AddBond(atom12);
+	 //cyc 1 -> cyc 3
+	 atom10->AddBond(atom12);
+	 //our mini cycle to the normal cycle
+	 atom10->AddBond(atom1);
+
+	 atom0->AddBond(atom1);
+	 atom1->AddBond(atom2);
+	 atom2->AddBond(atom3);
+	 atom3->AddBond(atom4);
+	 atom4->AddBond(atom5);
+	 atom1->AddBond(atom6);
+	 atom5->AddBond(atom6);
+	 atom2->AddBond(atom5);
+	 atom2->AddBond(atom6);
+	 atom5->AddBond(atom3);
+	 atom2->AddBond(atom7);
+	 atom7->AddBond(atom8);
+	 atom6->AddBond(atom3);
+	 atom6->AddBond(atom4);
+	 */
+
+	//to show our mega cycle decomp works
+	//b 1 -> cyc 1
+	//atom9->AddBond(atom10);
 	atom9->AddBond(atom10);
-	atom9->AddBond(atom9);
-//cyc 1 -> cyc 2
+	//cyc 1 -> cyc 2
 	atom10->AddBond(atom11);
-//cyc 2 -> cyc 3
+	//cyc 2 -> cyc 3
 	atom11->AddBond(atom12);
-//cyc 1 -> cyc 3
+	//cyc 1 -> cyc 3
 	atom10->AddBond(atom12);
-//our mini cycle to the normal cycle
+	//our mini cycle to the normal cycle
 	atom10->AddBond(atom1);
 
 	atom0->AddBond(atom1);
@@ -157,35 +186,6 @@ int main()
 	atom5->AddBond(atom3);
 	atom2->AddBond(atom7);
 	atom7->AddBond(atom8);
-	atom6->AddBond(atom3);
-	atom6->AddBond(atom4);
-*/
-
-	//to show our mega cycle decomp works
-		//b 1 -> cyc 1
-		//atom9->AddBond(atom10);
-		atom9->AddBond(atom10);
-		//cyc 1 -> cyc 2
-		atom10->AddBond(atom11);
-		//cyc 2 -> cyc 3
-		atom11->AddBond(atom12);
-		//cyc 1 -> cyc 3
-		atom10->AddBond(atom12);
-		//our mini cycle to the normal cycle
-		atom10->AddBond(atom1);
-
-		atom0->AddBond(atom1);
-		atom1->AddBond(atom2);
-		atom2->AddBond(atom3);
-		atom3->AddBond(atom4);
-		atom4->AddBond(atom5);
-		atom1->AddBond(atom6);
-		atom5->AddBond(atom6);
-		atom2->AddBond(atom5);
-		atom2->AddBond(atom6);
-		atom5->AddBond(atom3);
-		atom2->AddBond(atom7);
-		atom7->AddBond(atom8);
 
 	Graph<Atom> *g1 = new Graph<Atom>(atom1->GetNode().get());
 
@@ -210,16 +210,46 @@ int main()
 // atomC->AddBond(atomD);
 	atomA->AddBond(atomD);
 // atomD->AddBond(atomB);
-	//Graph<Atom> *g2 = new Graph<Atom>(atomA->GetNode().get());
+	Graph<Atom> *g2 = new Graph<Atom>(atomA->GetNode().get());
 
 	//graph all cycles
 	std::vector<std::unordered_set<Node<Atom>*>> cyclesG1 =
 			cycleDetector::totalCycleDetect(*g1);
 
-	//std::unordered_map<TemplateGraph::Node<Atom>*,
-	//		std::vector<TemplateGraph::Node<Atom>*>> matchedSubgraphs =
-	//		subgraphMatcher::findSubgraphs(*g1, *g2);
+	//Print all our cycles
+	lazyInfo(__LINE__, __func__, "Printing out all of our g1 cycles");
+	int printerCounter = 0;
+	for (std::unordered_set<Node<Atom>*> currUnSet : cyclesG1)
+	{
+		std::cout
+				<< "Printing nodes in cycle #" + std::to_string(printerCounter)
+						+ "\n\t";
+		for (Node<Atom> *currAtom : currUnSet)
+		{
+			std::cout << currAtom->getName() + ", ";
+		}
+		std::cout << "\n";
+		printerCounter++;
+	}
+	printerCounter = 0;
+	std::cout << "\nCompleted printing out all our cycles \n\n";
 
+	std::unordered_map<TemplateGraph::Node<Atom>*,
+			std::vector<TemplateGraph::Node<Atom>*>> matchedSubgraphs =
+			subgraphMatcher::findSubgraphs(*g1, *g2);
+
+	lazyInfo(__LINE__, __func__,
+			"Printing out all of g1 subgraphs that match g2");
+	for (std::pair<TemplateGraph::Node<Atom>*,
+			std::vector<TemplateGraph::Node<Atom>*>> currPair : matchedSubgraphs)
+	{
+		std::cout << "Node <" + currPair.first->getName() + "> is a part of cycle(s):\n\t";
+		for (TemplateGraph::Node<Atom>* currNode : currPair.second)
+		{
+			std::cout << currNode->getName() + ", ";
+		}
+		std::cout << "\n";
+	}
 //Graph<Atom> queryGraph(atomA->GetNode());
 
 //SubgraphMatcher<Atom> sumthin(&atomGraph, &queryGraph);
