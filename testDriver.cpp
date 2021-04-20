@@ -234,11 +234,11 @@ int main()
 	printerCounter = 0;
 	std::cout << "\nCompleted printing out all our cycles \n\n";
 
-	std::unordered_map<TemplateGraph::Node<Atom>*,
-			std::vector<TemplateGraph::Node<Atom>*>> matchedSubgraphs =
+	//std::unordered_map<TemplateGraph::Node<Atom>*,
+	//		std::vector<TemplateGraph::Node<Atom>*>> matchedSubgraphs =
 			subgraphMatcher::findSubgraphs(*g1, *g2);
 
-	lazyInfo(__LINE__, __func__,
+	/*lazyInfo(__LINE__, __func__,
 			"Printing out all of g1 subgraphs that match g2");
 	for (std::pair<TemplateGraph::Node<Atom>*,
 			std::vector<TemplateGraph::Node<Atom>*>> currPair : matchedSubgraphs)
@@ -249,7 +249,7 @@ int main()
 			std::cout << currNode->getName() + ", ";
 		}
 		std::cout << "\n";
-	}
+	}*/
 //Graph<Atom> queryGraph(atomA->GetNode());
 
 //SubgraphMatcher<Atom> sumthin(&atomGraph, &queryGraph);
