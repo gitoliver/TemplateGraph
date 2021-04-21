@@ -24,7 +24,7 @@ std::map<std::string, std::vector<std::string>> patternExtractor(
 {
 	std::map<std::string, std::vector<std::string>> foundPatterns;
 
-	for (unsigned int indexA = 0; indexA < patternGraph.getNodes().size();
+	for (unsigned int indexA = 0; indexA < patternGraph.getRawNodes().size();
 			indexA++)
 	{
 		//our "A-node"'s name will be our key for patterns
@@ -33,7 +33,7 @@ std::map<std::string, std::vector<std::string>> patternExtractor(
 		currentPattern.first = patternGraph.getNodeFromIndex(indexA)->getName();
 		//now we hit all other nodes and if the 2 nodes are connected we throw the
 		//	secondary node signifier in our pattern
-		for (unsigned int indexB = 0; indexB < patternGraph.getNodes().size();
+		for (unsigned int indexB = 0; indexB < patternGraph.getRawNodes().size();
 				indexB++)
 		{
 			//now we must check if the two nodes are connected. We can do this faster.
@@ -80,7 +80,7 @@ int searchForPatterns(unsigned int currNodeIndex,
 		 */
 		std::vector<TemplateGraph::Node<T>*> foundMatches;
 
-		for (TemplateGraph::Node<T> *interestingNode : graphSearch.getNodes())
+		for (TemplateGraph::Node<T> *interestingNode : graphSearch.getRawNodes())
 		{
 			//for now we just want to check if we have our current node
 			//we are checking out in our results vector.
@@ -217,7 +217,7 @@ std::unordered_map<TemplateGraph::Node<T>*, std::vector<TemplateGraph::Node<T>*>
 
 	//now we run a search for each node
 	for (unsigned int searchStartNodeIndex = 0;
-			searchStartNodeIndex < mainGraph.getNodes().size();
+			searchStartNodeIndex < mainGraph.getRawNodes().size();
 			searchStartNodeIndex++)
 	{
 		searchForPatterns(searchStartNodeIndex, patternsToMatch, currResults,

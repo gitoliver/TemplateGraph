@@ -349,7 +349,6 @@ Node<T>* Graph<T>::getNodeFromIndex(unsigned int const &queryIndex)
  * 			in all cases. Could just do currIndex-- once we find an expired
  * 			and remove it at the end of our current loop iteration tho.
  */
-
 template<class T>
 void Graph<T>::lazyExpiredFixer()
 {

@@ -49,7 +49,7 @@ std::pair<std::vector<std::unordered_set<TemplateGraph::Node<T>*>>,
 	std::vector<TemplateGraph::HalfAdjacencyMatrix<T>> funCycleAdjMatrixSet;
 
 	std::unique_ptr<TreeNode[]> aTree(
-			new TreeNode[interestingGraph.getNodes().size()]);
+			new TreeNode[interestingGraph.getRawNodes().size()]);
 
 	std::stack<unsigned int> nodeStack;
 	//start randomly with our 0 node
@@ -63,7 +63,7 @@ std::pair<std::vector<std::unordered_set<TemplateGraph::Node<T>*>>,
 	//initially have all treenodes as their own parent, will create our spanning
 	// tree while running algo
 	for (unsigned int currIndex = 0;
-			currIndex < interestingGraph.getNodes().size(); ++currIndex)
+			currIndex < interestingGraph.getRawNodes().size(); ++currIndex)
 	{
 		aTree[currIndex].parent = &aTree[currIndex];
 		aTree[currIndex].index = currIndex;
@@ -77,7 +77,7 @@ std::pair<std::vector<std::unordered_set<TemplateGraph::Node<T>*>>,
 
 //hit all edges connecting to this node
 		for (unsigned int anotherNodeIndex = 0;
-				anotherNodeIndex < interestingGraph.getNodes().size();
+				anotherNodeIndex < interestingGraph.getRawNodes().size();
 				anotherNodeIndex++)
 		{
 			//not connected we skip iteration
@@ -90,9 +90,9 @@ std::pair<std::vector<std::unordered_set<TemplateGraph::Node<T>*>>,
 			if (aTree[anotherNodeIndex].parent != &aTree[anotherNodeIndex])
 			{
 				TemplateGraph::HalfAdjacencyMatrix<T> currNodePath(
-						interestingGraph.getNodes());
+						interestingGraph.getRawNodes());
 				TemplateGraph::HalfAdjacencyMatrix<T> anotherNodePath(
-						interestingGraph.getNodes());
+						interestingGraph.getRawNodes());
 
 				unique_tree_path(&aTree[currNodeIndex], currNodePath);
 				unique_tree_path(&aTree[anotherNodeIndex], anotherNodePath);
@@ -106,11 +106,11 @@ std::pair<std::vector<std::unordered_set<TemplateGraph::Node<T>*>>,
 
 				//TODO: Make this legitimate, slow...
 				for (unsigned int aNodeIndex = 0;
-						aNodeIndex < interestingGraph.getNodes().size();
+						aNodeIndex < interestingGraph.getRawNodes().size();
 						aNodeIndex++)
 				{
 					for (unsigned int bNodeIndex = 0;
-							bNodeIndex < interestingGraph.getNodes().size();
+							bNodeIndex < interestingGraph.getRawNodes().size();
 							bNodeIndex++)
 					{
 						if (funCycleAdjMatrix.isConnected(aNodeIndex,
@@ -224,7 +224,6 @@ template<typename T>
 std::vector<std::unordered_set<TemplateGraph::Node<T>*>> totalCycleDetect(
 		TemplateGraph::Graph<T> &inputGraph)
 {
-	inputGraph.chuckRottenTomatoes();
 
 	std::pair<std::vector<std::unordered_set<TemplateGraph::Node<T>*>>,
 			std::vector<TemplateGraph::HalfAdjacencyMatrix<T>>> funCycleInfo =
@@ -252,7 +251,7 @@ std::vector<std::unordered_set<TemplateGraph::Node<T>*>> totalCycleDetect(
 		do
 		{
 			TemplateGraph::HalfAdjacencyMatrix<T> mutatingMatrix(
-					inputGraph.getNodes());
+					inputGraph.getRawNodes());
 
 			unsigned int edgeCount = 0;
 
@@ -292,10 +291,10 @@ std::vector<std::unordered_set<TemplateGraph::Node<T>*>> totalCycleDetect(
 	{
 		std::unordered_set<TemplateGraph::Node<T>*> temporaryCycleSet;
 		for (unsigned int aNodeIndex = 0;
-				aNodeIndex < inputGraph.getNodes().size(); aNodeIndex++)
+				aNodeIndex < inputGraph.getRawNodes().size(); aNodeIndex++)
 		{
 			for (unsigned int bNodeIndex = 0;
-					bNodeIndex < inputGraph.getNodes().size(); bNodeIndex++)
+					bNodeIndex < inputGraph.getRawNodes().size(); bNodeIndex++)
 			{
 				if (currentCycleAdj.isConnected(bNodeIndex, aNodeIndex))
 				{
