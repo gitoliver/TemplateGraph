@@ -8,7 +8,6 @@
 #include <memory>
 #include <unordered_set>
 
-
 namespace TemplateGraph
 {
 template<class T>
@@ -46,7 +45,8 @@ public:
 			std::shared_ptr<Node<T>> const &newNeighbor);
 
 	//Do we want to worry about adding a parent?
-	void addChild(std::string edgeName, std::shared_ptr<Node<T>> const &childNode);
+	void addChild(std::string edgeName,
+			std::shared_ptr<Node<T>> const &childNode);
 	/* NOTE: We MUST remove the edge from out "child" node BEFORE deleting the edge by deleting the
 	 * 			unique_ptr that owns it. This is handled in edge's destructor, all we have to worry
 	 * 			about is deleting the unique ptr that owns our edge.
@@ -132,16 +132,27 @@ Node<T>::~Node()
 	//TODO: Do this but not lazy
 	for (Edge<T> *currInEdge : tempInEdge)
 	{
-		std::shared_ptr<Node<T>> sourceLock =
-				currInEdge->getSourceNode().lock();
-		if (sourceLock)
+		if (currInEdge->GetSource()->expired)
 		{
-			sourceLock.get()->removeOutEdge(currInEdge);
+			//Should never EVER happen
+			badBehavior(__LINE__, __func__,
+					"Warning, this should NEVER happen. Our edges source node is expired");
 		}
 		else
 		{
-			badBehavior(__LINE__, __func__, "Could not lock our source node");
+			std::shared_ptr<Node<T>> sourceLock =
+					currInEdge->getSourceNode().lock();
+			if (sourceLock)
+			{
+				sourceLock.get()->removeOutEdge(currInEdge);
+			}
+			else
+			{
+				badBehavior(__LINE__, __func__,
+						"Could not lock our source node");
+			}
 		}
+
 	}
 	//lazyInfo(__LINE__, __func__,
 	//		"Finishing destructor on node <" + this->getName() + ">");
@@ -157,13 +168,13 @@ std::vector<std::weak_ptr<Node<T>> > Node<T>::getNeighbors()
 	std::unordered_set<std::shared_ptr<Node<T>>> tempSet;
 
 	//TODO: Actually prevent dupes instead of doing so lazily
-	for(std::shared_ptr<Node<T>> cWP : parentsVec)
+	for (std::shared_ptr<Node<T>> cWP : parentsVec)
 	{
 		tempSet.insert(cWP);
 	}
 
 	std::vector<std::weak_ptr<Node<T>>> parentsVeclol;
-	for(std::weak_ptr<Node<T>> cWP : tempSet)
+	for (std::weak_ptr<Node<T>> cWP : tempSet)
 	{
 		parentsVeclol.push_back(cWP);
 	}
@@ -210,7 +221,8 @@ void Node<T>::addNeighbor(std::string edgeName,
 }
 
 template<class T>
-void Node<T>::addChild(std::string edgeName, std::shared_ptr<Node<T>> const &childNode)
+void Node<T>::addChild(std::string edgeName,
+		std::shared_ptr<Node<T>> const &childNode)
 {
 	if (this->isNeighbor(childNode))
 	{
@@ -321,7 +333,8 @@ std::vector<std::shared_ptr<Node<T>> > Node<T>::getChildren()
 		{
 			childrenVecToReturn.push_back(lockedSink);
 		}
-		else{
+		else
+		{
 			badBehavior(__LINE__, __func__, "Couldnt lock our sink");
 		}
 	}
