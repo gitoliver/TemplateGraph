@@ -48,6 +48,7 @@ std::pair<std::vector<std::unordered_set<TemplateGraph::Node<T>*>>,
 
 	std::vector<TemplateGraph::HalfAdjacencyMatrix<T>> funCycleAdjMatrixSet;
 
+	//to construct our actual spanning tree
 	std::unique_ptr<TreeNode[]> aTree(
 			new TreeNode[interestingGraph.getRawNodes().size()]);
 
@@ -71,6 +72,7 @@ std::pair<std::vector<std::unordered_set<TemplateGraph::Node<T>*>>,
 
 	while (nodeStack.size() > 0)
 	{
+		//grab most recent node
 		unsigned int currNodeIndex = nodeStack.top();
 		nodeStack.pop();
 		TreeNode &currTreeNode = aTree[currNodeIndex];
@@ -80,7 +82,7 @@ std::pair<std::vector<std::unordered_set<TemplateGraph::Node<T>*>>,
 				anotherNodeIndex < interestingGraph.getRawNodes().size();
 				anotherNodeIndex++)
 		{
-			//not connected we skip iteration
+			//not connected we skip current iteration
 			if (!(mutatingAdjMatrix.isConnected(currNodeIndex, anotherNodeIndex)))
 			{
 				continue;
@@ -94,11 +96,15 @@ std::pair<std::vector<std::unordered_set<TemplateGraph::Node<T>*>>,
 				TemplateGraph::HalfAdjacencyMatrix<T> anotherNodePath(
 						interestingGraph.getRawNodes());
 
+				//to get our path from the current node
 				unique_tree_path(&aTree[currNodeIndex], currNodePath);
+				//to get our path from the other node
 				unique_tree_path(&aTree[anotherNodeIndex], anotherNodePath);
 
+				//we go ahead and actually connect the 2 nodes to show our path
 				currNodePath.connect(currNodeIndex, anotherNodeIndex);
 
+				//xor our 2 matriciies to get our fundamental cycle
 				TemplateGraph::HalfAdjacencyMatrix<T> funCycleAdjMatrix(
 						currNodePath ^ anotherNodePath);
 
@@ -161,6 +167,7 @@ void validateCycleMatrixRecursive(
 		unsigned int &currPathLength, const int interestingNodeIndex,
 		unsigned int prevNodeIndex, std::set<unsigned int> &visitedTracker)
 {
+	//just makes sure our call stack isnt stupid large, we can mutate this to our needs
 	if (currPathLength > 750)
 	{
 		badBehavior(__LINE__, __func__, "Our path is too long");
@@ -176,6 +183,7 @@ void validateCycleMatrixRecursive(
 				auto possVisited = visitedTracker.find(curiousIndex);
 				if (possVisited != visitedTracker.end())
 				{
+					//if we have visited and not at end we leave
 					return;
 				}
 				++currPathLength;
@@ -202,6 +210,7 @@ bool validateCycleMatrix(TemplateGraph::HalfAdjacencyMatrix<T> &matrixToCheck)
 		{
 			if (matrixToCheck.isConnected(aNodeIndex, bNodeIndex))
 			{
+				//when we are connected we check our cycle matrix
 				++pathLength;
 				std::set<unsigned int> isVisited;
 				isVisited.insert(aNodeIndex);
@@ -258,6 +267,11 @@ std::vector<std::unordered_set<TemplateGraph::Node<T>*>> totalCycleDetect(
 			for (unsigned int anotherFunAdj = 0;
 					anotherFunAdj < funCycleAdj.size(); anotherFunAdj++)
 			{
+				/* pretty much running every combo of our fundamental cycles
+				 * 		since our fundamental cycles form a total cycle basis
+				 * 		if we hit every combo of them we know we will produce
+				 * 		every cycle present in the graph
+				 */
 				if (combinitoricsVector[anotherFunAdj])
 				{
 					mutatingMatrix = mutatingMatrix
@@ -265,6 +279,7 @@ std::vector<std::unordered_set<TemplateGraph::Node<T>*>> totalCycleDetect(
 					edgeCount += funCycleAdj[anotherFunAdj].getNumEdges();
 				}
 			}
+			//our base case
 			if (currFunAdj == 2)
 			{
 				if (edgeCount > mutatingMatrix.getNumEdges())
@@ -287,6 +302,7 @@ std::vector<std::unordered_set<TemplateGraph::Node<T>*>> totalCycleDetect(
 				combinitoricsVector.end()));
 	} //end our for loop
 
+	//just transfering our cycles to the node ptrs
 	for (TemplateGraph::HalfAdjacencyMatrix<T> currentCycleAdj : allCyclesAdj)
 	{
 		std::unordered_set<TemplateGraph::Node<T>*> temporaryCycleSet;

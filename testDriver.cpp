@@ -7,6 +7,8 @@
 
 #include "./LazyPrints/LazyPrinters.hpp"
 
+#include <map>
+
 //https://dreampuf.github.io/GraphvizOnline/#digraph%20G%20%7B%0A%09Bobie-%3ESteve%0A%09Steve-%3ERonne%0A%09Ronne-%3EBingo%0A%09Bingo-%3EMarsh%0A%09Marsh-%3EDelux%0A%09Steve-%3EFrank%0A%09Delux-%3EFrank%0A%09Ronne-%3EDelux%0A%09Ronne-%3EFrank%0A%09Delux-%3EBingo%0A%09Ronne-%3EBingo1%0A%09Bingo1-%3EMasrsh1%0A%09Bridge1%20-%3E%20cycle1%0A%09cycle1%20-%3E%20cycle2%0A%09cycle1%20-%3E%20cycle3%0A%09cycle2%20-%3E%20cycle3%0A%09cycle1%20-%3E%20Steve%0A%7D
 
 using namespace TemplateGraph;
@@ -113,8 +115,11 @@ private:
  //endMolecule
  */
 
+void getGraphvizURL(Graph<Atom> *g);
+
 int main()
 {
+
 	Atom *atom0 = new Atom("Bobie");
 //Molecule *mol1 = new Molecule("mol1", atom0);
 	Atom *atom1 = new Atom("Steve");
@@ -187,7 +192,8 @@ int main()
 	atom2->AddBond(atom7);
 	atom7->AddBond(atom8);
 
-	Graph<Atom> *g1 = new Graph<Atom>(atom1->GetNode().get());
+	Graph<Atom> *g1 = new Graph<Atom>(atom1->GetNode());
+	getGraphvizURL(g1);
 
 //std::cout <<"\n\nGraph ptr in mol: " << mol1->getGraphPtr() << " okay \n\n";
 //std::cout <<"\n\nOur supposed roots node that it owns: " << atom0->GetNode() << " okay \n\n";
@@ -210,7 +216,7 @@ int main()
 // atomC->AddBond(atomD);
 	atomA->AddBond(atomD);
 // atomD->AddBond(atomB);
-	Graph<Atom> *g2 = new Graph<Atom>(atomA->GetNode().get());
+	Graph<Atom> *g2 = new Graph<Atom>(atomA->GetNode());
 
 	//graph all cycles
 	std::vector<std::unordered_set<Node<Atom>*>> cyclesG1 =
@@ -219,6 +225,29 @@ int main()
 	//Print all our cycles
 	lazyInfo(__LINE__, __func__, "Printing out all of our g1 cycles");
 	int printerCounter = 0;
+	for (std::unordered_set<Node<Atom>*> currUnSet : cyclesG1)
+	{
+		std::cout
+				<< "Printing nodes in cycle #" + std::to_string(printerCounter)
+						+ "\n\t";
+		for (Node<Atom> *currAtom : currUnSet)
+		{
+			std::cout << currAtom->getName() + ", ";
+		}
+		std::cout << "\n";
+		printerCounter++;
+	}
+	printerCounter = 0;
+	std::cout << "\nCompleted printing out all our cycles \n\n";
+
+	delete atom12;
+
+	//Print all our cycles
+	lazyInfo(__LINE__, __func__,
+			"Printing out all of our g1 cycles after deleting cycle 3 node");
+	cyclesG1 = cycleDetector::totalCycleDetect(*g1);
+
+	printerCounter = 0;
 	for (std::unordered_set<Node<Atom>*> currUnSet : cyclesG1)
 	{
 		std::cout
@@ -253,9 +282,7 @@ int main()
 		std::cout << "\n";
 	}
 //Graph<Atom> queryGraph(atomA->GetNode());
-
 //SubgraphMatcher<Atom> sumthin(&atomGraph, &queryGraph);
-
 	std::cout << "Deleting " << atom6->GetName() << "\n";
 	delete atom6;
 
@@ -506,6 +533,67 @@ int main()
 // Graph<int> theBestGraph(vectorOfEdges);
 
 	return 0;
+}
+
+//dont judge very very lazily done
+void getGraphvizURL(Graph<Atom> *g)
+{
+	std::string connectionArrow = "%20-%3E%20";
+	std::string newLine = "%0A%09";
+	std::string baseURL =
+			"https://dreampuf.github.io/GraphvizOnline/#digraph%20G%20%7B%0A%09";
+
+	//first make a collection of all of our node connections
+	std::vector<std::vector<std::string>> neighborsToURL;
+
+	std::map<std::string, std::set<std::string>> allEnglish;
+
+	for (Node<Atom> *currNode : g->getRawNodes())
+	{
+		std::pair<std::string, std::set<std::string>> currEnglish;
+		std::string currNN = currNode->getName();
+		for (std::weak_ptr<Node<Atom>> currWeakNeigh : currNode->getNeighbors())
+		{
+			std::shared_ptr<Node<Atom>> cLN = currWeakNeigh.lock();
+			if (cLN)
+			{
+				std::string neighNN = cLN.get()->getName();
+
+				//if we dont have our current connection in our final we throw it in
+				if (!(allEnglish[currNN].count(neighNN)
+						|| allEnglish[neighNN].count(currNN)))
+				{
+					allEnglish[currNN].insert(neighNN);
+				}
+			}
+			else
+			{
+				badBehavior(__LINE__, __func__, "COuldnt lock neigh");
+			}
+		}
+	}//end 4
+
+	std::vector<std::string> bondedParts;
+	for (std::pair<std::string, std::set<std::string>> curP : allEnglish)
+	{
+		for (std::string currNeigh : curP.second)
+		{
+			bondedParts.push_back(curP.first + connectionArrow + currNeigh);
+		}
+	}
+
+	lazyInfo(__LINE__, __func__, "8734217389210389012");
+	std::string finalBonds;
+	for (int i = 0 ; i < bondedParts.size(); i++)
+	{
+		finalBonds+=bondedParts[i];
+		if (i+1 < bondedParts.size() && i != 0)
+		{
+			finalBonds += newLine;
+		}
+		std::cout << finalBonds;
+	}
+
 }
 
 // bool compareLabel(TemplateGraph::Edge<int> &edge, TemplateGraph::Edge<int> &otherEdge) {
