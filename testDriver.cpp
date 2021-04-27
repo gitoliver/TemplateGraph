@@ -219,6 +219,8 @@ int main()
 // atomD->AddBond(atomB);
 	Graph<Atom> *g2 = new Graph<Atom>(atomA->GetNode());
 
+	lazyInfo(__LINE__, __func__, "\n"+g2->getGraphvizLink());
+
 	//graph all cycles
 	std::vector<std::unordered_set<Node<Atom>*>> cyclesG1 =
 			cycleDetector::totalCycleDetect(*g1);
@@ -534,128 +536,6 @@ int main()
 // Graph<int> theBestGraph(vectorOfEdges);
 
 	return 0;
-}
-
-//dont judge very very lazily done
-
-void getGraphvizURL(Graph<Atom> *g)
-{
-	/*
-	std::string connectionArrow = "%20-%3E%20";
-	std::string newLine = "%0A%09";
-	std::string baseURL =
-			"https://dreampuf.github.io/GraphvizOnline/#digraph%20G%20%7B%0A%09";
-	std::string endBracket = "%0A%7D";
-
-	//first make a collection of all of our node connections
-
-	std::map<Node<Atom>*, std::set<Node<Atom>*>> nodeNeighs;
-
-	for (Node<Atom> *currNode : g->getRawNodes())
-	{
-
-		for (std::weak_ptr<Node<Atom>> currNeigh : currNode->getNeighbors())
-		{
-			if (currNeigh.expired())
-			{
-				badBehavior(__LINE__, __func__, "Expired node");
-			}
-			else
-			{
-
-				Node<Atom> *rawNeigh = currNeigh.lock().get();
-*/
-				//ensure that the current connection is not already present
-				/*	We know we do not have a specific connection if either
-				 * 		A) We do NOT have our neighbor as a key in the node neighs
-				 * 						OR
-				 * 		B) If we DO have our neighbor as a key in the node neighs, then we do NOT have
-				 * 				the currNode as a member
-				 */
-		/*		if ((nodeNeighs.count(rawNeigh) == 0)
-						|| (nodeNeighs[rawNeigh].count(currNode) == 0))
-				{
-					if (nodeNeighs[currNode].count(rawNeigh) == 0)
-					{
-						nodeNeighs[currNode].insert(rawNeigh);
-					}
-					else
-					{
-						badBehavior(__LINE__, __func__, "ARGH MATEY");
-					}
-				}
-
-			}//end els
-		}//end 4
-	}//end 44
-
-	lazyInfo(__LINE__, __func__, "PRINTING OUT OUR POSSIBLE CONNECTIONS PLS WORK\n");
-
-	std::string endURL;
-
-	for (std::pair<Node<Atom>*, std::set<Node<Atom>*>> currPair : nodeNeighs)
-	{
-		for (Node<Atom>* currNeigh : currPair.second)
-		{
-			endURL += currPair.first->getName() +"->"+ currNeigh->getName() + newLine;
-		}
-	}
-	endURL += endBracket;
-	baseURL += endURL;
-	std::cout << "\n\n"+ baseURL +"\n\n";
-	*/
-	/*
-	 std::vector<std::vector<std::string>> neighborsToURL;
-
-	 std::map<std::string, std::set<std::string>> allEnglish;
-
-	 for (Node<Atom> *currNode : g->getRawNodes())
-	 {
-	 std::pair<std::string, std::set<std::string>> currEnglish;
-	 std::string currNN = currNode->getName();
-	 for (std::weak_ptr<Node<Atom>> currWeakNeigh : currNode->getNeighbors())
-	 {
-	 std::shared_ptr<Node<Atom>> cLN = currWeakNeigh.lock();
-	 if (cLN)
-	 {
-	 std::string neighNN = cLN.get()->getName();
-
-	 //if we dont have our current connection in our final we throw it in
-	 if (!(allEnglish[currNN].count(neighNN)
-	 || allEnglish[neighNN].count(currNN)))
-	 {
-	 allEnglish[currNN].insert(neighNN);
-	 }
-	 }
-	 else
-	 {
-	 badBehavior(__LINE__, __func__, "COuldnt lock neigh");
-	 }
-	 }
-	 }//end 4
-
-	 std::vector<std::string> bondedParts;
-	 for (std::pair<std::string, std::set<std::string>> curP : allEnglish)
-	 {
-	 for (std::string currNeigh : curP.second)
-	 {
-	 bondedParts.push_back(curP.first + connectionArrow + currNeigh);
-	 }
-	 }
-
-	 lazyInfo(__LINE__, __func__, "8734217389210389012");
-	 std::string finalBonds;
-	 for (int i = 0 ; i < bondedParts.size(); i++)
-	 {
-	 finalBonds+=bondedParts[i];
-	 if (i+1 < bondedParts.size() && i != 0)
-	 {
-	 finalBonds += newLine;
-	 }
-	 std::cout << finalBonds;
-	 }
-	 */
-
 }
 
 // bool compareLabel(TemplateGraph::Edge<int> &edge, TemplateGraph::Edge<int> &otherEdge) {
