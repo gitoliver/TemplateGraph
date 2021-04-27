@@ -44,9 +44,10 @@ public:
 	void addNeighbor(std::string edgeName,
 			std::shared_ptr<Node<T>> const &newNeighbor);
 
-	//Do we want to worry about adding a parent?
 	void addChild(std::string edgeName,
 			std::shared_ptr<Node<T>> const &childNode);
+	void addParent(std::string edgeName,
+				std::shared_ptr<Node<T>> const &parentNode);
 	/* NOTE: We MUST remove the edge from out "child" node BEFORE deleting the edge by deleting the
 	 * 			unique_ptr that owns it. This is handled in edge's destructor, all we have to worry
 	 * 			about is deleting the unique ptr that owns our edge.
@@ -132,7 +133,7 @@ Node<T>::~Node()
 	//TODO: Do this but not lazy
 	for (Edge<T> *currInEdge : tempInEdge)
 	{
-		if (currInEdge->GetSource()->expired)
+		if (currInEdge->getSourceNode().expired())
 		{
 			//Should never EVER happen
 			badBehavior(__LINE__, __func__,
@@ -205,12 +206,7 @@ std::vector<Edge<T>*> Node<T>::getOutEdges()
 template<class T>
 std::vector<Edge<T>*> Node<T>::getInEdges()
 {
-	std::vector<Edge<T>*> inEdgeVecToReturn;
-	for (Edge<T> *currInEdge : this->inEdges)
-	{
-		inEdgeVecToReturn.push_back(currInEdge);
-	}
-	return inEdgeVecToReturn;
+	return this->inEdges;
 }
 
 template<class T>
@@ -241,6 +237,13 @@ void Node<T>::addChild(std::string edgeName,
 						childNode));
 		childNode.get()->inEdges.push_back(this->outEdges.back().get());
 	}
+}
+
+template<class T>
+void Node<T>::addParent(std::string edgeName,
+		const std::shared_ptr<Node<T> > &parentNode)
+{
+	parentNode.get()->addChild(edgeName, this);
 }
 
 template<class T>
@@ -335,7 +338,7 @@ std::vector<std::shared_ptr<Node<T>> > Node<T>::getChildren()
 		}
 		else
 		{
-			badBehavior(__LINE__, __func__, "Couldnt lock our sink");
+			badBehavior(__LINE__, __func__, "Couldn't lock our sink");
 		}
 	}
 	return childrenVecToReturn;
@@ -378,7 +381,6 @@ inline void Node<T>::removeOutEdge(Edge<T> *edgeToRemove)
 	//lazyInfo(__LINE__, __func__,
 	//		"removing out edge <" + edgeToRemove->getName()
 	//				+ "> from node named <" + this->getName() + ">");
-
 	for (int outIndex = 0, ogSize = this->outEdges.size(); outIndex != ogSize;
 			outIndex++)
 	{
@@ -388,6 +390,7 @@ inline void Node<T>::removeOutEdge(Edge<T> *edgeToRemove)
 		}
 	}
 }
+
 
 template<class T>
 Edge<T>* TemplateGraph::Node<T>::getConnectingEdge(

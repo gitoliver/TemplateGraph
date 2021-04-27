@@ -6,6 +6,7 @@
 #include "../../LazyPrints/LazyPrinters.hpp"
 #include "../../GenericObject/includes/GenericObject.hpp"
 
+#include <set>
 #include <algorithm>
 #include <unordered_map>
 #include <unordered_set>
@@ -48,6 +49,7 @@ public:
 	/************************************************
 	 *  FUNCTIONS
 	 ***********************************************/
+	std::string getGraphvizLink();
 
 private:
 	/************************************************
@@ -180,7 +182,6 @@ std::vector<Node<T>*> Graph<T>::getRawNodes() // const
 			}
 		}
 	}
-
 	//ensure all unique listings
 	std::sort(nodeVecToReturn.begin(), nodeVecToReturn.end());
 	nodeVecToReturn.erase(
@@ -358,7 +359,8 @@ void Graph<T>::lazyExpiredFixer()
 	 */
 	unsigned int ogSize = this->allNodes.size();
 
-	for (unsigned int currIndex = 0; currIndex < this->allNodes.size(); currIndex++)
+	for (unsigned int currIndex = 0; currIndex < this->allNodes.size();
+			currIndex++)
 	{
 		if (this->allNodes[currIndex].expired())
 		{
@@ -389,6 +391,70 @@ void Graph<T>::lazyExpiredFixer()
 		this->populateLookups();
 		this->populateAdjacencyMatrix();
 	}
+}
+
+template<class T>
+std::string Graph<T>::getGraphvizLink()
+{
+	std::string connectionArrow = "%20-%3E%20";
+	std::string newLine = "%0A%09";
+	std::string baseURL =
+			"https://dreampuf.github.io/GraphvizOnline/#digraph%20G%20%7B%0A%09";
+	std::string endBracket = "%0A%7D";
+
+	//first make a collection of all of our node connections, just use set cause less chars lazy
+	std::map<Node<T>*, std::set<Node<T>*>> nodeNeighs;
+
+	for (Node<T> *currNode : this->getRawNodes())
+	{
+		for (std::weak_ptr<Node<T>> currNeigh : currNode->getNeighbors())
+		{
+			if (currNeigh.expired())
+			{
+				this->lazyExpiredFixer();
+				return this->getGraphvizLink();
+			}
+			else
+			{
+				Node<T> *rawNeigh = currNeigh.lock().get();
+
+				//ensure that the current connection is not already present
+				/*	We know we do not have a specific connection if either
+				 * 		A) We do NOT have our neighbor as a key in the node neighs
+				 * 						OR
+				 * 		B) If we DO have our neighbor as a key in the node neighs, then we do NOT have
+				 * 				the currNode as a member
+				 */
+				if ((nodeNeighs.count(rawNeigh) == 0)
+						|| (nodeNeighs[rawNeigh].count(currNode) == 0))
+				{
+					if (nodeNeighs[currNode].count(rawNeigh) == 0)
+					{
+						nodeNeighs[currNode].insert(rawNeigh);
+					}
+					else
+					{
+						badBehavior(__LINE__, __func__, "ARGH MATEY");
+					}
+				}
+
+			} //end els
+		} //end 4
+	} //end 44
+
+	std::string endURL;
+
+	for (std::pair<Node<T>*, std::set<Node<T>*>> currPair : nodeNeighs)
+	{
+		for (Node<T> *currNeigh : currPair.second)
+		{
+			endURL += currPair.first->getName() + "->" + currNeigh->getName()
+					+ newLine;
+		}
+	}
+	endURL += endBracket;
+	baseURL += endURL;
+	return baseURL;
 }
 
 template<class T>
