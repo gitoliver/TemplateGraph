@@ -6,7 +6,7 @@
 namespace TemplateGraph
 {
 
-enum class strutualType
+enum class connectivityType
 {
 	UNKNOWN, BRIDGE, LEAF, INCYCLE
 };
@@ -57,27 +57,27 @@ private:
 
 public:
 
-	enum strutualType getStructuralTypeIdentifier();
+	enum connectivityType getConnectivityTypeIdentifier();
 
-	void setStructuralTypeIdentifier(strutualType newStructuralIdentifier);
+	void setConnectivityTypeIdentifier(connectivityType newStructuralIdentifier);
 
 private:
 
 	//our deafult enum value is <UNKNOWN>, default enum value is the first element
 	//just added the strutualType::UNKNOWN to make obvious
-	strutualType structuralTypeIdentifier = strutualType::UNKNOWN;
+	connectivityType connectivityTypeIdentifier = connectivityType::UNKNOWN;
 
 };
 
-enum strutualType GenericGraphObject::getStructuralTypeIdentifier()
+enum connectivityType GenericGraphObject::getConnectivityTypeIdentifier()
 {
-	return this->structuralTypeIdentifier;
+	return this->connectivityTypeIdentifier;
 }
 
-void GenericGraphObject::setStructuralTypeIdentifier(
-		strutualType newStructuralIdentifier)
+void GenericGraphObject::setConnectivityTypeIdentifier(
+		connectivityType newStructuralIdentifier)
 {
-	this->structuralTypeIdentifier = newStructuralIdentifier;
+	this->connectivityTypeIdentifier = newStructuralIdentifier;
 }
 
 }

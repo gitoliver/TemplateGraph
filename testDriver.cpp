@@ -1,4 +1,3 @@
-#include "./Algorithms/includes/StructualIdentifier.hpp"
 #include "./Algorithms/includes/SubgraphMatching.hpp"
 #include "./Algorithms/includes/TotalCycleDecomposition.hpp"
 
@@ -10,6 +9,7 @@
 
 #include <map>
 #include <set>
+#include "Algorithms/includes/ConnectivityIdentifier.hpp"
 
 using namespace TemplateGraph;
 class Atom
@@ -194,9 +194,9 @@ int main()
 
 	Graph<Atom> *g1 = new Graph<Atom>(atom1->GetNode());
 	lazyInfo(__LINE__, __func__, "\n"+g1->getGraphvizLink());
-	structualIdentifier::leafDetect(*g1);
+	connectivityIdentifier::leafDetect(*g1);
 
-	structualIdentifier::bridgeDetect(*g1);
+	connectivityIdentifier::bridgeDetect(*g1);
 
 //std::cout <<"\n\nGraph ptr in mol: " << mol1->getGraphPtr() << " okay \n\n";
 //std::cout <<"\n\nOur supposed roots node that it owns: " << atom0->GetNode() << " okay \n\n";

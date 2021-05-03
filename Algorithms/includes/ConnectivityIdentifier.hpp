@@ -1,5 +1,5 @@
-#ifndef STRUCTUALIDENTIFIER_HPP
-#define STRUCTUALIDENTIFIER_HPP
+#ifndef CONNECTIVITYIDENTIFIER_HPP
+#define CONNECTIVITYIDENTIFIER_HPP
 
 #include <vector>
 #include <memory>
@@ -50,8 +50,8 @@ void bridgeDetectHelperDFS(TemplateGraph::Node<T> *currNode,
 				TemplateGraph::Edge<T> *connectingEdge =
 						currNeigh->getConnectingEdge(
 								nextNode->shared_from_this());
-				connectingEdge->setStructuralTypeIdentifier(
-						TemplateGraph::strutualType::BRIDGE);
+				connectingEdge->setConnectivityTypeIdentifier(
+						TemplateGraph::connectivityType::BRIDGE);
 			} //end if where we lable our bridge edges
 
 		} //end if
@@ -65,7 +65,7 @@ void bridgeDetectHelperDFS(TemplateGraph::Node<T> *currNode,
 
 }
 
-namespace structualIdentifier
+namespace connectivityIdentifier
 {
 
 /* Now this is a little more odd. We could just remove an edge, run dfs/bfs and
@@ -110,16 +110,16 @@ void bridgeDetect(TemplateGraph::Graph<T> &graphToBridgeDetect)
 	 */
 	for (TemplateGraph::Node<T> *currNode : graphToBridgeDetect.getRawNodes())
 	{
-		if (!(currNode->getStructuralTypeIdentifier()
-				== TemplateGraph::strutualType::LEAF))
+		if (!(currNode->getConnectivityTypeIdentifier()
+				== TemplateGraph::connectivityType::LEAF))
 		{
 			bool possibleBridgeNode = false;
 
 			for (TemplateGraph::Edge<T> *currEdge : currNode->getEdges())
 			{
 				// If we ever hit an edge that is NOT a bridge edge we know we dont want to insert
-				if (!(currEdge->getStructuralTypeIdentifier()
-						== TemplateGraph::strutualType::BRIDGE))
+				if (!(currEdge->getConnectivityTypeIdentifier()
+						== TemplateGraph::connectivityType::BRIDGE))
 				{
 					possibleBridgeNode = false;
 					break;
@@ -133,8 +133,8 @@ void bridgeDetect(TemplateGraph::Graph<T> &graphToBridgeDetect)
 
 			if (possibleBridgeNode)
 			{
-				currNode->setStructuralTypeIdentifier(
-						TemplateGraph::strutualType::BRIDGE);
+				currNode->setConnectivityTypeIdentifier(
+						TemplateGraph::connectivityType::BRIDGE);
 			}
 		}
 
@@ -155,8 +155,8 @@ void leafDetect(TemplateGraph::Graph<T> &graphToLeafDetect)
 		if (currNode->getNeighbors().size() == 1)
 		{
 			//Set node as leaf
-			currNode->setStructuralTypeIdentifier(
-					TemplateGraph::strutualType::LEAF);
+			currNode->setConnectivityTypeIdentifier(
+					TemplateGraph::connectivityType::LEAF);
 			int errorEdgeCounter = 0;
 			for (TemplateGraph::Edge<T> *currEdge : currNode->getEdges())
 			{
@@ -169,8 +169,8 @@ void leafDetect(TemplateGraph::Graph<T> &graphToLeafDetect)
 				else
 				{
 					//set edge as bridge
-					currEdge->setStructuralTypeIdentifier(
-							TemplateGraph::strutualType::BRIDGE);
+					currEdge->setConnectivityTypeIdentifier(
+							TemplateGraph::connectivityType::BRIDGE);
 				}
 				errorEdgeCounter++;
 			} // end currEdge for
@@ -180,4 +180,4 @@ void leafDetect(TemplateGraph::Graph<T> &graphToLeafDetect)
 
 }
 
-#endif // end STRUCTUALIDENTIFIER_HPP
+#endif // end CONNECTIVITYIDENTIFIER_HPP
