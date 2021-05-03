@@ -329,7 +329,7 @@ bool Node<T>::isParentOf(std::shared_ptr<Node<T>> const &possibleChild)
 	for (std::unique_ptr<Edge<T>> const &currOutEdge : this->outEdges)
 	{
 		std::shared_ptr<Node<T>> sinkNodeLock =
-				currOutEdge.get()->getSinkNode().lock();
+				currOutEdge.get()->getTargetNode().lock();
 		if (sinkNodeLock)
 		{
 			if (sinkNodeLock.get() == possibleChild.get())
@@ -352,7 +352,7 @@ std::vector<std::shared_ptr<Node<T>> > Node<T>::getChildren()
 	for (std::unique_ptr<Edge<T>> const &currOutEdge : this->outEdges)
 	{
 		std::shared_ptr<Node<T>> lockedSink =
-				currOutEdge.get()->getSinkNode().lock();
+				currOutEdge.get()->getTargetNode().lock();
 		if (lockedSink)
 		{
 			childrenVecToReturn.push_back(lockedSink);
@@ -445,7 +445,7 @@ Edge<T>* TemplateGraph::Node<T>::getConnectingEdge(
 			for (std::unique_ptr<Edge<T>> const &currOutEdge : this->outEdges)
 			{
 				std::shared_ptr<Node<T>> sinkNodeLock =
-						currOutEdge->getSinkNode().lock();
+						currOutEdge->getTargetNode().lock();
 				if (sinkNodeLock)
 				{
 					if (sinkNodeLock.get() == otherNode.get())
