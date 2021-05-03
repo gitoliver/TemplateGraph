@@ -48,7 +48,8 @@ void bridgeDetectHelperDFS(TemplateGraph::Node<T> *currNode,
 				 * 		we know we only have 1 edge to label for now.
 				 */
 				TemplateGraph::Edge<T> *connectingEdge =
-						currNeigh->getConnectingEdge(nextNode->shared_from_this());
+						currNeigh->getConnectingEdge(
+								nextNode->shared_from_this());
 				connectingEdge->setStructuralTypeIdentifier(
 						TemplateGraph::strutualType::BRIDGE);
 			} //end if where we lable our bridge edges
@@ -112,7 +113,7 @@ void bridgeDetect(TemplateGraph::Graph<T> &graphToBridgeDetect)
 		if (!(currNode->getStructuralTypeIdentifier()
 				== TemplateGraph::strutualType::LEAF))
 		{
-			bool isBridgeNode = false;
+			bool possibleBridgeNode = false;
 
 			for (TemplateGraph::Edge<T> *currEdge : currNode->getEdges())
 			{
@@ -120,49 +121,18 @@ void bridgeDetect(TemplateGraph::Graph<T> &graphToBridgeDetect)
 				if (!(currEdge->getStructuralTypeIdentifier()
 						== TemplateGraph::strutualType::BRIDGE))
 				{
-
-					std::string edgeType;
-					switch(currEdge->getStructuralTypeIdentifier())
-					{
-					case TemplateGraph::strutualType::BRIDGE:
-						edgeType = " bridge ";
-						break;
-					case TemplateGraph::strutualType::LEAF:
-						edgeType = " leaf ";
-						break;
-					case TemplateGraph::strutualType::INCYCLE:
-						edgeType = " in cycle ";
-						break;
-					case TemplateGraph::strutualType::UNKNOWN:
-						edgeType = " unknown ";
-						break;
-					default :
-						edgeType = " we have no idea ";
-						break;
-					}
-
-
-
-					lazyInfo(__LINE__, __func__, "Not bridge Node: " + currNode->getName());
-					lazyInfo(__LINE__, __func__, "Non bridge edge: " + currEdge->getName() + "\n\t\tWith signifier: "  + edgeType);
-
-
-					isBridgeNode == false;
+					possibleBridgeNode = false;
 					break;
 				}
 				else
 				{
-					isBridgeNode == true;
+					possibleBridgeNode = true;
 				}
+
 			}
 
-			std::string loleMsg = (isBridgeNode) ? " is bridge node" : " is not bridge node";
-			lazyInfo(__LINE__, __func__, currNode->getName() + loleMsg);
-
-			if (isBridgeNode)
+			if (possibleBridgeNode)
 			{
-
-
 				currNode->setStructuralTypeIdentifier(
 						TemplateGraph::strutualType::BRIDGE);
 			}
