@@ -187,7 +187,6 @@ void searchMatches(std::vector<TemplateGraph::Node<T>*> matches,
 			int searchState = searchForPatterns(
 					graphSearch.getIndexFromNode(currMatch), patterns, results,
 					visitedKeys, graphSearch);
-
 			//if we hit a leaf we get out
 			if (searchState == 1)
 				break;

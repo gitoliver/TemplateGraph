@@ -1,8 +1,9 @@
 #ifndef EDGE_HPP
 #define EDGE_HPP
 
+#include "./GenericGraphObject.hpp"
 #include "../../LazyPrints/LazyPrinters.hpp"
-#include "../../GenericObject/includes/GenericObject.hpp"
+
 
 #include <memory>
 
@@ -13,7 +14,7 @@ namespace TemplateGraph
 template<class T> class Node;
 
 template<class T>
-class Edge: public Abstract::GenericObject
+class Edge: public GenericGraphObject
 {
 public:
 	/************************************************

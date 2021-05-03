@@ -2,8 +2,9 @@
 #define NODE_HPP
 
 #include "./Edge.hpp"
+#include "./GenericGraphObject.hpp"
 #include "../../LazyPrints/LazyPrinters.hpp"
-#include "../../GenericObject/includes/GenericObject.hpp"
+
 
 #include <memory>
 #include <unordered_set>
@@ -11,7 +12,7 @@
 namespace TemplateGraph
 {
 template<class T>
-class Node: public Abstract::GenericObject, public std::enable_shared_from_this<
+class Node: public GenericGraphObject, public std::enable_shared_from_this<
 		Node<T>>
 {
 public:
