@@ -1,3 +1,4 @@
+#include "./Algorithms/includes/StructualIdentifier.hpp"
 #include "./Algorithms/includes/SubgraphMatching.hpp"
 #include "./Algorithms/includes/TotalCycleDecomposition.hpp"
 
@@ -195,7 +196,7 @@ int main()
 
 	Graph<Atom> *g1 = new Graph<Atom>(atom1->GetNode());
 	lazyInfo(__LINE__, __func__, "\n"+g1->getGraphvizLink());
-
+	structualIdentifier::leafDetect(*g1);
 //std::cout <<"\n\nGraph ptr in mol: " << mol1->getGraphPtr() << " okay \n\n";
 //std::cout <<"\n\nOur supposed roots node that it owns: " << atom0->GetNode() << " okay \n\n";
 //std::cout <<"\n\nGraph ptr root node: " << mol1->getGraphPtr()->PoobGetRoot() << " okay \n\n"; //this is issue

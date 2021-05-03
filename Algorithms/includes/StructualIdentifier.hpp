@@ -49,7 +49,7 @@ void leafDetect(TemplateGraph::Graph<T> &graphToLeaf)
 			 *
 			 *	Set node as leaf
 			 */
-			currNode->setStructuralTypeIdentifier(2);
+			currNode->setStructuralTypeIdentifier(TemplateGraph::strutualType::LEAF);
 			int errorEdgeCounter = 0;
 			for (TemplateGraph::Edge<T>* currEdge : currNode->getEdges())
 			{
@@ -61,17 +61,13 @@ void leafDetect(TemplateGraph::Graph<T> &graphToLeaf)
 				else
 				{
 					//set edge as bridge
-					currEdge->setStructuralTypeIdentifier(1);
+					currEdge->setStructuralTypeIdentifier(TemplateGraph::strutualType::BRIDGE);
 				}
 				errorEdgeCounter++;
 			}// end currEdge for
 		}
-
 	}//end all nodes for
-
-
 }//end leaf detect
-
 
 }
 

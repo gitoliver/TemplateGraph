@@ -197,7 +197,8 @@ template<class T>
 std::vector<Edge<T>*> Node<T>::getOutEdges()
 {
 	std::vector<Edge<T>*> outEdgeVecToReturn;
-	for (std::unique_ptr<Edge<T>*> const &currOutEdge : this->outEdges)
+	//for (std::unique_ptr<Edge<T>*> const &currOutEdge : this->outEdges)
+	for (auto const &currOutEdge : this->outEdges)
 	{
 		outEdgeVecToReturn.push_back(currOutEdge.get());
 	}
