@@ -11,8 +11,6 @@
 #include <map>
 #include <set>
 
-//https://dreampuf.github.io/GraphvizOnline/#digraph%20G%20%7B%0A%09Bobie-%3ESteve%0A%09Steve-%3ERonne%0A%09Ronne-%3EBingo%0A%09Bingo-%3EMarsh%0A%09Marsh-%3EDelux%0A%09Steve-%3EFrank%0A%09Delux-%3EFrank%0A%09Ronne-%3EDelux%0A%09Ronne-%3EFrank%0A%09Delux-%3EBingo%0A%09Ronne-%3EBingo1%0A%09Bingo1-%3EMasrsh1%0A%09Bridge1%20-%3E%20cycle1%0A%09cycle1%20-%3E%20cycle2%0A%09cycle1%20-%3E%20cycle3%0A%09cycle2%20-%3E%20cycle3%0A%09cycle1%20-%3E%20Steve%0A%7D
-
 using namespace TemplateGraph;
 class Atom
 {
@@ -197,6 +195,9 @@ int main()
 	Graph<Atom> *g1 = new Graph<Atom>(atom1->GetNode());
 	lazyInfo(__LINE__, __func__, "\n"+g1->getGraphvizLink());
 	structualIdentifier::leafDetect(*g1);
+
+	structualIdentifier::bridgeDetect(*g1);
+
 //std::cout <<"\n\nGraph ptr in mol: " << mol1->getGraphPtr() << " okay \n\n";
 //std::cout <<"\n\nOur supposed roots node that it owns: " << atom0->GetNode() << " okay \n\n";
 //std::cout <<"\n\nGraph ptr root node: " << mol1->getGraphPtr()->PoobGetRoot() << " okay \n\n"; //this is issue

@@ -29,6 +29,8 @@ public:
 	 *  GETTER/SETTER
 	 ***********************************************/
 	std::vector<std::weak_ptr<Node<T>>> getNeighbors();
+	//Eventually want to remove. Need to think about how to properly do this
+	std::vector<Node<T>*> getRawNeighbors();
 
 	std::vector<Edge<T>*> getEdges();
 	std::vector<Edge<T>*> getOutEdges();
@@ -62,6 +64,7 @@ public:
 	 *  FUNCTIONS
 	 ***********************************************/
 	bool isNeighbor(std::shared_ptr<Node<T>> const &otherNode);
+	Edge<T>* getConnectingEdge(std::shared_ptr<Node<T>> const &otherNode);
 
 private:
 	/************************************************
@@ -91,8 +94,6 @@ private:
 	 */
 	std::vector<std::shared_ptr<Node<T>>> getChildren();
 	std::vector<std::shared_ptr<Node<T>>> getParents();
-
-	Edge<T>* getConnectingEdge(std::shared_ptr<Node<T>> const &otherNode);
 
 	friend class Edge<T> ;
 };
@@ -182,6 +183,24 @@ std::vector<std::weak_ptr<Node<T>> > Node<T>::getNeighbors()
 	}
 
 	return parentsVeclol;
+}
+
+template<class T>
+std::vector<Node<T>*> Node<T>::getRawNeighbors()
+{
+	std::vector<Node<T>*> rawNeighborVec;
+	for (std::weak_ptr<Node<T>> currWeakNeigh : this->getNeighbors())
+	{
+		if (currWeakNeigh.expired())
+		{
+			badBehavior(__LINE__, __func__, "WARNING WE SOMEHOW HAVE AN EXPIRED NEIGHBOR");
+		}
+		else
+		{
+			rawNeighborVec.push_back(currWeakNeigh.lock().get());
+		}
+	}
+	return rawNeighborVec;
 }
 
 template<class T>
