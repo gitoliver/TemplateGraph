@@ -20,14 +20,17 @@ public:
 	 *  CONSTRUCTORS/DESTRUCTORS
 	 ***********************************************/
 	Node();
-	Node(std::string inName);
-	Node(std::string name, std::string label);
+	Node(std::string inName, T* inObjectPtr);
+	Node(std::string name, std::string label, T* inObjectPtr);
 
 	~Node();
 
 	/************************************************
 	 *  GETTER/SETTER
 	 ***********************************************/
+
+	T* getObjectPtr();
+
 	std::vector<std::weak_ptr<Node<T>>> getNeighbors();
 	//Eventually want to remove. Need to think about how to properly do this
 	std::vector<Node<T>*> getRawNeighbors();
@@ -95,6 +98,12 @@ private:
 	std::vector<std::shared_ptr<Node<T>>> getChildren();
 	std::vector<std::shared_ptr<Node<T>>> getParents();
 
+	/*	Needed to allow us to go from our node to the object we
+	 * 		created the node with. Couldnt find an eloquent way
+	 * 		around this. We should probably rename it.
+	 */
+	T* objectPtr;
+
 	friend class Edge<T> ;
 };
 
@@ -102,23 +111,25 @@ template<class T>
 Node<T>::Node()
 {
 	this->setName("INVALID NODE");
+	this->objectPtr = NULL;
 	badBehavior(__LINE__, __func__, "We called the default node constructor");
 }
 
 template<class T>
-Node<T>::Node(std::string name)
+Node<T>::Node(std::string name, T* inObjectPtr)
 {
 	this->setName(name);
+	this->objectPtr = inObjectPtr;
 	//lazyInfo(__LINE__, __func__,
 	//		"Created node with name <" + this->getName() + ">");
 }
 
 template<class T>
-Node<T>::Node(std::string name, std::string label)
+Node<T>::Node(std::string name, std::string label, T* inObjectPtr)
 {
 	this->setName(name);
 	this->setLabels(label);
-
+	this->objectPtr = inObjectPtr;
 	lazyInfo(__LINE__, __func__,
 			"Created node with name <" + this->getName()
 					+ ">\n\tAnd with label <" + this->getLabel() + ">");
@@ -363,6 +374,12 @@ std::vector<std::shared_ptr<Node<T>> > Node<T>::getChildren()
 		}
 	}
 	return childrenVecToReturn;
+}
+
+template<class T>
+T* Node<T>::getObjectPtr()
+{
+	return this->objectPtr;
 }
 
 template<class T>

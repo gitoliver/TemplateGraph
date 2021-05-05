@@ -18,7 +18,7 @@ public:
 	Atom(std::string name) :
 			name_(name)
 	{
-		atomNodePtr_ = std::make_shared<Node<Atom>>(name);
+		atomNodePtr_ = std::make_shared<Node<Atom>>(name, this);
 	} // default node name is atom name
 	~Atom()
 	{
