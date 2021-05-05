@@ -25,7 +25,7 @@ public:
 	Graph();
 	//TODO: Ensure we would like this functionality, current idea is pass root node then get all traversable from this node and store in our set
 	Graph(std::shared_ptr<Node<T>>const &initialNode);
-	Graph(std::vector<Node<T>*> const &nodeList);
+	Graph(std::vector<std::shared_ptr<Node<T>>> const &nodeList);
 
 	~Graph();
 
@@ -105,41 +105,24 @@ Graph<T>::Graph(std::shared_ptr<Node<T>>const &initialNode)
 
 	//populate our lookups
 	this->populateLookups();
-
 	this->populateAdjacencyMatrix();
 
 }
 
 template<class T>
-Graph<T>::Graph(std::vector<Node<T>*> const &nodeList)
+Graph<T>::Graph(std::vector<std::shared_ptr<Node<T>>> const &nodeList)
 {
 	if (nodeList.size() > 0)
 	{
-
-		//We dont need to do weak ptr here. Doesnt matter.
-		for (std::weak_ptr<Node<T>> currNode : nodeList)
+		//Lazy way to prevent dupes, again need to come up with
+		//a more efficient way to actually prevent our dupes
+		std::unordered_set<std::shared_ptr<Node<T>>> tempNodeSet(
+				nodeList.begin(), nodeList.end());
+		for (std::shared_ptr<Node<T>> currNode : tempNodeSet)
 		{
-			std::shared_ptr<Node<T>> lockedNode = currNode.lock();
-			if (lockedNode)
-			{
-				if (!(this->allNodes.count(currNode)))
-				{
-					this->allNodes.insert(currNode);
-				}
-				else
-				{
-					badBehavior(__LINE__, __func__,
-							"Tried to insert duplicate node named <"
-									+ lockedNode->getName()
-									+ "> into our all node list");
-				}
-			}
-			else
-			{
-				badBehavior(__LINE__, __func__,
-						"Was unable to lock our current node to place it in our set of nodes");
-			}
+			this->allNodes.push_back(currNode);
 		}
+
 		this->populateLookups();
 		this->populateAdjacencyMatrix();
 	}

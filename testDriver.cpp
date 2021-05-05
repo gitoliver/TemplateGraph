@@ -115,8 +115,6 @@ private:
  //endMolecule
  */
 
-void getGraphvizURL(Graph<Atom> *g);
-
 int main()
 {
 
@@ -134,6 +132,24 @@ int main()
 	Atom *atom10 = new Atom("cycle1");
 	Atom *atom11 = new Atom("cycle2");
 	Atom *atom12 = new Atom("cycle3");
+
+	//test vector for our graph constructor overload using a vec of nodes
+	std::vector<std::shared_ptr<Node<Atom>>> testGraphVec;
+
+	testGraphVec.push_back(atom0->GetNode());
+	testGraphVec.push_back(atom1->GetNode());
+	testGraphVec.push_back(atom2->GetNode());
+	testGraphVec.push_back(atom3->GetNode());
+	testGraphVec.push_back(atom4->GetNode());
+	testGraphVec.push_back(atom5->GetNode());
+	testGraphVec.push_back(atom6->GetNode());
+	testGraphVec.push_back(atom7->GetNode());
+	testGraphVec.push_back(atom8->GetNode());
+	testGraphVec.push_back(atom9->GetNode());
+	testGraphVec.push_back(atom10->GetNode());
+	testGraphVec.push_back(atom11->GetNode());
+	testGraphVec.push_back(atom12->GetNode());
+
 
 	/*
 	 //to show our mega cycle decomp works
@@ -192,11 +208,18 @@ int main()
 	atom2->AddBond(atom7);
 	atom7->AddBond(atom8);
 
-	Graph<Atom> *g1 = new Graph<Atom>(atom1->GetNode());
-	lazyInfo(__LINE__, __func__, "\n"+g1->getGraphvizLink());
+	//To show that we can take in a vec to build graph obj
+	Graph<Atom> *g1 = new Graph<Atom>(testGraphVec);
+
+
+	//Graph<Atom> *g1 = new Graph<Atom>(atom1->GetNode());
+
+	lazyInfo(__LINE__, __func__, "\n" + g1->getGraphvizLink());
 	connectivityIdentifier::leafDetect(*g1);
 
 	connectivityIdentifier::bridgeDetect(*g1);
+
+	connectivityIdentifier::cycleDetect(*g1);
 
 //std::cout <<"\n\nGraph ptr in mol: " << mol1->getGraphPtr() << " okay \n\n";
 //std::cout <<"\n\nOur supposed roots node that it owns: " << atom0->GetNode() << " okay \n\n";
@@ -221,7 +244,7 @@ int main()
 // atomD->AddBond(atomB);
 	Graph<Atom> *g2 = new Graph<Atom>(atomA->GetNode());
 
-	lazyInfo(__LINE__, __func__, "\n"+g2->getGraphvizLink());
+	lazyInfo(__LINE__, __func__, "\n" + g2->getGraphvizLink());
 
 	//graph all cycles
 	std::vector<std::unordered_set<Node<Atom>*>> cyclesG1 =
