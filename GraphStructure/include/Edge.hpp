@@ -1,5 +1,5 @@
-#ifndef EDGE_HPP
-#define EDGE_HPP
+#ifndef TEMPLATEGRAPH_GRAPHSTRUCTURE_INCLUDE_EDGE_HPP
+#define TEMPLATEGRAPH_GRAPHSTRUCTURE_INCLUDE_EDGE_HPP
 
 #include "./GenericGraphObject.hpp"
 #include "../../LazyPrints/LazyPrinters.hpp"
@@ -119,4 +119,4 @@ std::weak_ptr<Node<T>> Edge<T>::getSourceNode()
 }
 
 }
-#endif // EDGE_HPP
+#endif //end TEMPLATEGRAPH_GRAPHSTRUCTURE_INCLUDE_EDGE_HPP

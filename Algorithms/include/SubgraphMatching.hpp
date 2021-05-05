@@ -1,5 +1,5 @@
-#ifndef SUBGRAPHMATCHING_HPP
-#define SUBGRAPHMATCHING_HPP
+#ifndef TEMPLATEGRAPH_ALGORITHMS_INCLUDE_SUBGRAPHMATCHING_HPP
+#define TEMPLATEGRAPH_ALGORITHMS_INCLUDE_SUBGRAPHMATCHING_HPP
 
 #include <map>
 #include <vector>
@@ -237,4 +237,4 @@ std::unordered_map<TemplateGraph::Node<T>*, std::vector<TemplateGraph::Node<T>*>
 
 } //end subgraph matcher namespace
 
-#endif //SUBGRAPHMATCHING_HPP
+#endif //END TEMPLATEGRAPH_ALGORITHMS_INCLUDE_SUBGRAPHMATCHING_HPP

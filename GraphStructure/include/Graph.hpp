@@ -1,5 +1,5 @@
-#ifndef GRAPH_HPP
-#define GRAPH_HPP
+#ifndef TEMPLATEGRAPH_GRAPHSTRUCTURE_INCLUDE_GRAPH_HPP
+#define TEMPLATEGRAPH_GRAPHSTRUCTURE_INCLUDE_GRAPH_HPP
 
 #include "Node.hpp"
 #include "HalfAdjacencyMatrix.hpp"
@@ -470,4 +470,4 @@ void Graph<T>::getReachableHelper(std::shared_ptr<Node<T>> const &currentNode,
 }
 
 }
-#endif // GRAPH_HPP
+#endif // TEMPLATEGRAPH_GRAPHSTRUCTURE_INCLUDE_GRAPH_HPP

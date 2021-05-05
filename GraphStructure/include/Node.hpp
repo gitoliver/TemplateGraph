@@ -1,5 +1,5 @@
-#ifndef NODE_HPP
-#define NODE_HPP
+#ifndef TEMPLATEGRAPH_GRAPHSTRUCTURE_INCLUDE_NODE_HPP
+#define TEMPLATEGRAPH_GRAPHSTRUCTURE_INCLUDE_NODE_HPP
 
 #include "./Edge.hpp"
 #include "./GenericGraphObject.hpp"
@@ -492,4 +492,4 @@ Edge<T>* TemplateGraph::Node<T>::getConnectingEdge(
 
 }
 
-#endif //NODE_HPP
+#endif //end TEMPLATEGRAPH_GRAPHSTRUCTURE_INCLUDE_NODE_HPP
