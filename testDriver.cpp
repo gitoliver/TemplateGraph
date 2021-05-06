@@ -1,5 +1,5 @@
-#include "./Algorithms/includes/SubgraphMatching.hpp"
-#include "./Algorithms/includes/TotalCycleDecomposition.hpp"
+#include "./Algorithms/include/SubgraphMatching.hpp"
+#include "./Algorithms/include/TotalCycleDecomposition.hpp"
 
 #include "./GraphStructure/include/Edge.hpp"
 #include "./GraphStructure/include/Node.hpp"
@@ -9,7 +9,7 @@
 
 #include <map>
 #include <set>
-#include "Algorithms/includes/ConnectivityIdentifier.hpp"
+#include "Algorithms/include/ConnectivityIdentifier.hpp"
 
 using namespace TemplateGraph;
 class Atom

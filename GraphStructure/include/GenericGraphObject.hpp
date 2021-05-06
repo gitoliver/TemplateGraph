@@ -1,7 +1,7 @@
 #ifndef TEMPLATEGRAPH_GRAPHSTRUCTURE_INCLUDE_GENERICGRAPHOBJECT_HPP
 #define TEMPLATEGRAPH_GRAPHSTRUCTURE_INCLUDE_GENERICGRAPHOBJECT_HPP
 
-#include "../../GenericObject/includes/GenericObject.hpp"
+#include "../../AbstractObject/includes/AbstractObject.hpp"
 
 namespace TemplateGraph
 {
@@ -11,7 +11,7 @@ enum class connectivityType
 	UNKNOWN, BRIDGE, LEAF, INCYCLE
 };
 
-class GenericGraphObject: public Abstract::GenericObject
+class GenericGraphObject: public Abstract::AbstractObject
 {
 private:
 	/*	Quick tl;dr about each type & why we care.

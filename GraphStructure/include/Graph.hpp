@@ -4,7 +4,6 @@
 #include "Node.hpp"
 #include "HalfAdjacencyMatrix.hpp"
 #include "../../LazyPrints/LazyPrinters.hpp"
-#include "../../GenericObject/includes/GenericObject.hpp"
 
 #include <map>
 #include <set>
