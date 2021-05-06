@@ -1,0 +1,3 @@
+[submodule "AbstractObject"]
+	path = AbstractObject
+	url = https://github.com/Pshepp/AbstractObject.git
