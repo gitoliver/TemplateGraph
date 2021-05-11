@@ -150,7 +150,6 @@ int main()
 	testGraphVec.push_back(atom11->GetNode());
 	testGraphVec.push_back(atom12->GetNode());
 
-
 	/*
 	 //to show our mega cycle decomp works
 	 //b 1 -> cyc 1
@@ -211,13 +210,12 @@ int main()
 	//To show that we can take in a vec to build graph obj
 	Graph<Atom> *g1 = new Graph<Atom>(testGraphVec);
 
-
 	//Graph<Atom> *g1 = new Graph<Atom>(atom1->GetNode());
 
 	lazyInfo(__LINE__, __func__, "\n" + g1->getGraphvizLink());
-	connectivityIdentifier::leafDetect(*g1);
+	//connectivityIdentifier::leafDetect(*g1);
 
-	connectivityIdentifier::bridgeDetect(*g1);
+	//connectivityIdentifier::bridgeDetect(*g1);
 
 	connectivityIdentifier::cycleDetect(*g1);
 
@@ -246,69 +244,125 @@ int main()
 
 	lazyInfo(__LINE__, __func__, "\n" + g2->getGraphvizLink());
 
-	//graph all cycles
-	std::vector<std::unordered_set<Node<Atom>*>> cyclesG1 =
+	std::vector<
+			std::pair<std::unordered_set<TemplateGraph::Node<Atom>*>,
+					std::unordered_set<TemplateGraph::Edge<Atom>*>>> cyclesGraph1 =
 			cycleDetector::totalCycleDetect(*g1);
-
-	//Print all our cycles
-	lazyInfo(__LINE__, __func__, "Printing out all of our g1 cycles");
-	int printerCounter = 0;
-	for (std::unordered_set<Node<Atom>*> currUnSet : cyclesG1)
-	{
-		std::cout
-				<< "Printing nodes in cycle #" + std::to_string(printerCounter)
-						+ "\n\t";
-		for (Node<Atom> *currAtom : currUnSet)
-		{
-			std::cout << currAtom->getName() + ", ";
-		}
-		std::cout << "\n";
-		printerCounter++;
-	}
-	printerCounter = 0;
-	std::cout << "\nCompleted printing out all our cycles \n\n";
-
-	delete atom12;
-
-	//Print all our cycles
+	//Print all our edges
 	lazyInfo(__LINE__, __func__,
-			"Printing out all of our g1 cycles after deleting cycle 3 node");
-	cyclesG1 = cycleDetector::totalCycleDetect(*g1);
+			"Printing our all our cycles. First is our Node list and second is our edge list for each cycle");
 
-	printerCounter = 0;
-	for (std::unordered_set<Node<Atom>*> currUnSet : cyclesG1)
+	int printerCounter = 0;
+
+	for (std::pair<std::unordered_set<Node<Atom>*>,
+			std::unordered_set<Edge<Atom>*>> currCyclePair : cyclesGraph1)
 	{
 		std::cout
-				<< "Printing nodes in cycle #" + std::to_string(printerCounter)
-						+ "\n\t";
-		for (Node<Atom> *currAtom : currUnSet)
+				<< "Printing Nodes and Edges in cycle #"
+						+ std::to_string(printerCounter) + "\n\tNodes: ";
+		//print out the nodes
+
+		for (Node<Atom> *currCycleAtom : currCyclePair.first)
 		{
-			std::cout << currAtom->getName() + ", ";
+			//Prints out both name and memory addr
+			std::cout << currCycleAtom->getName() + " <" << currCycleAtom
+					<< ">, ";
 		}
-		std::cout << "\n";
+		std::cout << "\n\tEdges: ";
+		for (Edge<Atom> *currCycleBond : currCyclePair.second)
+		{
+			std::cout << currCycleBond->getName() + ", ";
+		}
+		std::cout << " \n";
 		printerCounter++;
 	}
-	printerCounter = 0;
-	std::cout << "\nCompleted printing out all our cycles \n\n";
+	std::cout << "\n\n";
+
+//graph all cycles
+//std::vector<std::unordered_set<Node<Atom>*>> cyclesG1 =
+	/*		cycleDetector::totalCycleDetect(*g1);
+
+	 //Print all our cycles
+	 lazyInfo(__LINE__, __func__, "Printing out all of our g1 cycles");
+	 int printerCounter = 0;
+	 for (std::unordered_set<Node<Atom>*> currUnSet : cyclesG1)
+	 {
+	 std::cout
+	 << "Printing nodes in cycle #" + std::to_string(printerCounter)
+	 + "\n\t";
+	 for (Node<Atom> *currAtom : currUnSet)
+	 {
+	 std::cout << currAtom->getName() + ", ";
+	 }
+	 std::cout << "\n";
+	 printerCounter++;
+	 }
+	 printerCounter = 0;
+	 std::cout << "\nCompleted printing out all our cycles \n\n";
+
+	 delete atom12;
+
+	 //Print all our cycles
+	 lazyInfo(__LINE__, __func__,
+	 "Printing out all of our g1 cycles after deleting cycle 3 node");
+	 cyclesG1 = cycleDetector::totalCycleDetect(*g1);
+
+	 printerCounter = 0;
+	 for (std::unordered_set<Node<Atom>*> currUnSet : cyclesG1)
+	 {
+	 std::cout
+	 << "Printing nodes in cycle #" + std::to_string(printerCounter)
+	 + "\n\t";
+	 for (Node<Atom> *currAtom : currUnSet)
+	 {
+	 std::cout << currAtom->getName() + ", ";
+	 }
+	 std::cout << "\n";
+	 printerCounter++;
+	 }
+	 printerCounter = 0;
+	 std::cout << "\nCompleted printing out all our cycles \n\n";
+	 */
 
 	std::unordered_map<TemplateGraph::Node<Atom>*,
-			std::vector<TemplateGraph::Node<Atom>*>> matchedSubgraphs =
+			std::pair<std::vector<TemplateGraph::Node<Atom>*>,
+					std::vector<TemplateGraph::Edge<Atom>*>>> blarf =
 			subgraphMatcher::findSubgraphs(*g1, *g2);
 
 	lazyInfo(__LINE__, __func__,
-			"Printing out all of g1 subgraphs that match g2");
+			"Printing out all of g1 subgraphs that match g2\n\n");
+
 	for (std::pair<TemplateGraph::Node<Atom>*,
-			std::vector<TemplateGraph::Node<Atom>*>> currPair : matchedSubgraphs)
+			std::pair<std::vector<TemplateGraph::Node<Atom>*>,
+					std::vector<TemplateGraph::Edge<Atom>*>>> currSubgraphPair : blarf)
 	{
 		std::cout
-				<< "Node <" + currPair.first->getName()
-						+ "> is a part of cycle(s):\n\t";
-		for (TemplateGraph::Node<Atom> *currNode : currPair.second)
+				<< "Matched subgraph using node "
+						+ currSubgraphPair.first->getName() + "\n\tNodes: ";
+		for (Node<Atom>* currNode : currSubgraphPair.second.first)
 		{
 			std::cout << currNode->getName() + ", ";
 		}
-		std::cout << "\n";
+		std::cout <<"\n\tEdges: ";
+		for (Edge<Atom>* currEdge : currSubgraphPair.second.second)
+		{
+			std::cout << currEdge->getName() + ", ";
+		}
+		std::cout << "\n\n";
 	}
+	/*for (std::pair<TemplateGraph::Node<Atom>*,
+	 std::vector<TemplateGraph::Node<Atom>*>> currPair : matchedSubgraphs)
+	 {
+	 std::cout
+	 << "Node <" + currPair.first->getName()
+	 + "> is a part of cycle(s):\n\t";
+	 for (TemplateGraph::Node<Atom> *currNode : currPair.second)
+	 {
+	 std::cout << currNode->getName() + ", ";
+	 }
+	 std::cout << "\n";
+	 }
+	 */
 //Graph<Atom> queryGraph(atomA->GetNode());
 //SubgraphMatcher<Atom> sumthin(&atomGraph, &queryGraph);
 	std::cout << "Deleting " << atom6->GetName() << "\n";
@@ -327,12 +381,12 @@ int main()
 //  std::cout << "Graph:\n" << atomGraph.Print() << "\n\n";
 	std::cout << "Deleting bonds: \n";
 //atom1->RemoveBond(atom6);
-	//std::string neighMsg =
-	//		(atom1->GetNode().get()->isNeighbor(atom2->GetNode())) ?
-	//				"is Neighbor" : "is not neighbor";
+//std::string neighMsg =
+//		(atom1->GetNode().get()->isNeighbor(atom2->GetNode())) ?
+//				"is Neighbor" : "is not neighbor";
 	atom1->RemoveBond(atom2);
 
-	//lazyInfo(__LINE__, __func__, neighMsg);
+//lazyInfo(__LINE__, __func__, neighMsg);
 
 // atom3->RemoveBond(atom4);
 //  std::cout << "Graph:\n" << atomGraph.Print() << "\n\n";
