@@ -57,6 +57,7 @@ void searchMatches(std::vector<TemplateGraph::Node<T>*> matches,
 		std::pair<std::vector<TemplateGraph::Node<T>*>,
 				std::vector<TemplateGraph::Edge<T>*>> &resultsPair,
 		std::unordered_set<TemplateGraph::Node<T>*> &visitedKeys,
+		TemplateGraph::Node<T> *previousNode,
 		TemplateGraph::Graph<T> &graphSearch);
 
 template<class T>
@@ -65,6 +66,7 @@ int searchForPatterns(unsigned int currNodeIndex,
 		std::pair<std::vector<TemplateGraph::Node<T>*>,
 				std::vector<TemplateGraph::Edge<T>*>> &resultsPair,
 		std::unordered_set<TemplateGraph::Node<T>*> &visitedKeys,
+		TemplateGraph::Node<T> *previousNode,
 		TemplateGraph::Graph<T> &graphSearch)
 {
 	TemplateGraph::Node<T> *currNode = graphSearch.getNodeFromIndex(
@@ -90,7 +92,6 @@ int searchForPatterns(unsigned int currNodeIndex,
 			//if we dont have current node in our results we want to check it out
 			if (!(visitedKeys.count(interestingNode) && !isInterestingInResults))
 			{
-
 				//now ensure the two nodes are actually connected
 				int interestingNodeIndex = graphSearch.getIndexFromNode(
 						interestingNode);
@@ -149,19 +150,20 @@ int searchForPatterns(unsigned int currNodeIndex,
 				//Since I have a small brain and need to check whats getting algo mad I wanna
 				//	see if my idea is correct. It was, we were trying to get an edge between
 				//	our node and itself (a "loop" edge).
-				if (!(currNode == resultsPair.first.back()))
+				//if (!(currNode == resultsPair.first.back()))
+				if (!(previousNode == currNode))
 				{
 					resultsPair.second.push_back(
 							currNode->getConnectingEdge(
-									resultsPair.first.back()->shared_from_this()));
+									previousNode->shared_from_this()));
 				}
 			}				//end our bit that inserts edge.
 
 			//add the current node we are checking out to our results since we are good so far
 			resultsPair.first.push_back(currNode);
-
+			previousNode = currNode;
 			searchMatches(foundMatches, patterns, resultsPair, visitedKeys,
-					graphSearch);
+					previousNode, graphSearch);
 
 			//return 2 to designate we are continuing our traversal
 			return 2;
@@ -182,7 +184,7 @@ int searchForPatterns(unsigned int currNodeIndex,
 							currNode->getConnectingEdge(
 									resultsPair.first.back()->shared_from_this()));
 				}
-			}//end our bit that inserts edge.
+			}				//end our bit that inserts edge.
 
 			resultsPair.first.push_back(currNode);
 
@@ -204,6 +206,7 @@ void searchMatches(std::vector<TemplateGraph::Node<T>*> matches,
 		std::pair<std::vector<TemplateGraph::Node<T>*>,
 				std::vector<TemplateGraph::Edge<T>*>> &resultsPair,
 		std::unordered_set<TemplateGraph::Node<T>*> &visitedKeys,
+		TemplateGraph::Node<T> *previousNode,
 		TemplateGraph::Graph<T> &graphSearch)
 {
 	for (TemplateGraph::Node<T> *currMatch : matches)
@@ -220,7 +223,7 @@ void searchMatches(std::vector<TemplateGraph::Node<T>*> matches,
 		{
 			int searchState = searchForPatterns(
 					graphSearch.getIndexFromNode(currMatch), patterns,
-					resultsPair, visitedKeys, graphSearch);
+					resultsPair, visitedKeys, previousNode, graphSearch);
 			//if we hit a leaf we get out
 			if (searchState == 1)
 				break;
@@ -268,13 +271,14 @@ std::unordered_map<TemplateGraph::Node<T>*,
 	std::unordered_map<TemplateGraph::Node<T>*,
 			std::vector<TemplateGraph::Node<T>*>> finalResults;
 
+	TemplateGraph::Node<T> *firstNode = mainGraph.getNodeFromIndex(0);
 	//now we run a search for each node
 	for (unsigned int searchStartNodeIndex = 0;
 			searchStartNodeIndex < mainGraph.getRawNodes().size();
 			searchStartNodeIndex++)
 	{
 		searchForPatterns(searchStartNodeIndex, patternsToMatch, pairedResult,
-				keyVisitTracker, mainGraph);
+				keyVisitTracker, firstNode, mainGraph);
 
 		if (pairedResult.first.size() != 0)
 		{
@@ -283,7 +287,8 @@ std::unordered_map<TemplateGraph::Node<T>*,
 			//after we recursively hit all patterns we want to go ahead and clear out
 			//	our results so we hit all again. From my understanding this is, in our case,
 			//	the best way to clear our pairedResult pair.
-			pairedResult = {};
+			pairedResult =
+			{ };
 		}
 		keyVisitTracker.clear();
 	}
