@@ -12,10 +12,10 @@
 namespace
 {
 
-/*	Please note that this algo only labels our bridge EDGES, not our bridge nodes. We will
- * 		do a little extra lifting to label all of our bridge nodes in our main function and
- * 		not this one that is hidden away in an anonymous namespace.
- */
+//	Please note that this algo only labels our bridge EDGES, not our bridge nodes. We will
+//		do a little extra lifting to label all of our bridge nodes in our main function and
+// 		not this one that is hidden away in an anonymous namespace.
+
 template<class T>
 void bridgeDetectHelperDFS(TemplateGraph::Node<T> *currNode,
 		TemplateGraph::Node<T> *nextNode, TemplateGraph::Graph<T> &runningGraph,
@@ -32,9 +32,8 @@ void bridgeDetectHelperDFS(TemplateGraph::Node<T> *currNode,
 	{
 		unsigned int currNeighIndex = runningGraph.getIndexFromNode(currNeigh);
 
-		/*	We know we have not run our algo on said node yet so we need to
-		 * 		go ahead and use our friend recurion to run through the nodes.
-		 */
+		//	We know we have not run our algo on said node yet so we need to
+		// 		go ahead and use our friend recurion to run through the nodes.
 		if (preTime[currNeighIndex] == -1)
 		{
 			bridgeDetectHelperDFS(nextNode, currNeigh, runningGraph, preTime,
@@ -43,10 +42,9 @@ void bridgeDetectHelperDFS(TemplateGraph::Node<T> *currNode,
 					lowestTime[currNeighIndex]);
 			if (lowestTime[currNeighIndex] == preTime[currNeighIndex])
 			{
-				/*	Now we know all edges between our two nodes are bridge edges so
-				 * 		we must label them as such. Since we are not dealing with a multigraph
-				 * 		we know we only have 1 edge to label for now.
-				 */
+				//	Now we know all edges between our two nodes are bridge edges so
+				//		we must label them as such. Since we are not dealing with a multigraph
+				//  	we know we only have 1 edge to label for now.
 				TemplateGraph::Edge<T> *connectingEdge =
 						currNeigh->getConnectingEdge(
 								nextNode->shared_from_this());
@@ -60,27 +58,25 @@ void bridgeDetectHelperDFS(TemplateGraph::Node<T> *currNode,
 			lowestTime[nextIndex] = std::min(lowestTime[nextIndex],
 					preTime[currNeighIndex]);
 		}
-	}
-} // end bridgeDetectHelperDFS
-
+	} // end bridgeDetectHelperDFS
 }
+} //end anon namespace
 
 namespace connectivityIdentifier
 {
 
-/* Now this is a little more odd. We could just remove an edge, run dfs/bfs and
- * 	make sure all our nodes are still connected but that gives us a time complexity
- * 	of O(E*(N+E)) which is not very good especially considering that we want to be fast
- * 	and stay zoomin. We can do something better which is based off the idea of articulation
- * 	points.
- *
- * 	A node is an articulation point if and only if removing it and the connected edges disconnects
- * 	our graph. Please note that this is slightly different than the definition of a bridge due
- * 	to the fact that this is a little bit "looser" of a definition in comparison to a bridge.
- * 	We run DFS and in our call tree an edge is considered a bridge if there are no other
- * 	alternatives to reach our "parent" node (node we are looking at) or an ancestor of said parent
- * 	node from our "child" node (next node we are looking at).
- */
+// Now this is a little more odd. We could just remove an edge, run dfs/bfs and
+// 	make sure all our nodes are still connected but that gives us a time complexity
+// 	of O(E*(N+E)) which is not very good especially considering that we want to be fast
+// 	and stay zoomin. We can do something better which is based off the idea of articulation
+// 	points.
+//
+// 	A node is an articulation point if and only if removing it and the connected edges disconnects
+// 	our graph. Please note that this is slightly different than the definition of a bridge due
+// 	to the fact that this is a little bit "looser" of a definition in comparison to a bridge.
+// 	We run DFS and in our call tree an edge is considered a bridge if there are no other
+// 	alternatives to reach our "parent" node (node we are looking at) or an ancestor of said parent
+// 	node from our "child" node (next node we are looking at).
 template<class T>
 void bridgeDetect(TemplateGraph::Graph<T> &graphToBridgeDetect)
 {
@@ -95,9 +91,8 @@ void bridgeDetect(TemplateGraph::Graph<T> &graphToBridgeDetect)
 
 	for (TemplateGraph::Node<T> *currNode : graphToBridgeDetect.getRawNodes())
 	{
-		/* If our "time" for our previous time is -1 we know that we have not checked said
-		 * 	node yet thus we must run our algo.
-		 */
+		// If our "time" for our previous time is -1 we know that we have not checked said
+		// 	node yet thus we must run our algo.
 		if (preTime[graphToBridgeDetect.getIndexFromNode(currNode)] == -1)
 		{
 			bridgeDetectHelperDFS(currNode, currNode, graphToBridgeDetect,
@@ -105,9 +100,9 @@ void bridgeDetect(TemplateGraph::Graph<T> &graphToBridgeDetect)
 		}
 	} // end labeling all of our bridge EDGES
 
-	/* Now we hit all of our nodes, we only label a node as a bridge if all of its
-	 * 	edges are bridge edges.
-	 */
+	// Now we hit all of our nodes, we only label a node as a bridge if all of its
+	// 	edges are bridge edges.
+
 	for (TemplateGraph::Node<T> *currNode : graphToBridgeDetect.getRawNodes())
 	{
 		if (!(currNode->getConnectivityTypeIdentifier()
@@ -130,7 +125,6 @@ void bridgeDetect(TemplateGraph::Graph<T> &graphToBridgeDetect)
 				}
 
 			}
-
 			if (possibleBridgeNode)
 			{
 				currNode->setConnectivityTypeIdentifier(
@@ -142,10 +136,8 @@ void bridgeDetect(TemplateGraph::Graph<T> &graphToBridgeDetect)
 
 } // end our bridge detect algo
 
-/* This is easy to do, we know that a node is a leaf if it has 1 neighbor. Thus we label our node
- * 	that is being checked as a leaf and the edge associated with it as a bridge edge.
- *
- */
+//This is easy to do, we know that a node is a leaf if it has 1 neighbor. Thus we label our node
+// 	that is being checked as a leaf and the edge associated with it as a bridge edge.
 template<class T>
 void leafDetect(TemplateGraph::Graph<T> &graphToLeafDetect)
 {
@@ -178,30 +170,28 @@ void leafDetect(TemplateGraph::Graph<T> &graphToLeafDetect)
 	} //end all nodes for
 } //end leaf detect
 
-/*	The only issue is I dislike this naming, also I would like to have this only
- * 		label the nodes within a cycle instead of having to run all of our algos.
- * 		We know if a node/edge is neither a bridge or a node then it MUST be in a
- * 		cycle. I checked out a good bit of algos and even thew one together myself
- * 		but it seems like the best approach is done by using bridge detection.
- *
- * 		My self-developed algo was lazy and would just run dfs through and check
- * 		for a leading edge to the node we called then we could label said node as
- * 		incycle then also label the first edge we hit leaving our node and the one
- * 		hit to go back to the node as in cycle but this must be run on every single
- * 		node. Another way is we just label all nodes as if they are in a cycle then
- * 		change each edge between 2 nodes that are in cycle to a cycle edge. Finally
- * 		we could keep a stack of what edges & nodes we visited and then if we hit a
- * 		cycle then all in the stack are considered incycle but this is basically the
- * 		same as the bridge algo so we would be stupid to not just call the leaf &
- * 		bridge detection then just label all unknown as incycle. Let me know if we
- * 		would prefer to do something else for cycle signifier.
- */
+//	The only issue is I dislike this naming, also I would like to have this only
+// 		label the nodes within a cycle instead of having to run all of our algos.
+// 		We know if a node/edge is neither a bridge or a node then it MUST be in a
+// 		cycle. I checked out a good bit of algos and even thew one together myself
+// 		but it seems like the best approach is done by using bridge detection.
+//
+// 		My self-developed algo was lazy and would just run dfs through and check
+// 		for a leading edge to the node we called then we could label said node as
+// 		incycle then also label the first edge we hit leaving our node and the one
+// 		hit to go back to the node as in cycle but this must be run on every single
+// 		node. Another way is we just label all nodes as if they are in a cycle then
+// 		change each edge between 2 nodes that are in cycle to a cycle edge. Finally
+// 		we could keep a stack of what edges & nodes we visited and then if we hit a
+// 		cycle then all in the stack are considered incycle but this is basically the
+// 		same as the bridge algo so we would be stupid to not just call the leaf &
+// 		bridge detection then just label all unknown as incycle. Let me know if we
+// 		would prefer to do something else for cycle signifier.
 template<class T>
 void cycleDetect(TemplateGraph::Graph<T> &graphToCycleDetect)
 {
 	leafDetect(graphToCycleDetect);
 	bridgeDetect(graphToCycleDetect);
-
 	for (TemplateGraph::Node<T> *currNode : graphToCycleDetect.getRawNodes())
 	{
 		if (currNode->getConnectivityTypeIdentifier()
@@ -209,10 +199,9 @@ void cycleDetect(TemplateGraph::Graph<T> &graphToCycleDetect)
 		{
 			currNode->setConnectivityTypeIdentifier(
 					TemplateGraph::connectivityType::INCYCLE);
-			/*	now we need to hit our connecting edges to the
-			 * 		newly labeled node and do the same logic.
-			 * 		I dont like this it is slow and gross.
-			 */
+			//	now we need to hit our connecting edges to the
+			// 		newly labeled node and do the same logic.
+			// 		I dont like this it is slow and gross.
 			for (TemplateGraph::Edge<T> *currEdge : currNode->getEdges())
 			{
 				if (currEdge->getConnectivityTypeIdentifier()
@@ -256,12 +245,16 @@ void cycleDetect(TemplateGraph::Graph<T> &graphToCycleDetect)
 
 }
 
-/*	Until I finalize our algos, this is just a lazy wrapper to make
- * 		our other coders happy and to show that this does total
- * 		connectivity type labeling.
- *
- */
-
-} // end connectivity identifier namespace
+//	Until I finalize our algos, this is just a lazy wrapper to make
+// 		our other coders happy and to show that this does total
+// 		connectivity type labeling.
+//
+//
+template<class T>
+void identifyConnectivity(TemplateGraph::Graph<T> &graphToConnectivityDetect)
+{
+	cycleDetect(graphToConnectivityDetect);
+}
+}// end connectivity identifier namespace
 
 #endif // end TEMPLATEGRAPH_ALGORITHMS_INCLUDE_CONNECTIVITYIDENTIFIER_HPP

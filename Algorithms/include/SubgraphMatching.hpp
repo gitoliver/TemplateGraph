@@ -76,7 +76,6 @@ int searchForPatterns(unsigned int currNodeIndex,
 	if (patterns.count(currNode->getName()) && !visitedKeys.count(currNode))
 	{
 		visitedKeys.insert(currNode);
-
 		// When we are searching and we hit a match in our graphSearch (i.e. a parital
 		// 	match onto our query graph) we want to put them in our matched nodes, then
 		// 	we want to check search our patterns for each match.
@@ -141,23 +140,25 @@ int searchForPatterns(unsigned int currNodeIndex,
 			patterns.erase(currNode->getName());
 
 			//	Now we get the edge between the previous node and this node to insert.
-			//	I will throw a one line in to de-comment once I make sure no bad bahvior happens
-			//resultsPair.second.push_back(currNode->getConnectingEdge(resultsPair.first.back()));
-			//TemplateGraph::Edge<T> *connEdge = currNode->getConnectingEdge(
-			//		resultsPair.first.back());
-			if (resultsPair.first.size() > 0)
+			//
+			//  NOTE: For some odd reason when I take out this size check I end up
+			//			trying to get a connecting edge between 2 nodes (many times) when
+			//			they do NOT have an edge between them. Was due to never updating the
+			//			"firstNode" value which would stay the same value as the node returned
+			//			by checking key "0" from our graph.
+			//if (resultsPair.first.size() > 0)
+			//{
+			//Since I have a small brain and need to check whats getting algo mad I wanna
+			//	see if my idea is correct. It was, we were trying to get an edge between
+			//	our node and itself (a "loop" edge).
+			//if (!(currNode == resultsPair.first.back()))
+			if (!(previousNode == currNode))
 			{
-				//Since I have a small brain and need to check whats getting algo mad I wanna
-				//	see if my idea is correct. It was, we were trying to get an edge between
-				//	our node and itself (a "loop" edge).
-				//if (!(currNode == resultsPair.first.back()))
-				if (!(previousNode == currNode))
-				{
-					resultsPair.second.push_back(
-							currNode->getConnectingEdge(
-									previousNode->shared_from_this()));
-				}
-			}				//end our bit that inserts edge.
+				resultsPair.second.push_back(
+						currNode->getConnectingEdge(
+								previousNode->shared_from_this()));
+			}
+			//}				//end our bit that inserts edge.
 
 			//add the current node we are checking out to our results since we are good so far
 			resultsPair.first.push_back(currNode);
@@ -271,12 +272,13 @@ std::unordered_map<TemplateGraph::Node<T>*,
 	std::unordered_map<TemplateGraph::Node<T>*,
 			std::vector<TemplateGraph::Node<T>*>> finalResults;
 
-	TemplateGraph::Node<T> *firstNode = mainGraph.getNodeFromIndex(0);
 	//now we run a search for each node
 	for (unsigned int searchStartNodeIndex = 0;
 			searchStartNodeIndex < mainGraph.getRawNodes().size();
 			searchStartNodeIndex++)
 	{
+		TemplateGraph::Node<T> *firstNode = mainGraph.getNodeFromIndex(
+				searchStartNodeIndex);
 		searchForPatterns(searchStartNodeIndex, patternsToMatch, pairedResult,
 				keyVisitTracker, firstNode, mainGraph);
 
