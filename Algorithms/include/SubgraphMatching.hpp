@@ -144,14 +144,18 @@ int searchForPatterns(unsigned int currNodeIndex,
 			//resultsPair.second.push_back(currNode->getConnectingEdge(resultsPair.first.back()));
 			//TemplateGraph::Edge<T> *connEdge = currNode->getConnectingEdge(
 			//		resultsPair.first.back());
-
 			if (resultsPair.first.size() > 0)
 			{
-				//TemplateGraph::Node<T>* loleNode = resultsPair.first.back();
-				//TemplateGraph::Edge<T>* loleEdge = currNode->getConnectingEdge(loleNode->shared_from_this());
-				//resultsPair.second.push_back(loleEdge);
-				resultsPair.second.push_back(currNode->getConnectingEdge(resultsPair.first.back()->shared_from_this()));
-			}
+				//Since I have a small brain and need to check whats getting algo mad I wanna
+				//	see if my idea is correct. It was, we were trying to get an edge between
+				//	our node and itself (a "loop" edge).
+				if (!(currNode == resultsPair.first.back()))
+				{
+					resultsPair.second.push_back(
+							currNode->getConnectingEdge(
+									resultsPair.first.back()->shared_from_this()));
+				}
+			}				//end our bit that inserts edge.
 
 			//add the current node we are checking out to our results since we are good so far
 			resultsPair.first.push_back(currNode);
@@ -166,6 +170,20 @@ int searchForPatterns(unsigned int currNodeIndex,
 		{
 			//we have hit a leaf, update our patterns
 			patterns.erase(currNode->getName());
+
+			if (resultsPair.first.size() > 0)
+			{
+				//Since I have a small brain and need to check whats getting algo mad I wanna
+				//	see if my idea is correct. It was, we were trying to get an edge between
+				//	our node and itself (a "loop" edge).
+				if (!(currNode == resultsPair.first.back()))
+				{
+					resultsPair.second.push_back(
+							currNode->getConnectingEdge(
+									resultsPair.first.back()->shared_from_this()));
+				}
+			}//end our bit that inserts edge.
+
 			resultsPair.first.push_back(currNode);
 
 			//return 1 for our leaf case
@@ -258,13 +276,14 @@ std::unordered_map<TemplateGraph::Node<T>*,
 		searchForPatterns(searchStartNodeIndex, patternsToMatch, pairedResult,
 				keyVisitTracker, mainGraph);
 
-		if (currResults.size() != 0)
+		if (pairedResult.first.size() != 0)
 		{
 			subgraphEdgeNodeResults.insert(
 			{ mainGraph.getNodeFromIndex(searchStartNodeIndex), pairedResult });
 			//after we recursively hit all patterns we want to go ahead and clear out
-			//our results so we hit all again
-			currResults.clear();
+			//	our results so we hit all again. From my understanding this is, in our case,
+			//	the best way to clear our pairedResult pair.
+			pairedResult = {};
 		}
 		keyVisitTracker.clear();
 	}
