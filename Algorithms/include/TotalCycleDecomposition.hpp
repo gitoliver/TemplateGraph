@@ -228,27 +228,46 @@ bool validateCycleMatrix(TemplateGraph::HalfAdjacencyMatrix<T> &matrixToCheck)
 
 namespace cycleDetector
 {
-//switch to weak_ptr so we can correctly observe, now just go
+
+// This is our main function that actually returns all the decomposed cycles.
+//		We return a vector that contains pairs of the nodes within a cycle
+//		and the edges so we know our exact connectivity. The reasoning for this
+//		is explained a little bit down.
 template<typename T>
-std::vector<std::unordered_set<TemplateGraph::Node<T>*>> totalCycleDetect(
+std::vector<
+		std::pair<std::unordered_set<TemplateGraph::Node<T>*>,
+				std::unordered_set<TemplateGraph::Edge<T>*>>> totalCycleDetect(
 		TemplateGraph::Graph<T> &inputGraph)
 {
+	//	The following is used to rip out all of our fundamental cycles which
+	// 		are used to compute all cycles. This is currently inneficient due
+	// 		to my use of double storing (i.e. storing our nodes sets & adj sets
+	// 		in 2 different stl containers. Will keep for now to increase readability
+	//
+	// 		TODO: Need to not do above.
 
 	std::pair<std::vector<std::unordered_set<TemplateGraph::Node<T>*>>,
 			std::vector<TemplateGraph::HalfAdjacencyMatrix<T>>> funCycleInfo =
 			computeFundamentalCycles(inputGraph);
 
-	std::vector<std::unordered_set<TemplateGraph::Node<T>*>> funCycleNodeSets =
-			funCycleInfo.first;
 	std::vector<TemplateGraph::HalfAdjacencyMatrix<T>> funCycleAdj =
 			funCycleInfo.second;
 
-	std::vector<std::unordered_set<TemplateGraph::Node<T>*>> allCyclesNodeList;
+	//	This is kind of a doozy but this way each cycle we have contains both out nodes
+	// 		and edges. A "pair" contains a first and second member, pretty self explanatory.
+	//		Now if we insert them into any stl that uses a key-value pair type relation
+	// 		the first member will be utilized as the key and the second will be used as
+	// 		the value.
+	std::vector<
+			std::pair<std::unordered_set<TemplateGraph::Node<T>*>,
+					std::unordered_set<TemplateGraph::Edge<T>*>>> allCycleEdgesNodes;
 
+	//	All of our fundamental cycles are still cycles so we throw them over
+	// 		to our  whole adj list.
 	std::vector<TemplateGraph::HalfAdjacencyMatrix<T>> allCyclesAdj(
 			funCycleAdj);
 
-	std::vector<bool> combinitoricsVector(funCycleAdj.size());
+	std::vector<bool> combinitoricsVector(funCycleInfo.second.size());
 
 	for (unsigned int currFunAdj = 2; currFunAdj <= funCycleAdj.size();
 			currFunAdj++)
@@ -267,11 +286,11 @@ std::vector<std::unordered_set<TemplateGraph::Node<T>*>> totalCycleDetect(
 			for (unsigned int anotherFunAdj = 0;
 					anotherFunAdj < funCycleAdj.size(); anotherFunAdj++)
 			{
-				/* pretty much running every combo of our fundamental cycles
-				 * 		since our fundamental cycles form a total cycle basis
-				 * 		if we hit every combo of them we know we will produce
-				 * 		every cycle present in the graph
-				 */
+				// pretty much running every combo of our fundamental cycles
+				// 		since our fundamental cycles form a total cycle basis
+				// 		if we hit every combo of them we know we will produce
+				// 		every cycle present in the graph
+				//
 				if (combinitoricsVector[anotherFunAdj])
 				{
 					mutatingMatrix = mutatingMatrix
@@ -302,10 +321,14 @@ std::vector<std::unordered_set<TemplateGraph::Node<T>*>> totalCycleDetect(
 				combinitoricsVector.end()));
 	} //end our for loop
 
-	//just transfering our cycles to the node ptrs
+	// Just transfering our cycles to the node ptrs and edge ptrs.Up until here we
+	//		were running our algo only using adj lists. Now we convert to our (hopefully)
+	//		more useful data.
 	for (TemplateGraph::HalfAdjacencyMatrix<T> currentCycleAdj : allCyclesAdj)
 	{
-		std::unordered_set<TemplateGraph::Node<T>*> temporaryCycleSet;
+		std::unordered_set<TemplateGraph::Node<T>*> temporaryNodeCycleSet;
+		std::unordered_set<TemplateGraph::Edge<T>*> temporaryEdgeCycleSet;
+
 		for (unsigned int aNodeIndex = 0;
 				aNodeIndex < inputGraph.getRawNodes().size(); aNodeIndex++)
 		{
@@ -314,24 +337,52 @@ std::vector<std::unordered_set<TemplateGraph::Node<T>*>> totalCycleDetect(
 			{
 				if (currentCycleAdj.isConnected(bNodeIndex, aNodeIndex))
 				{
-					temporaryCycleSet.insert(
+					temporaryNodeCycleSet.insert(
 							inputGraph.getNodeFromIndex(aNodeIndex));
-					temporaryCycleSet.insert(
+					temporaryNodeCycleSet.insert(
 							inputGraph.getNodeFromIndex(bNodeIndex));
+
+					// Now to insert our specifc edges in order to ensure we completely destroy any
+					// 		possibility of being able to produce an induced cycle from what is returned.
+					//		This method is easiest, if we try to run checks after getting our node list
+					//		returned it will cause a large increase in complexity. Tried to run checks
+					//		but ended up being a total waste of time, would be easier to just add edges
+					//		to our returned data.
+					//
+					// 		TODO: Silence worries regarding using "shared_from_this()" where I grab
+					//				the edge. Our edge is returned from everything within
+					// 				the parenthesis of "insert". Also we could just pop
+					//				The previous 2 Nodes out of our nodeCycle set since
+					//				it is now switched to handle order. Was done for this reason.
+					//
+					//		NOTE: Turns out I was being dumb with the "set" stl preserving
+					//				order. It turns out that the elements are ordered within
+//									the set by use of a comparator. This means ordering is not
+					//				based on when we inserted. Switched back to unordered, I
+					//				tested using the set stl and it did return the correct
+					//				order (i.e. order we traversed everything) BUT this was due
+					//				to memory following the comparator.
+					temporaryEdgeCycleSet.insert(
+							inputGraph.getNodeFromIndex(aNodeIndex)->getConnectingEdge(
+									inputGraph.getNodeFromIndex(bNodeIndex)->shared_from_this()));
 				}
 			}
 		}
-		if (temporaryCycleSet.size() == 0)
+		if (temporaryNodeCycleSet.size() == 0)
 		{
 			badBehavior(__LINE__, __func__, "Our found cycle is empty");
 		}
 		else
 		{
-			allCyclesNodeList.push_back(temporaryCycleSet);
+			// We now have our set of edges and set of nodes that create a cycle
+			//		so we must put them into our vector as a pair.
+			allCycleEdgesNodes.push_back(
+			{ temporaryNodeCycleSet, temporaryEdgeCycleSet });
+
 		}
 	}
-	return allCyclesNodeList;
-}// end total cycle detect
+	return allCycleEdgesNodes;
+} // end total cycle detect
 
 }
 
