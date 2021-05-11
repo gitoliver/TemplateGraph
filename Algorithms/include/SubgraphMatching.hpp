@@ -138,6 +138,21 @@ int searchForPatterns(unsigned int currNodeIndex,
 			//we now prune our matches in order to make the rest of our resursive journey
 			//easier and faster. Once we match a pattern who cares about it anymore for this current run
 			patterns.erase(currNode->getName());
+
+			//	Now we get the edge between the previous node and this node to insert.
+			//	I will throw a one line in to de-comment once I make sure no bad bahvior happens
+			//resultsPair.second.push_back(currNode->getConnectingEdge(resultsPair.first.back()));
+			//TemplateGraph::Edge<T> *connEdge = currNode->getConnectingEdge(
+			//		resultsPair.first.back());
+
+			if (resultsPair.first.size() > 0)
+			{
+				//TemplateGraph::Node<T>* loleNode = resultsPair.first.back();
+				//TemplateGraph::Edge<T>* loleEdge = currNode->getConnectingEdge(loleNode->shared_from_this());
+				//resultsPair.second.push_back(loleEdge);
+				resultsPair.second.push_back(currNode->getConnectingEdge(resultsPair.first.back()->shared_from_this()));
+			}
+
 			//add the current node we are checking out to our results since we are good so far
 			resultsPair.first.push_back(currNode);
 
@@ -177,8 +192,8 @@ void searchMatches(std::vector<TemplateGraph::Node<T>*> matches,
 	{
 		//as before we need to check if our node we are checking out is
 		//already in our results i.e. already been run through
-		bool isMatchInResults = (std::find(resultsPair.first.begin(), resultsPair.first.end(),
-				currMatch) != resultsPair.first.end());
+		bool isMatchInResults = (std::find(resultsPair.first.begin(),
+				resultsPair.first.end(), currMatch) != resultsPair.first.end());
 		// We want to make sure we havent used the current node as an "entry point"
 		// 		for our search pattern function AND we want to make sure she doesnt
 		// 		exist in our results yet.
@@ -186,8 +201,8 @@ void searchMatches(std::vector<TemplateGraph::Node<T>*> matches,
 		if (!isMatchInResults && !(visitedKeys.count(currMatch)))
 		{
 			int searchState = searchForPatterns(
-					graphSearch.getIndexFromNode(currMatch), patterns, resultsPair,
-					visitedKeys, graphSearch);
+					graphSearch.getIndexFromNode(currMatch), patterns,
+					resultsPair, visitedKeys, graphSearch);
 			//if we hit a leaf we get out
 			if (searchState == 1)
 				break;
