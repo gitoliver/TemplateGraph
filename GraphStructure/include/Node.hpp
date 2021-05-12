@@ -108,7 +108,7 @@ private:
 };
 
 template<class T>
-Node<T>::Node()
+inline Node<T>::Node()
 {
 	this->setName("INVALID NODE");
 	this->objectPtr = NULL;
@@ -116,7 +116,7 @@ Node<T>::Node()
 }
 
 template<class T>
-Node<T>::Node(std::string name, T* inObjectPtr)
+inline Node<T>::Node(std::string name, T* inObjectPtr)
 {
 	this->setName(name);
 	this->objectPtr = inObjectPtr;
@@ -125,7 +125,7 @@ Node<T>::Node(std::string name, T* inObjectPtr)
 }
 
 template<class T>
-Node<T>::Node(std::string name, std::string label, T* inObjectPtr)
+inline Node<T>::Node(std::string name, std::string label, T* inObjectPtr)
 {
 	this->setName(name);
 	this->setLabels(label);
@@ -136,7 +136,7 @@ Node<T>::Node(std::string name, std::string label, T* inObjectPtr)
 }
 
 template<class T>
-Node<T>::~Node()
+inline Node<T>::~Node()
 {
 
 	//lazyInfo(__LINE__, __func__,
@@ -173,7 +173,7 @@ Node<T>::~Node()
 }
 
 template<class T>
-std::vector<std::weak_ptr<Node<T>> > Node<T>::getNeighbors()
+inline std::vector<std::weak_ptr<Node<T>> > Node<T>::getNeighbors()
 {
 	std::vector<std::shared_ptr<Node<T>>> childrenVec = this->getChildren();
 	std::vector<std::shared_ptr<Node<T>>> parentsVec = this->getParents();
@@ -197,7 +197,7 @@ std::vector<std::weak_ptr<Node<T>> > Node<T>::getNeighbors()
 }
 
 template<class T>
-std::vector<Node<T>*> Node<T>::getRawNeighbors()
+inline std::vector<Node<T>*> Node<T>::getRawNeighbors()
 {
 	std::vector<Node<T>*> rawNeighborVec;
 	for (std::weak_ptr<Node<T>> currWeakNeigh : this->getNeighbors())
@@ -215,7 +215,7 @@ std::vector<Node<T>*> Node<T>::getRawNeighbors()
 }
 
 template<class T>
-std::vector<Edge<T>*> Node<T>::getEdges()
+inline std::vector<Edge<T>*> Node<T>::getEdges()
 {
 	std::vector<Edge<T>*> outEdgesVec = this->getOutEdges();
 	std::vector<Edge<T>*> inEdgesVec = this->getInEdges();
@@ -224,7 +224,7 @@ std::vector<Edge<T>*> Node<T>::getEdges()
 }
 
 template<class T>
-std::vector<Edge<T>*> Node<T>::getOutEdges()
+inline std::vector<Edge<T>*> Node<T>::getOutEdges()
 {
 	std::vector<Edge<T>*> outEdgeVecToReturn;
 	//for (std::unique_ptr<Edge<T>*> const &currOutEdge : this->outEdges)
@@ -236,20 +236,20 @@ std::vector<Edge<T>*> Node<T>::getOutEdges()
 }
 
 template<class T>
-std::vector<Edge<T>*> Node<T>::getInEdges()
+inline std::vector<Edge<T>*> Node<T>::getInEdges()
 {
 	return this->inEdges;
 }
 
 template<class T>
-void Node<T>::addNeighbor(std::string edgeName,
+inline void Node<T>::addNeighbor(std::string edgeName,
 		std::shared_ptr<Node<T>> const &newNeighbor)
 {
 	this->addChild(edgeName, newNeighbor);
 }
 
 template<class T>
-void Node<T>::addChild(std::string edgeName,
+inline void Node<T>::addChild(std::string edgeName,
 		std::shared_ptr<Node<T>> const &childNode)
 {
 	if (this->isNeighbor(childNode))
@@ -272,14 +272,14 @@ void Node<T>::addChild(std::string edgeName,
 }
 
 template<class T>
-void Node<T>::addParent(std::string edgeName,
+inline void Node<T>::addParent(std::string edgeName,
 		const std::shared_ptr<Node<T> > &parentNode)
 {
 	parentNode.get()->addChild(edgeName, this);
 }
 
 template<class T>
-void Node<T>::removeEdgeBetween(std::shared_ptr<Node<T>> const &otherNode)
+inline void Node<T>::removeEdgeBetween(std::shared_ptr<Node<T>> const &otherNode)
 {
 	if (this->isNeighbor(otherNode))
 	{
@@ -307,7 +307,7 @@ void Node<T>::removeEdgeBetween(std::shared_ptr<Node<T>> const &otherNode)
 }
 
 template<class T>
-bool Node<T>::isNeighbor(std::shared_ptr<Node<T>> const &otherNode)
+inline bool Node<T>::isNeighbor(std::shared_ptr<Node<T>> const &otherNode)
 {
 	return (this->isChildOf(otherNode) || this->isParentOf(otherNode));
 }
@@ -335,7 +335,7 @@ bool Node<T>::isChildOf(std::shared_ptr<Node<T>> const &possibleParent)
 }
 
 template<class T>
-bool Node<T>::isParentOf(std::shared_ptr<Node<T>> const &possibleChild)
+inline bool Node<T>::isParentOf(std::shared_ptr<Node<T>> const &possibleChild)
 {
 	for (std::unique_ptr<Edge<T>> const &currOutEdge : this->outEdges)
 	{
@@ -357,7 +357,7 @@ bool Node<T>::isParentOf(std::shared_ptr<Node<T>> const &possibleChild)
 }
 
 template<class T>
-std::vector<std::shared_ptr<Node<T>> > Node<T>::getChildren()
+inline std::vector<std::shared_ptr<Node<T>> > Node<T>::getChildren()
 {
 	std::vector<std::shared_ptr<Node<T>>> childrenVecToReturn;
 	for (std::unique_ptr<Edge<T>> const &currOutEdge : this->outEdges)
@@ -377,13 +377,13 @@ std::vector<std::shared_ptr<Node<T>> > Node<T>::getChildren()
 }
 
 template<class T>
-T* Node<T>::getObjectPtr()
+inline T* Node<T>::getObjectPtr()
 {
 	return this->objectPtr;
 }
 
 template<class T>
-std::vector<std::shared_ptr<Node<T>> > Node<T>::getParents()
+inline std::vector<std::shared_ptr<Node<T>> > Node<T>::getParents()
 {
 	std::vector<std::shared_ptr<Node<T>>> parentsVecToReturn;
 	for (Edge<T> *currInEdge : this->inEdges)
@@ -403,7 +403,7 @@ std::vector<std::shared_ptr<Node<T>> > Node<T>::getParents()
 }
 
 template<class T>
-void Node<T>::removeInEdge(Edge<T> *edgeToRemove)
+inline void Node<T>::removeInEdge(Edge<T> *edgeToRemove)
 {
 	//lazyInfo(__LINE__, __func__,
 	//		"removing in edge <" + edgeToRemove->getName()
@@ -431,7 +431,7 @@ inline void Node<T>::removeOutEdge(Edge<T> *edgeToRemove)
 
 
 template<class T>
-Edge<T>* TemplateGraph::Node<T>::getConnectingEdge(
+inline Edge<T>* TemplateGraph::Node<T>::getConnectingEdge(
 		std::shared_ptr<Node<T>> const &otherNode)
 {
 	if (this->isNeighbor(otherNode))
