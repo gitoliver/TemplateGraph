@@ -78,14 +78,14 @@ private:
 };
 
 template<class T>
-Graph<T>::Graph()
+inline Graph<T>::Graph()
 {
 	badBehavior(__LINE__, __func__,
 			"Warning calling default graph constructor");
 }
 
 template<class T>
-Graph<T>::Graph(std::shared_ptr<Node<T>>const &initialNode)
+inline Graph<T>::Graph(std::shared_ptr<Node<T>>const &initialNode)
 {
 	/* Lazy way to prevent dupes, cant use method used in get nodes
 	 * due to weak_ptr being useless in our typical stl algo functions
@@ -109,7 +109,7 @@ Graph<T>::Graph(std::shared_ptr<Node<T>>const &initialNode)
 }
 
 template<class T>
-Graph<T>::Graph(std::vector<std::shared_ptr<Node<T>>> const &nodeList)
+inline Graph<T>::Graph(std::vector<std::shared_ptr<Node<T>>> const &nodeList)
 {
 	if (nodeList.size() > 0)
 	{
@@ -132,13 +132,13 @@ Graph<T>::Graph(std::vector<std::shared_ptr<Node<T>>> const &nodeList)
 }
 
 template<class T>
-Graph<T>::~Graph()
+inline Graph<T>::~Graph()
 {
 	lazyInfo(__LINE__, __func__, "Graph deleted");
 }
 
 template<class T>
-std::vector<Node<T>*> Graph<T>::getRawNodes() // const
+inline std::vector<Node<T>*> Graph<T>::getRawNodes() // const
 {
 	std::vector<Node<T>*> nodeVecToReturn;
 	for (std::weak_ptr<Node<T>> currWeakNode : this->allNodes)
@@ -175,13 +175,13 @@ std::vector<Node<T>*> Graph<T>::getRawNodes() // const
 }
 
 template<class T>
-HalfAdjacencyMatrix<T> Graph<T>::getAdjMatrix() const
+inline HalfAdjacencyMatrix<T> Graph<T>::getAdjMatrix() const
 {
 	return this->adjMatrix;
 }
 
 template<class T>
-void Graph<T>::populateAdjacencyMatrix()
+inline void Graph<T>::populateAdjacencyMatrix()
 {
 	if ((this->allNodes.size() > 0) && (this->indexLookup.size()))
 	{
@@ -253,7 +253,7 @@ void Graph<T>::populateAdjacencyMatrix()
 
 //NOTE: Must call before we try to create our adj matrix
 template<class T>
-void Graph<T>::populateLookups()
+inline void Graph<T>::populateLookups()
 {
 	if (this->allNodes.size() > 0)
 	{
@@ -301,7 +301,7 @@ void Graph<T>::populateLookups()
 }
 
 template<class T>
-std::vector<std::shared_ptr<Node<T>>> Graph<T>::getReachableNodes(
+inline std::vector<std::shared_ptr<Node<T>>> Graph<T>::getReachableNodes(
 		std::shared_ptr<Node<T>> const &startingNode)
 {
 	std::unordered_set<Node<T>*> visitedNodes;
@@ -317,13 +317,13 @@ std::vector<std::shared_ptr<Node<T>>> Graph<T>::getReachableNodes(
 
 //Should be correct. Passing pointer by reference
 template<class T>
-unsigned int Graph<T>::getIndexFromNode(Node<T> *const&queryNode)
+inline unsigned int Graph<T>::getIndexFromNode(Node<T> *const&queryNode)
 {
 	return this->indexLookup[queryNode];
 }
 
 template<class T>
-Node<T>* Graph<T>::getNodeFromIndex(unsigned int const &queryIndex)
+inline Node<T>* Graph<T>::getNodeFromIndex(unsigned int const &queryIndex)
 {
 	return this->nodeLookup[queryIndex];
 }
@@ -334,7 +334,7 @@ Node<T>* Graph<T>::getNodeFromIndex(unsigned int const &queryIndex)
  * 			and remove it at the end of our current loop iteration tho.
  */
 template<class T>
-void Graph<T>::lazyExpiredFixer()
+inline void Graph<T>::lazyExpiredFixer()
 {
 
 	/*
@@ -377,7 +377,7 @@ void Graph<T>::lazyExpiredFixer()
 }
 
 template<class T>
-std::string Graph<T>::getGraphvizLink()
+inline std::string Graph<T>::getGraphvizLink()
 {
 	std::string connectionArrow = "%20-%3E%20";
 	std::string newLine = "%0A%09";
@@ -441,7 +441,7 @@ std::string Graph<T>::getGraphvizLink()
 }
 
 template<class T>
-void Graph<T>::getReachableHelper(std::shared_ptr<Node<T>> const &currentNode,
+inline void Graph<T>::getReachableHelper(std::shared_ptr<Node<T>> const &currentNode,
 		std::unordered_set<Node<T>*> &visitedNodeSet,
 		std::vector<std::shared_ptr<Node<T>>> &reachableNodes)
 {

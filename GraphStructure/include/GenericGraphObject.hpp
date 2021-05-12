@@ -69,12 +69,12 @@ private:
 
 };
 
-enum connectivityType GenericGraphObject::getConnectivityTypeIdentifier()
+inline enum connectivityType GenericGraphObject::getConnectivityTypeIdentifier()
 {
 	return this->connectivityTypeIdentifier;
 }
 
-void GenericGraphObject::setConnectivityTypeIdentifier(
+inline void GenericGraphObject::setConnectivityTypeIdentifier(
 		connectivityType newStructuralIdentifier)
 {
 	this->connectivityTypeIdentifier = newStructuralIdentifier;
