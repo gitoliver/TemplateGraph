@@ -264,9 +264,9 @@ inline void Node<T>::addChild(std::string edgeName,
 	}
 	else
 	{
-		this->outEdges.push_back(
+		this->outEdges.push_back(std::move(
 				std::make_unique<Edge<T>>(edgeName, this->shared_from_this(),
-						childNode));
+						childNode)));
 		childNode.get()->inEdges.push_back(this->outEdges.back().get());
 	}
 }

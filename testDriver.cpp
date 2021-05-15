@@ -12,114 +12,45 @@
 #include "Algorithms/include/ConnectivityIdentifier.hpp"
 
 using namespace TemplateGraph;
-class Atom
+class Atom: public Node<Atom>
 {
 public:
-	Atom(std::string name) :
-			name_(name)
-	{
-		atomNodePtr_ = std::make_shared<Node<Atom>>(name, this);
-	} // default node name is atom name
-	~Atom()
-	{
-	}
-	inline void AddBond(Atom *otherAtom)
-	{
-		this->GetNode().get()->addNeighbor(
-				this->GetName() + "->" + otherAtom->GetName(),
-				otherAtom->GetNode());
-	}
-	inline void RemoveBond(Atom *otherAtom)
-	{
-		this->GetNode().get()->removeEdgeBetween(otherAtom->GetNode());
-	}
-	/*std::vector<Atom*> getNeighbors()
-	 {
-	 std::vector<Atom*> v2Ret;
-	 for (std::weak_ptr<Node<Atom>> currN : this->GetNode().get()->getNeighbors())
-	 {
-	 std::shared_ptr<Atom> cnl = currN.lock();
-	 if (cnl)
-	 {
-	 //v2Ret.push_back(cnl.get());
-	 }
-	 else
-	 {
-	 badBehavior(__LINE__, __func__, "couldnt lock atom neighbor");
-	 }
-	 }
 
-	 return v2Ret;
-	 }*/
-
-	//inline std::vector<Atom*> GetNeighbors()
-	//{
-	//	std::vector<Atom*> vecToReturn;
-	//	for (std::weak_ptr<Node<Atom>> currN)
-	//}
-	inline std::string GetName()
+	inline Atom(std::string inName) :
+			Node(inName, this)
 	{
-		return name_;
+		this->atomNodePtr_ = std::shared_ptr<Atom>(this);
 	}
-
-	inline std::shared_ptr<Node<Atom>> GetNode()
+	inline void addBond(Atom *otherAtom)
 	{
-		return atomNodePtr_;
+		this->addNeighbor(this->getName() + " -> " + otherAtom->getName(),
+				otherAtom->getSharedAtom());
+	}
+	inline void removeBond(Atom *otherAtom)
+	{
+		this->removeEdgeBetween(otherAtom->getSharedAtom());
+	}
+	inline std::shared_ptr<Node<Atom>> getSharedAtom()
+	{
+		return this->shared_from_this();
+	}
+	inline std::vector<Atom*> getBondedAtoms()
+	{
+		std::vector<Atom*> bondedAtomVec;
+		for (Node<Atom> *currAtom : this->getRawNeighbors())
+		{
+			bondedAtomVec.push_back(currAtom->getObjectPtr());
+		}
+		return bondedAtomVec;
 	}
 private:
-	//friend std::shared_ptr<Node<Atom>> Graph<Atom>::GetNodeGraph(const Atom& atom);
-	//inline std::shared_ptr<Node<Atom>> GetNode() {return atomNodePtr_;}
 	std::shared_ptr<Node<Atom>> atomNodePtr_;
-	std::string name_;
 };
 //endAtom
-/*
- class Molecule
- {
- public:
-
- //Atom(std::string name) :
- //	name_(name) {
- //	atomNodePtr_ = std::make_shared<Node<Atom>>(this, name);
- //} // default node label is atom name
-
- Molecule(std::string name, Atom *atomRoot)
- {
-
- //Graph<Atom>(atomRoot->GetNode());
- this->name = name;
- this->graphPtr = NULL;
- std::cout << "ATOM ROOTS NODE: " << atomRoot->GetNode() << "\n\n";
- this->graphLol = Graph<Atom>(atomRoot->GetNode());
- //std::cout << "our temp graph: " << &tGraph << "\n";
- //std::cout << "our temp graph rootnode: " << tGraph.PoobGetRoot() << "\n";
- this->graphPtr = &this->graphLol;
-
- }
-
- ~Molecule()
- {
- std::cout << "Molly destructor" << "\n\n";
- }
-
- Graph<Atom>* getGraphPtr()
- {
- return this->graphPtr;
- }
-
- private:
- std::string name;
- Graph<Atom> *graphPtr;
- Graph<Atom> graphLol; //prevent nuking early
- };
- //endMolecule
- */
 
 int main()
 {
-
 	Atom *atom0 = new Atom("Bobie");
-//Molecule *mol1 = new Molecule("mol1", atom0);
 	Atom *atom1 = new Atom("Steve");
 	Atom *atom2 = new Atom("Ronne");
 	Atom *atom3 = new Atom("Bingo");
@@ -136,147 +67,128 @@ int main()
 	//test vector for our graph constructor overload using a vec of nodes
 	std::vector<std::shared_ptr<Node<Atom>>> testGraphVec;
 
-	testGraphVec.push_back(atom0->GetNode());
-	testGraphVec.push_back(atom1->GetNode());
-	testGraphVec.push_back(atom2->GetNode());
-	testGraphVec.push_back(atom3->GetNode());
-	testGraphVec.push_back(atom4->GetNode());
-	testGraphVec.push_back(atom5->GetNode());
-	testGraphVec.push_back(atom6->GetNode());
-	testGraphVec.push_back(atom7->GetNode());
-	testGraphVec.push_back(atom8->GetNode());
-	testGraphVec.push_back(atom9->GetNode());
-	testGraphVec.push_back(atom10->GetNode());
-	testGraphVec.push_back(atom11->GetNode());
-	testGraphVec.push_back(atom12->GetNode());
-
-	/*
-	 //to show our mega cycle decomp works
-	 //b 1 -> cyc 1
-	 //atom9->AddBond(atom10);
-	 atom9->AddBond(atom10);
-	 atom9->AddBond(atom9);
-	 //cyc 1 -> cyc 2
-	 atom10->AddBond(atom11);
-	 //cyc 2 -> cyc 3
-	 atom11->AddBond(atom12);
-	 //cyc 1 -> cyc 3
-	 atom10->AddBond(atom12);
-	 //our mini cycle to the normal cycle
-	 atom10->AddBond(atom1);
-
-	 atom0->AddBond(atom1);
-	 atom1->AddBond(atom2);
-	 atom2->AddBond(atom3);
-	 atom3->AddBond(atom4);
-	 atom4->AddBond(atom5);
-	 atom1->AddBond(atom6);
-	 atom5->AddBond(atom6);
-	 atom2->AddBond(atom5);
-	 atom2->AddBond(atom6);
-	 atom5->AddBond(atom3);
-	 atom2->AddBond(atom7);
-	 atom7->AddBond(atom8);
-	 atom6->AddBond(atom3);
-	 atom6->AddBond(atom4);
-	 */
+	testGraphVec.push_back(atom0->getSharedAtom());
+	testGraphVec.push_back(atom1->getSharedAtom());
+	testGraphVec.push_back(atom2->getSharedAtom());
+	testGraphVec.push_back(atom3->getSharedAtom());
+	testGraphVec.push_back(atom4->getSharedAtom());
+	testGraphVec.push_back(atom5->getSharedAtom());
+	testGraphVec.push_back(atom6->getSharedAtom());
+	testGraphVec.push_back(atom7->getSharedAtom());
+	testGraphVec.push_back(atom8->getSharedAtom());
+	testGraphVec.push_back(atom9->getSharedAtom());
+	testGraphVec.push_back(atom10->getSharedAtom());
+	testGraphVec.push_back(atom11->getSharedAtom());
+	testGraphVec.push_back(atom12->getSharedAtom());
 
 	//to show our mega cycle decomp works
 	//b 1 -> cyc 1
 	//atom9->AddBond(atom10);
-	atom9->AddBond(atom10);
+	atom9->addBond(atom10);
 	//cyc 1 -> cyc 2
-	atom10->AddBond(atom11);
+	atom10->addBond(atom11);
 	//cyc 2 -> cyc 3
-	atom11->AddBond(atom12);
+	atom11->addBond(atom12);
 	//cyc 1 -> cyc 3
-	atom10->AddBond(atom12);
+	atom10->addBond(atom12);
 	//our mini cycle to the normal cycle
-	atom10->AddBond(atom1);
+	atom10->addBond(atom1);
 
-	atom0->AddBond(atom1);
-	atom1->AddBond(atom2);
-	atom2->AddBond(atom3);
-	atom3->AddBond(atom4);
-	atom4->AddBond(atom5);
-	atom1->AddBond(atom6);
-	atom5->AddBond(atom6);
-	atom2->AddBond(atom5);
-	atom2->AddBond(atom6);
-	atom5->AddBond(atom3);
-	atom2->AddBond(atom7);
-	atom7->AddBond(atom8);
+	atom0->addBond(atom1);
+	atom1->addBond(atom2);
+	atom2->addBond(atom3);
+	atom3->addBond(atom4);
+	atom4->addBond(atom5);
+	atom1->addBond(atom6);
+	atom5->addBond(atom6);
+	atom2->addBond(atom5);
+	atom2->addBond(atom6);
+	atom5->addBond(atom3);
+	atom2->addBond(atom7);
+	atom7->addBond(atom8);
+	atom6->addBond(atom3);
+	atom6->addBond(atom4);
 
-	//To show that we can take in a vec to build graph obj
 	Graph<Atom> *g1 = new Graph<Atom>(testGraphVec);
-
-	//Graph<Atom> *g1 = new Graph<Atom>(atom1->GetNode());
-
-	lazyInfo(__LINE__, __func__, "\n" + g1->getGraphvizLink());
-	//connectivityIdentifier::leafDetect(*g1);
-
-	//connectivityIdentifier::bridgeDetect(*g1);
-
-	connectivityIdentifier::cycleDetect(*g1);
-
-//std::cout <<"\n\nGraph ptr in mol: " << mol1->getGraphPtr() << " okay \n\n";
-//std::cout <<"\n\nOur supposed roots node that it owns: " << atom0->GetNode() << " okay \n\n";
-//std::cout <<"\n\nGraph ptr root node: " << mol1->getGraphPtr()->PoobGetRoot() << " okay \n\n"; //this is issue
-//CycleDetector<Atom> sike("cycleOfMol1", mol1->getGraphPtr());
-
-//Graph<Atom> atomGraph(atom0->GetNode());
-
-//CycleDetector<Atom> sike("cycles", &atomGraph);
-
-// SUBGRAPH MATCH TESTING
+	connectivityIdentifier::identifyConnectivity(*g1);
+	lazyInfo(__LINE__, __func__,
+			"Graph 1 grapviz link: \n\t" + g1->getGraphvizLink());
 
 	Atom *atomA = new Atom("Ronne");
 	Atom *atomB = new Atom("Bingo");
 	Atom *atomC = new Atom("Marsh");
 	Atom *atomD = new Atom("Delux");
 
-	atomA->AddBond(atomB);
-	atomB->AddBond(atomC);
-// atomC->AddBond(atomD);
-	atomA->AddBond(atomD);
-// atomD->AddBond(atomB);
-	Graph<Atom> *g2 = new Graph<Atom>(atomA->GetNode());
+	atomA->addBond(atomB);
+	atomB->addBond(atomC);
+	atomA->addBond(atomD);
+	Graph<Atom> *g2 = new Graph<Atom>(atomA->getSharedAtom());
+	connectivityIdentifier::identifyConnectivity(*g2);
+	lazyInfo(__LINE__, __func__,
+			"Graph 2 grapviz link: \n\t" + g2->getGraphvizLink());
 
-	lazyInfo(__LINE__, __func__, "\n" + g2->getGraphvizLink());
-
+	//Showing cycle decomp works
 	std::vector<
 			std::pair<std::unordered_set<TemplateGraph::Node<Atom>*>,
-					std::unordered_set<TemplateGraph::Edge<Atom>*>>> cyclesGraph1 =
+					std::unordered_set<TemplateGraph::Edge<Atom>*>>> g1Cycles =
 			cycleDetector::totalCycleDetect(*g1);
-	//Print all our edges
-	lazyInfo(__LINE__, __func__,
-			"Printing our all our cycles. First is our Node list and second is our edge list for each cycle");
 
-	int printerCounter = 0;
+	//Showing subgraph matching works
+	std::unordered_map<TemplateGraph::Node<Atom>*,
+			std::pair<std::vector<TemplateGraph::Node<Atom>*>,
+					std::vector<TemplateGraph::Edge<Atom>*>>> g2MatchesIng1 =
+			subgraphMatcher::findSubgraphs(*g1, *g2);
 
-	for (std::pair<std::unordered_set<Node<Atom>*>,
-			std::unordered_set<Edge<Atom>*>> currCyclePair : cyclesGraph1)
+	lazyInfo(__LINE__, __func__, "Printing out all cycles of g1\n");
+	int prettyCounter = 0;
+	//for (Node<Atom> *lole : g1->getRawNodes())
+	//{
+	//std::cout << "Cycles containing node: " + lole->getName() + "\n";
+	for (std::pair<std::unordered_set<TemplateGraph::Node<Atom>*>,
+			std::unordered_set<TemplateGraph::Edge<Atom>*>> currCyclePair : g1Cycles)
 	{
-		std::cout
-				<< "Printing Nodes and Edges in cycle #"
-						+ std::to_string(printerCounter) + "\n\tNodes: ";
-		//print out the nodes
-
-		for (Node<Atom> *currCycleAtom : currCyclePair.first)
+		//if (currCyclePair.first.count(lole) > 0)
+		//{
+		std::cout << "Cycle #" + std::to_string(prettyCounter) + "\n\tNodes: ";
+		for (Node<Atom> *currAtom : currCyclePair.first)
 		{
-			//Prints out both name and memory addr
-			std::cout << currCycleAtom->getName() + " <" << currCycleAtom
-					<< ">, ";
+			std::cout << currAtom->getName() + ", ";
 		}
 		std::cout << "\n\tEdges: ";
-		for (Edge<Atom> *currCycleBond : currCyclePair.second)
+		for (Edge<Atom> *currEdge : currCyclePair.second)
 		{
-			std::cout << currCycleBond->getName() + ", ";
+			std::cout << currEdge->getName() + ", ";
 		}
-		std::cout << " \n";
-		printerCounter++;
+		std::cout << "\n";
+		prettyCounter++;
+		//}
 	}
+	prettyCounter = 0;
 	std::cout << "\n\n";
+	//}
+
+	lazyInfo(__LINE__, __func__,
+			"Printing out our nodes in g1 that match g2");
+
+	for (std::pair<TemplateGraph::Node<Atom>*,
+			std::pair<std::vector<TemplateGraph::Node<Atom>*>,
+					std::vector<TemplateGraph::Edge<Atom>*>>> currMatchPair : g2MatchesIng1)
+	{
+		std::cout
+				<< "Node Key: " + currMatchPair.first->getName()
+						+ "\n\tNodes: ";
+		for (Node<Atom> *currAtom : currMatchPair.second.first)
+		{
+			std::cout << currAtom->getName() + ", ";
+		}
+		std::cout << "\n\tEdges: ";
+		for (Edge<Atom> *currEdge : currMatchPair.second.second)
+		{
+			std::cout << currEdge->getName() + ", ";
+		}
+		std::cout << "\n\n";
+	}
+
 
 //graph all cycles
 //std::vector<std::unordered_set<Node<Atom>*>> cyclesG1 =
@@ -323,33 +235,34 @@ int main()
 	 printerCounter = 0;
 	 std::cout << "\nCompleted printing out all our cycles \n\n";
 	 */
+	/*
+	 std::unordered_map<TemplateGraph::Node<Atom>*,
+	 std::pair<std::vector<TemplateGraph::Node<Atom>*>,
+	 std::vector<TemplateGraph::Edge<Atom>*>>> blarf =
+	 subgraphMatcher::findSubgraphs(*g1, *g2);
 
-	std::unordered_map<TemplateGraph::Node<Atom>*,
-			std::pair<std::vector<TemplateGraph::Node<Atom>*>,
-					std::vector<TemplateGraph::Edge<Atom>*>>> blarf =
-			subgraphMatcher::findSubgraphs(*g1, *g2);
+	 lazyInfo(__LINE__, __func__,
+	 "Printing out all of g1 subgraphs that match g2\n\n");
 
-	lazyInfo(__LINE__, __func__,
-			"Printing out all of g1 subgraphs that match g2\n\n");
-
-	for (std::pair<TemplateGraph::Node<Atom>*,
-			std::pair<std::vector<TemplateGraph::Node<Atom>*>,
-					std::vector<TemplateGraph::Edge<Atom>*>>> currSubgraphPair : blarf)
-	{
-		std::cout
-				<< "Matched subgraph using node "
-						+ currSubgraphPair.first->getName() + "\n\tNodes: ";
-		for (Node<Atom>* currNode : currSubgraphPair.second.first)
-		{
-			std::cout << currNode->getName() + ", ";
-		}
-		std::cout <<"\n\tEdges: ";
-		for (Edge<Atom>* currEdge : currSubgraphPair.second.second)
-		{
-			std::cout << currEdge->getName() + ", ";
-		}
-		std::cout << "\n\n";
-	}
+	 for (std::pair<TemplateGraph::Node<Atom>*,
+	 std::pair<std::vector<TemplateGraph::Node<Atom>*>,
+	 std::vector<TemplateGraph::Edge<Atom>*>>> currSubgraphPair : blarf)
+	 {
+	 std::cout
+	 << "Matched subgraph using node "
+	 + currSubgraphPair.first->getName() + "\n\tNodes: ";
+	 for (Node<Atom>* currNode : currSubgraphPair.second.first)
+	 {
+	 std::cout << currNode->getName() + ", ";
+	 }
+	 std::cout <<"\n\tEdges: ";
+	 for (Edge<Atom>* currEdge : currSubgraphPair.second.second)
+	 {
+	 std::cout << currEdge->getName() + ", ";
+	 }
+	 std::cout << "\n\n";
+	 }
+	 */
 	/*for (std::pair<TemplateGraph::Node<Atom>*,
 	 std::vector<TemplateGraph::Node<Atom>*>> currPair : matchedSubgraphs)
 	 {
@@ -365,29 +278,28 @@ int main()
 	 */
 //Graph<Atom> queryGraph(atomA->GetNode());
 //SubgraphMatcher<Atom> sumthin(&atomGraph, &queryGraph);
-	std::cout << "Deleting " << atom6->GetName() << "\n";
-	delete atom6;
+	/*std::cout << "Deleting " << atom6->GetName() << "\n";
+	 delete atom6;
 
-	std::cout << "Deleting " << atom4->GetName() << "\n";
-	delete atom4;
-//std::cout << "Graph:\n" << atomGraph.Print() << "\n\n";
-	std::cout
-			<< "Visualize the graph here:\nhttps://dreampuf.github.io/GraphvizOnline/#digraph%20G%20%7B%0ABobie-%3ESteve%0A%7D\n";
-//CycleDetector<Atom> cycleDetector(atom0->GetNode());
-//cycleDetector.DetectCyclesInDFSGraph();
+	 std::cout << "Deleting " << atom4->GetName() << "\n";
+	 delete atom4;
+	 //std::cout << "Graph:\n" << atomGraph.Print() << "\n\n";
+	 std::cout
+	 << "Visualize the graph here:\nhttps://dreampuf.github.io/GraphvizOnline/#digraph%20G%20%7B%0ABobie-%3ESteve%0A%7D\n";
+	 //CycleDetector<Atom> cycleDetector(atom0->GetNode());
+	 //cycleDetector.DetectCyclesInDFSGraph();
 
-	std::cout << "Deleting " << atom5->GetName() << "\n";
-	delete atom5;
-//  std::cout << "Graph:\n" << atomGraph.Print() << "\n\n";
-	std::cout << "Deleting bonds: \n";
-//atom1->RemoveBond(atom6);
-//std::string neighMsg =
-//		(atom1->GetNode().get()->isNeighbor(atom2->GetNode())) ?
-//				"is Neighbor" : "is not neighbor";
-	atom1->RemoveBond(atom2);
-
+	 std::cout << "Deleting " << atom5->GetName() << "\n";
+	 delete atom5;
+	 //  std::cout << "Graph:\n" << atomGraph.Print() << "\n\n";
+	 std::cout << "Deleting bonds: \n";
+	 //atom1->RemoveBond(atom6);
+	 //std::string neighMsg =
+	 //		(atom1->GetNode().get()->isNeighbor(atom2->GetNode())) ?
+	 //				"is Neighbor" : "is not neighbor";
+	 atom1->RemoveBond(atom2);
+	 */
 //lazyInfo(__LINE__, __func__, neighMsg);
-
 // atom3->RemoveBond(atom4);
 //  std::cout << "Graph:\n" << atomGraph.Print() << "\n\n";
 // std::cout << "Deleting atoms.\n";
@@ -539,7 +451,7 @@ int main()
 //     Graph<Graph<int>> garyTheGraphGraph;
 //     garyTheGraphGraph.AddEdge(new Edge<Graph<int>>(&graphNode1, &graphNode2));
 
-//     // Subgraph matching test
+//     // Subgraph matching tNULLest
 //     int intStance = 1, intStance2 = 24, intStance3 = 999;
 //     Graph<int> mainGraph, queryGraph;
 //     Node<int> mana(&intStance, "Man");
@@ -561,7 +473,7 @@ int main()
 //     Edge<int> edge2(&glc, &gal);
 //     Edge<int> edge3(&mana, &gala);
 //     Edge<int> edge4(&gala, &man);
-//     Edge<int> edge5(&gal, &roh);
+//     Edge<int> edge5(&gal, &rohNULL);
 //     edge1.AddLabel("1-4");
 //     edge2.AddLabel("1-3");
 //     edge3.AddLabel("1-4");
