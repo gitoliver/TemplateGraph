@@ -66,8 +66,6 @@ public:
 		//HalfAdjacencyMatrix<T> result(this->numNodes);
 		HalfAdjacencyMatrix<T> result(rhs);
 		result.emptyInitializeWorkaround(rhs);
-
-
 		if (this->numNodes != rhs.numNodes)
 		{
 			badBehavior(__LINE__, __func__,
@@ -76,11 +74,12 @@ public:
 		}
 		else
 		{
-			for (unsigned int bitListIndex = 0; bitListIndex < this->bitList.size();
-					bitListIndex++)
+			for (unsigned int bitListIndex = 0;
+					bitListIndex < this->bitList.size(); bitListIndex++)
 			{
 				if ((this->bitList[bitListIndex] || rhs.bitList[bitListIndex])
-						&& (this->bitList[bitListIndex] != rhs.bitList[bitListIndex]))
+						&& (this->bitList[bitListIndex]
+								!= rhs.bitList[bitListIndex]))
 				{
 					result.bitList[bitListIndex] = 1;
 					++result.numEdges;
@@ -128,9 +127,8 @@ public:
 	}
 
 private:
-	/* Allows for proper index lookup. We use a half adjacency matrix because
-	 * 	our data is mirrored on the diagonal and we would like to save space
-	 */
+	// Allows for proper index lookup. We use a half adjacency matrix because
+	// 	our data is mirrored on the diagonal and we would like to save space
 	unsigned int index(const unsigned int aNodeIndex,
 			const unsigned int bNodeIndex);
 	//Our actual connections/Adj matrix
@@ -150,7 +148,8 @@ HalfAdjacencyMatrix<T>::HalfAdjacencyMatrix()
 }
 
 template<class T>
-HalfAdjacencyMatrix<T>::HalfAdjacencyMatrix(std::vector<Node<T>*> const &nodeList)
+HalfAdjacencyMatrix<T>::HalfAdjacencyMatrix(
+		std::vector<Node<T>*> const &nodeList)
 {
 	unsigned int numNodes = nodeList.size();
 	this->bitList.assign(((numNodes * (numNodes - 1)) / 2), 0);

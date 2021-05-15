@@ -31,12 +31,12 @@ public:
 	/************************************************
 	 *  GETTER/SETTER
 	 ***********************************************/
-	/* TODO: Finalize what we would like to pass. Using weak_ptr is nice because we can easily check
-	 * 			if our node is even useful/alive still but this would get annoying to constantly pass
-	 * 			weak_ptr<Node<T>>. As of now, for our getNodes I will be using a raw ptr due to the fact
-	 * 			that there should be no deletions etc. when we run our algos. I will do a check prior to
-	 * 			returning the vector to ensure that all nodes in our node-list are still alive.
-	 */
+	// TODO: Finalize what we would like to pass. Using weak_ptr is nice because we can easily check
+	// 			if our node is even useful/alive still but this would get annoying to constantly pass
+	// 			weak_ptr<Node<T>>. As of now, for our getNodes I will be using a raw ptr due to the fact
+	// 			that there should be no deletions etc. when we run our algos. I will do a check prior to
+	// 			returning the vector to ensure that all nodes in our node-list are still alive.
+	//
 	std::vector<Node<T>*> getRawNodes(); // const;
 	HalfAdjacencyMatrix<T> getAdjMatrix() const;
 
@@ -87,10 +87,8 @@ inline Graph<T>::Graph()
 template<class T>
 inline Graph<T>::Graph(std::shared_ptr<Node<T>>const &initialNode)
 {
-	/* Lazy way to prevent dupes, cant use method used in get nodes
-	 * due to weak_ptr being useless in our typical stl algo functions
-	 */
-
+	// Lazy way to prevent dupes, cant use method used in get nodes
+	// due to weak_ptr being useless in our typical stl algo functions
 	std::vector<std::shared_ptr<Node<T>>> tempNodeVec = this->getReachableNodes(
 			initialNode);
 
@@ -305,11 +303,9 @@ inline std::vector<std::shared_ptr<Node<T>>> Graph<T>::getReachableNodes(
 		std::shared_ptr<Node<T>> const &startingNode)
 {
 	std::unordered_set<Node<T>*> visitedNodes;
-	/* TODO: Please note that this current method does increase the size of our call stack a good bit due to the use of recursion.
-	 * 			Depending on how large of graphs we are dealing with this could become an issue and it may be a better
-	 * 			call to use a different method.
-	 */
-
+	// TODO: Please note that this current method does increase the size of our call stack a good bit due to the use of recursion.
+	// 			Depending on how large of graphs we are dealing with this could become an issue and it may be a better
+	// 			call to use a different method.
 	std::vector<std::shared_ptr<Node<T>>> reachableVecToReturn;
 	this->getReachableHelper(startingNode, visitedNodes, reachableVecToReturn);
 	return reachableVecToReturn;
@@ -328,20 +324,16 @@ inline Node<T>* Graph<T>::getNodeFromIndex(unsigned int const &queryIndex)
 	return this->nodeLookup[queryIndex];
 }
 
-/* TODO: Find a better way to remove all expired ptrs that will always work
- * 			I am worried that just iterating through index will not work well
- * 			in all cases. Could just do currIndex-- once we find an expired
- * 			and remove it at the end of our current loop iteration tho.
- */
+// TODO: Find a better way to remove all expired ptrs that will always work
+// 			I am worried that just iterating through index will not work well
+// 			in all cases. Could just do currIndex-- once we find an expired
+// 			and remove it at the end of our current loop iteration tho.
+//
 template<class T>
 inline void Graph<T>::lazyExpiredFixer()
 {
-
-	/*
-	 * Possibly a good way, need to run through some tests.
-	 */
+	// Possibly a good way, need to run through some tests.
 	unsigned int ogSize = this->allNodes.size();
-
 	for (unsigned int currIndex = 0; currIndex < this->allNodes.size();
 			currIndex++)
 	{
@@ -352,23 +344,18 @@ inline void Graph<T>::lazyExpiredFixer()
 		}
 	}
 
-	/*	Extremely heavy way but def works
-	 *
-	 *
-	 unsigned int ogSize = this->allNodes.size();
-
-	 std::vector<std::weak_ptr<Node<T>>> dustyList = this->allNodes;
-
-	 this->allNodes.clear();
-
-	 for (std::weak_ptr<Node<T>> currDusty : dustyList)
-	 {
-	 if (!(currDusty.expired()))
-	 {
-	 this->allNodes.push_back(currDusty);
-	 }
-	 }
-	 */
+	//	Extremely heavy way but def works
+	//
+	// unsigned int ogSize = this->allNodes.size();
+	// std::vector<std::weak_ptr<Node<T>>> dustyList = this->allNodes;
+	// this->allNodes.clear();
+	// for (std::weak_ptr<Node<T>> currDusty : dustyList)
+	// {
+	// if (!(currDusty.expired()))
+	// {
+	// this->allNodes.push_back(currDusty);
+	// }
+	// }
 	if (ogSize != this->allNodes.size())
 	{
 		this->populateLookups();
@@ -402,12 +389,11 @@ inline std::string Graph<T>::getGraphvizLink()
 				Node<T> *rawNeigh = currNeigh.lock().get();
 
 				//ensure that the current connection is not already present
-				/*	We know we do not have a specific connection if either
-				 * 		A) We do NOT have our neighbor as a key in the node neighs
-				 * 						OR
-				 * 		B) If we DO have our neighbor as a key in the node neighs, then we do NOT have
-				 * 				the currNode as a member
-				 */
+				//	We know we do not have a specific connection if either
+				// 		A) We do NOT have our neighbor as a key in the node neighs
+				// 						OR
+				// 		B) If we DO have our neighbor as a key in the node neighs, then we do NOT have
+				// 				the currNode as a member
 				if ((nodeNeighs.count(rawNeigh) == 0)
 						|| (nodeNeighs[rawNeigh].count(currNode) == 0))
 				{
@@ -441,7 +427,8 @@ inline std::string Graph<T>::getGraphvizLink()
 }
 
 template<class T>
-inline void Graph<T>::getReachableHelper(std::shared_ptr<Node<T>> const &currentNode,
+inline void Graph<T>::getReachableHelper(
+		std::shared_ptr<Node<T>> const &currentNode,
 		std::unordered_set<Node<T>*> &visitedNodeSet,
 		std::vector<std::shared_ptr<Node<T>>> &reachableNodes)
 {
