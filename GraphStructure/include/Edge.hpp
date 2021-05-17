@@ -4,7 +4,6 @@
 #include "./GenericGraphObject.hpp"
 #include "../../LazyPrints/LazyPrinters.hpp"
 
-
 #include <memory>
 
 namespace TemplateGraph
@@ -29,18 +28,15 @@ public:
 
 	~Edge();
 
-	/*	Return our weak to ensure alive.
-	 *
-	 */
+	//	Return our weak to ensure alive.
 	std::weak_ptr<Node<T>> getTargetNode();
 	std::weak_ptr<Node<T>> getSourceNode();
 
 	/************************************************
 	 *  GETTER/SETTER
 	 ***********************************************/
-	/* NOTE: Using shared pointer to get our source and sink in order to ensure
-	 * 			source and sink are good and alive.
-	 */
+	// NOTE: Using shared pointer to get our source and sink in order to ensure
+	// 			source and sink are good and alive.
 	void setSourceNode(std::shared_ptr<Node<T>> source);
 	void setTargetNode(std::shared_ptr<Node<T>> target);
 
@@ -63,7 +59,8 @@ inline Edge<T>::Edge()
 }
 
 template<class T>
-inline Edge<T>::Edge(std::string name, std::shared_ptr<Node<T>> const &sourceNode,
+inline Edge<T>::Edge(std::string name,
+		std::shared_ptr<Node<T>> const &sourceNode,
 		std::shared_ptr<Node<T>> const &targetNode)
 {
 	this->setName(name);
@@ -77,7 +74,8 @@ inline Edge<T>::Edge(std::string name, std::shared_ptr<Node<T>> const &sourceNod
 
 template<class T>
 inline Edge<T>::Edge(std::string name, std::vector<std::string> labels,
-		std::shared_ptr<Node<T>> const &sourceNode, std::shared_ptr<Node<T>> const &targetNode)
+		std::shared_ptr<Node<T>> const &sourceNode,
+		std::shared_ptr<Node<T>> const &targetNode)
 {
 	this->setName(name);
 	this->setLabels(labels);

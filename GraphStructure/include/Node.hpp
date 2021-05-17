@@ -23,7 +23,7 @@ public:
 	Node(std::string inName, T* inObjectPtr);
 	Node(std::string name, std::string label, T* inObjectPtr);
 
-	~Node();
+	virtual ~Node();
 
 	/************************************************
 	 *  GETTER/SETTER
@@ -264,9 +264,9 @@ inline void Node<T>::addChild(std::string edgeName,
 	}
 	else
 	{
-		this->outEdges.push_back(
+		this->outEdges.push_back(std::move(
 				std::make_unique<Edge<T>>(edgeName, this->shared_from_this(),
-						childNode));
+						childNode)));
 		childNode.get()->inEdges.push_back(this->outEdges.back().get());
 	}
 }
