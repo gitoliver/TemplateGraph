@@ -17,10 +17,43 @@ class Atom: public Node<Atom>
 public:
 
 	inline Atom(std::string inName) :
-			Node(inName, this)
+		Node(inName, this),
+		atomNodePtr_(std::shared_ptr<Atom>(this))
 	{
+	}
+
+	inline ~Atom()
+	{
+		lazyInfo(__LINE__, __func__, "Destroying Node: " + this->getName() + "\n\tMem Addr: ");
+		std::cout << this << "\n";
+	}
+
+	//copy constructor
+	inline Atom(const Atom &rhs) :
+		Node(*rhs.atomNodePtr_.get())
+	{
+		lazyInfo(__LINE__, __func__, "Calling atom copy constructor");
 		this->atomNodePtr_ = std::shared_ptr<Atom>(this);
 	}
+
+	//move constructor
+	inline Atom(Atom &&rhs)
+	{
+		lazyInfo(__LINE__, __func__, "Calling atom move constructor");
+	}
+
+	//copy assignment
+	inline Atom& operator=(const Atom &rhs)
+	{
+		lazyInfo(__LINE__, __func__, "Calling atom copy assignment");
+	}
+
+	//move assignment
+	inline Atom& operator=(Atom &&rhs)
+	{
+		lazyInfo(__LINE__, __func__, "Calling atom move assignment");
+	}
+
 	inline void addBond(Atom *otherAtom)
 	{
 		this->addNeighbor(this->getName() + " -> " + otherAtom->getName(),
@@ -34,6 +67,7 @@ public:
 	{
 		return this->shared_from_this();
 	}
+
 	inline std::vector<Atom*> getBondedAtoms()
 	{
 		std::vector<Atom*> bondedAtomVec;
@@ -67,7 +101,7 @@ int main()
 	//test vector for our graph constructor overload using a vec of nodes
 	std::vector<std::shared_ptr<Node<Atom>>> testGraphVec;
 
-	testGraphVec.push_back(atom0->getSharedAtom());
+	/*testGraphVec.push_back(atom0->getSharedAtom());
 	testGraphVec.push_back(atom1->getSharedAtom());
 	testGraphVec.push_back(atom2->getSharedAtom());
 	testGraphVec.push_back(atom3->getSharedAtom());
@@ -79,7 +113,7 @@ int main()
 	testGraphVec.push_back(atom9->getSharedAtom());
 	testGraphVec.push_back(atom10->getSharedAtom());
 	testGraphVec.push_back(atom11->getSharedAtom());
-	testGraphVec.push_back(atom12->getSharedAtom());
+	testGraphVec.push_back(atom12->getSharedAtom());*/
 
 	//to show our mega cycle decomp works
 	//b 1 -> cyc 1
@@ -109,8 +143,14 @@ int main()
 	atom6->addBond(atom3);
 	atom6->addBond(atom4);
 
-	Graph<Atom> *g1 = new Graph<Atom>(testGraphVec);
-	connectivityIdentifier::identifyConnectivity(*g1);
+
+
+	Atom copyTester(*atom6);
+
+
+
+	Graph<Atom> *g1 = new Graph<Atom>(atom0->getSharedAtom());
+	//connectivityIdentifier::identifyConnectivity(*g1);
 	lazyInfo(__LINE__, __func__,
 			"Graph 1 grapviz link: \n\t" + g1->getGraphvizLink());
 
@@ -167,8 +207,7 @@ int main()
 	std::cout << "\n\n";
 	//}
 
-	lazyInfo(__LINE__, __func__,
-			"Printing out our nodes in g1 that match g2");
+	lazyInfo(__LINE__, __func__, "Printing out our nodes in g1 that match g2");
 
 	for (std::pair<TemplateGraph::Node<Atom>*,
 			std::pair<std::vector<TemplateGraph::Node<Atom>*>,
@@ -188,7 +227,6 @@ int main()
 		}
 		std::cout << "\n\n";
 	}
-
 
 //graph all cycles
 //std::vector<std::unordered_set<Node<Atom>*>> cyclesG1 =
