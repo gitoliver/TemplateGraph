@@ -87,10 +87,14 @@ inline Graph<T>::Graph()
 template<class T>
 inline Graph<T>::Graph(std::shared_ptr<Node<T>>const &initialNode)
 {
+
 	// Lazy way to prevent dupes, cant use method used in get nodes
 	// due to weak_ptr being useless in our typical stl algo functions
+
 	std::vector<std::shared_ptr<Node<T>>> tempNodeVec = this->getReachableNodes(
 			initialNode);
+
+
 
 	std::unordered_set<std::shared_ptr<Node<T>>> tempNodeSet(
 			tempNodeVec.begin(), tempNodeVec.end());
@@ -306,7 +310,9 @@ inline std::vector<std::shared_ptr<Node<T>>> Graph<T>::getReachableNodes(
 	// TODO: Please note that this current method does increase the size of our call stack a good bit due to the use of recursion.
 	// 			Depending on how large of graphs we are dealing with this could become an issue and it may be a better
 	// 			call to use a different method.
+
 	std::vector<std::shared_ptr<Node<T>>> reachableVecToReturn;
+
 	this->getReachableHelper(startingNode, visitedNodes, reachableVecToReturn);
 	return reachableVecToReturn;
 }
@@ -432,8 +438,9 @@ inline void Graph<T>::getReachableHelper(
 		std::unordered_set<Node<T>*> &visitedNodeSet,
 		std::vector<std::shared_ptr<Node<T>>> &reachableNodes)
 {
-	currentNode->getNeighbors();
+
 	reachableNodes.push_back(currentNode);
+
 	visitedNodeSet.insert(currentNode.get());
 	for (std::weak_ptr<Node<T>> currNeighbor : currentNode->getNeighbors())
 	{

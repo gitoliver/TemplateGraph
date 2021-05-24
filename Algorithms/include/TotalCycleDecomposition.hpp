@@ -239,6 +239,7 @@ std::vector<
 				std::unordered_set<TemplateGraph::Edge<T>*>>> totalCycleDetect(
 		TemplateGraph::Graph<T> &inputGraph)
 {
+
 	//	The following is used to rip out all of our fundamental cycles which
 	// 		are used to compute all cycles. This is currently inneficient due
 	// 		to my use of double storing (i.e. storing our nodes sets & adj sets
@@ -252,6 +253,7 @@ std::vector<
 
 	std::vector<TemplateGraph::HalfAdjacencyMatrix<T>> funCycleAdj =
 			funCycleInfo.second;
+
 
 	//	This is kind of a doozy but this way each cycle we have contains both out nodes
 	// 		and edges. A "pair" contains a first and second member, pretty self explanatory.
@@ -268,6 +270,7 @@ std::vector<
 			funCycleAdj);
 
 	std::vector<bool> combinitoricsVector(funCycleInfo.second.size());
+
 
 	for (unsigned int currFunAdj = 2; currFunAdj <= funCycleAdj.size();
 			currFunAdj++)
@@ -321,6 +324,7 @@ std::vector<
 				combinitoricsVector.end()));
 	} //end our for loop
 
+
 	// Just transfering our cycles to the node ptrs and edge ptrs.Up until here we
 	//		were running our algo only using adj lists. Now we convert to our (hopefully)
 	//		more useful data.
@@ -328,7 +332,6 @@ std::vector<
 	{
 		std::unordered_set<TemplateGraph::Node<T>*> temporaryNodeCycleSet;
 		std::unordered_set<TemplateGraph::Edge<T>*> temporaryEdgeCycleSet;
-
 		for (unsigned int aNodeIndex = 0;
 				aNodeIndex < inputGraph.getRawNodes().size(); aNodeIndex++)
 		{
@@ -362,9 +365,10 @@ std::vector<
 					//				tested using the set stl and it did return the correct
 					//				order (i.e. order we traversed everything) BUT this was due
 					//				to memory following the comparator.
-					temporaryEdgeCycleSet.insert(
-							inputGraph.getNodeFromIndex(aNodeIndex)->getConnectingEdge(
-									inputGraph.getNodeFromIndex(bNodeIndex)->shared_from_this()));
+					TemplateGraph::Edge<T>* tempLoleEdge = inputGraph.getNodeFromIndex(aNodeIndex)->getConnectingEdge(
+							inputGraph.getNodeFromIndex(bNodeIndex)->shared_from_this());
+					temporaryEdgeCycleSet.insert(tempLoleEdge
+							);
 				}
 			}
 		}
