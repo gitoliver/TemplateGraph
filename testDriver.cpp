@@ -24,16 +24,18 @@ public:
 
 	inline ~Atom()
 	{
-		lazyInfo(__LINE__, __func__, "Destroying Node: " + this->getName() + "\n\tMem Addr: ");
-		std::cout << this << "\n";
+		//shows our double delete issue
+		lazyInfo(__LINE__, __func__, "Destroying Node: " + this->getName());
+		std::cout << "\tMem Addr: " << this << "\n\n";
 	}
 
 	//copy constructor
 	inline Atom(const Atom &rhs) :
-		Node(*rhs.atomNodePtr_.get())
+		Node(*rhs.atomNodePtr_.get()),
+		atomNodePtr_(std::shared_ptr<Atom>(this))
 	{
+		this->setObjectPtr(this);
 		lazyInfo(__LINE__, __func__, "Calling atom copy constructor");
-		this->atomNodePtr_ = std::shared_ptr<Atom>(this);
 	}
 
 	//move constructor
@@ -46,12 +48,19 @@ public:
 	inline Atom& operator=(const Atom &rhs)
 	{
 		lazyInfo(__LINE__, __func__, "Calling atom copy assignment");
+		return *this = Atom(rhs);
 	}
 
 	//move assignment
 	inline Atom& operator=(Atom &&rhs)
 	{
 		lazyInfo(__LINE__, __func__, "Calling atom move assignment");
+
+		this->atomNodePtr_ = std::move(rhs.getSharedAtom());
+		lazyInfo(__LINE__, __func__, "Post move");
+
+		//delete &rhs;
+		return *this;
 	}
 
 	inline void addBond(Atom *otherAtom)
@@ -145,12 +154,14 @@ int main()
 
 
 
-	Atom copyTester(*atom6);
+	//Atom copyTester(*atom6);
+	//Atom *testerDude = new Atom("tester dude");
+	//*testerDude = *atom6;
 
 
 
 	Graph<Atom> *g1 = new Graph<Atom>(atom0->getSharedAtom());
-	//connectivityIdentifier::identifyConnectivity(*g1);
+	connectivityIdentifier::identifyConnectivity(*g1);
 	lazyInfo(__LINE__, __func__,
 			"Graph 1 grapviz link: \n\t" + g1->getGraphvizLink());
 

@@ -34,13 +34,15 @@ public:
 	//move assignment
 	Node<T>& operator=(Node<T> &&rhs);
 
-	~Node();
+	virtual ~Node();
 
 	/************************************************
 	 *  GETTER/SETTER
 	 ***********************************************/
 
-	T* getObjectPtr();
+	T* getObjectPtr() const;
+	void setObjectPtr(T* inObjPtr);
+
 
 	std::vector<std::weak_ptr<Node<T>>> getNeighbors();
 	//Eventually want to remove. Need to think about how to properly do this
@@ -142,28 +144,24 @@ template<class T>
 inline Node<T>::Node(std::string name, std::string label, T *inObjectPtr) :
 		GenericGraphObject(name, label), objectPtr(inObjectPtr)
 {
-	lazyInfo(__LINE__, __func__,
-			"Created node with name <" + this->getName()
-					+ ">\n\tAnd with label <" + this->getLabel() + ">");
+	//lazyInfo(__LINE__, __func__,
+	//		"Created node with name <" + this->getName()
+	//				+ ">\n\tAnd with label <" + this->getLabel() + ">");
 }
 
 template<class T>
 inline Node<T>::~Node()
 {
-
-
 	std::vector<Edge<T>*> tempInEdge = this->inEdges;
 
 	//go through and hit all our parents, i.e. the ones that own the incoming edge and delete them
 	//TODO: Do this but not lazy
+	this->outEdges.clear();
 	for (Edge<T> *currInEdge : tempInEdge)
 	{
 		currInEdge->getSourceNode()->removeOutEdge(currInEdge);
 	}
-	lazyInfo(__LINE__, __func__,
-					"Running destructor on node <" + this->getName() + ">");
-	//lazyInfo(__LINE__, __func__,
-	//		"Finishing destructor on node <" + this->getName() + ">");
+
 }
 
 //Copy constructor
@@ -172,7 +170,7 @@ inline Node<T>::Node(const Node<T> &rhs) :
 		GenericGraphObject(rhs.getName(), rhs.getLabels(),
 				rhs.getConnectivityTypeIdentifier()), objectPtr(rhs.objectPtr)
 {
-	lazyInfo(__LINE__, __func__, "Calling copy constructor");
+	//lazyInfo(__LINE__, __func__, "Calling copy constructor");
 
 	//copy our in edges
 	/*
@@ -204,19 +202,17 @@ inline Node<T>::Node(const Node<T> &rhs) :
 		this->outEdges.push_back(std::move(tempOut));
 	}
 
-	this->edgeConnectionUpdate();
-
 }
 
 //move constructor
 template<class T>
 inline Node<T>::Node(Node<T> &&rhs) :
-		GenericGraphObject(rhs.getName(), rhs.getLabels()), outEdges(
+GenericGraphObject(rhs.getName(), rhs.getLabels(),
+				rhs.getConnectivityTypeIdentifier()), outEdges(
 				std::move(rhs.outEdges)), inEdges(std::move(rhs.inEdges)), objectPtr(
 				std::move(rhs.objectPtr))
 {
-	lazyInfo(__LINE__, __func__, "Calling move constructor");
-	this->setConnectivityTypeIdentifier(rhs.getConnectivityTypeIdentifier());
+	//lazyInfo(__LINE__, __func__, "Calling node move constructor");
 	this->edgeConnectionUpdate();
 }
 
@@ -224,29 +220,14 @@ inline Node<T>::Node(Node<T> &&rhs) :
 template<class T>
 inline Node<T>& Node<T>::operator =(const Node<T> &rhs)
 {
-	lazyInfo(__LINE__, __func__, "Calling copy assignment");
-	this->setName(rhs.getName());
-	this->setLabels(rhs.getLabels());
-	this->setConnectivityTypeIdentifier(rhs.getConnectivityTypeIdentifier());
-	this->objectPtr = rhs.objectPtr;
-	for (Edge<T> const *currEdge : rhs.getEdges())
-	{
-		//hopefully this will use proper copy constructor to make deep copies...
-		//Since this is pushed onto vec here our node -> add edge that is called
-		//	from the edge copy will cause us to throw the error
-		Edge<T> lole(*currEdge);
-
-		this->addEdge(lole);
-	}
-	this->edgeConnectionUpdate();
-
+	return *this = Node<T>(rhs);
 }
 
 //move assignment
 template<class T>
 inline Node<T>& Node<T>::operator =(Node<T> &&rhs)
 {
-	lazyInfo(__LINE__, __func__, "Calling move assignment");
+	//lazyInfo(__LINE__, __func__, "Calling node move assignment");
 	this->setName(rhs.getName());
 	this->setLabels(rhs.getLabels());
 	this->setConnectivityTypeIdentifier(rhs.getConnectivityTypeIdentifier());
@@ -254,6 +235,8 @@ inline Node<T>& Node<T>::operator =(Node<T> &&rhs)
 
 	this->inEdges = std::move(rhs.inEdges);
 	this->outEdges = std::move(rhs.outEdges);
+	this->edgeConnectionUpdate();
+	delete rhs;
 }
 
 template<class T>
@@ -312,8 +295,7 @@ template<class T>
 inline std::vector<Edge<T>*> Node<T>::getOutEdges() const
 {
 	std::vector<Edge<T>*> outEdgeVecToReturn;
-	//for (std::unique_ptr<Edge<T>*> const &currOutEdge : this->outEdges)
-	for (auto const &currOutEdge : this->outEdges)
+	for (std::unique_ptr<Edge<T>> const &currOutEdge : this->outEdges)
 	{
 		outEdgeVecToReturn.push_back(currOutEdge.get());
 	}
@@ -444,9 +426,15 @@ inline std::vector<std::shared_ptr<Node<T>> > Node<T>::getChildren()
 }
 
 template<class T>
-inline T* Node<T>::getObjectPtr()
+inline T* Node<T>::getObjectPtr() const
 {
 	return this->objectPtr;
+}
+
+template<class T>
+inline void Node<T>::setObjectPtr(T *inObjPtr)
+{
+	this->objectPtr = inObjPtr;
 }
 
 template<class T>
@@ -462,32 +450,6 @@ inline void Node<T>::edgeConnectionUpdate()
 	{
 		currOutEdge.get()->setSourceNode(this);
 	}
-}
-
-template<class T>
-inline void Node<T>::addEdge(Edge<T> *edgeToAdd)
-{
-	//Note that we can only use this for edges that have not been claimed by a unique ptr. Below is just used as a
-	bool borker = false;
-	bool sanityBorker = false;
-	bool lockable = false;
-
-	//This is bad because our (should be) newly created edge that is not
-	//present in either node should never be found
-	for (std::unique_ptr<Edge<T>> &currOutEdge : edgeToAdd->getSourceNode()->outEdges)
-	{
-		if (currOutEdge.get() == edgeToAdd)
-		{
-			edgeToAdd->getTargetNode()->inEdges.push_back(currOutEdge.get());
-			return;
-		}
-	}
-
-	std::unique_ptr<Edge<T>> tempEdge(edgeToAdd);
-//	tempEdge.get()->getTargetNode()->inEdges.push_back(tempEdge.get());
-
-	tempEdge.get()->getSourceNode()->outEdges.push_back(std::move(tempEdge));
-
 }
 
 template<class T>
@@ -517,9 +479,9 @@ template<class T>
 inline void Node<T>::removeOutEdge(Edge<T> *edgeToRemove)
 {
 	//lazyInfo(__LINE__, __func__,
-	//		"removing out edge <" + edgeToRemove->getName()
-	//				+ "> from node named <" + this->getName() + ">");
-	for (int outIndex = 0, ogSize = this->outEdges.size(); outIndex != ogSize;
+	//			"removing out edge <" + edgeToRemove->getName()
+	//	 				+ "> from node named <" + this->getName() + ">");
+	for (unsigned int outIndex = 0; outIndex <= this->outEdges.size();
 			outIndex++)
 	{
 		if (this->outEdges[outIndex].get() == edgeToRemove)

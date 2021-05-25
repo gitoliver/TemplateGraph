@@ -38,7 +38,7 @@ public:
 	//move assignment
 	Edge<T>& operator=(Edge<T> &&rhs);
 
-	~Edge();
+	virtual ~Edge();
 
 	//	Return our weak to ensure alive.
 	Node<T>* getTargetNode() const;
@@ -92,17 +92,11 @@ inline Edge<T>::Edge(std::string name, std::vector<std::string> labels,
 template<class T>
 inline Edge<T>::~Edge()
 {
+	//have our edge destructor remove itself from our inList then let die
 	this->targetNode->removeInEdge(this);
 
-	//have our edge destructor remove itself from our inList then let die
 	//lazyInfo(__LINE__, __func__,
-	//		"Edge with name <" + this->getName() + "> deleted");
-}
-
-template<class T>
-inline void Edge<T>::setSourceNode(Node<T> *source)
-{
-	this->sourceNode = source;
+	//			"Edge with name <" + this->getName() + "> deleted");
 }
 
 //copy constructor
@@ -112,69 +106,62 @@ inline Edge<T>::Edge(const Edge<T> &rhs) :
 				rhs.getConnectivityTypeIdentifier()), sourceNode(
 				rhs.getSourceNode()), targetNode(rhs.getTargetNode())
 {
-	lazyInfo(__LINE__, __func__,
-			"Calling copy constructor on " + this->getName());
+	//lazyInfo(__LINE__, __func__,
+	//		"Calling copy constructor on " + this->getName());
 }
 
 //move constructor
 template<class T>
 inline Edge<T>::Edge(Edge<T> &&rhs) :
-		sourceNode(rhs.getSourceNode().lock().get()), targetNode(
-				rhs.getTargetNode().lock().get()),
 				GenericGraphObject(rhs.getName(), rhs.getLabels(),
-								rhs.getConnectivityTypeIdentifier())
+				rhs.getConnectivityTypeIdentifier()), sourceNode(
+				rhs.getSourceNode()), targetNode(rhs.getTargetNode())
 {
-	lazyInfo(__LINE__, __func__, "Calling move constructor");
-	this->setConnectivityTypeIdentifier(rhs.getConnectivityTypeIdentifier());
-	//well since we dont really care about our rhs for move and I want to stress
-	//	that we dont care about it due to unique ptr gonna go ahead and delete the og
-	rhs.sourceNode->removeOutEdge(rhs);
+	//wanted data has been yoinked so we go ahead and delete this edge that we dont care about
+	//	anymore. As stated in move assignment we dont care what state we leave our rhs in after a move
+	//lazyInfo(__LINE__, __func__,
+	//			"Calling move constructor on " + this->getName());
 
-	//granted we could add before removeing the previous but meh.
-	this->sourceNode->addEdge(this);
+	rhs.getSourceNode()->removeOutEdge(rhs);
 }
 
 //copy assignment
 template<class T>
 inline Edge<T>& Edge<T>::operator =(const Edge<T> &rhs)
 {
-	lazyInfo(__LINE__, __func__, "Calling copy assignment");
-
-	//PLEASE NOTE THAT IF USED THIS WILL SCREW UP OUR GRAPH STRUCTURE
-	//	IF INVOKED IT WILL CAUSE A MULTIGRAPH TO SPAWN, ALGOS ARE NOT
-	//	FOR A MULTIGRAPH BUT I CAN MAKE THEM FOR A MULTIGRAPH
-	this->setConnectivityTypeIdentifier(rhs.getConnectivityTypeIdentifier());
-	bool bork = true;
-	bool borkbork = true;
-
-	if (rhs.getTargetNode().lock())
-	{
-		bork = false;
-		this->setTargetNode(rhs.getTargetNode());
-	}
-	if (rhs.getSourceNode().lock())
-	{
-		borkbork = false;
-		this->setSourceNode(rhs.getSourceNode());
-	}
-
-	this->sourceNode->addEdge(this);
-	return *this;
+	return *this = Edge<T>(rhs);
 }
 
 //move assignment
 template<class T>
 inline Edge<T>& Edge<T>::operator =(Edge<T> &&rhs)
 {
+	//lazyInfo(__LINE__,__func__, "Edge move assignment");
+	//Please note that in order to help prevent some bad behavior due to moving an edge
+	//	causing bad connectivity to arise (i.e. multigraph creation, etc.) I am using
+	//	the delete on move paradigm in order to help prevent this. Keep in mind move
+	//	implies that we dont care about what happens to our rhs.
+	this->sourceNode = rhs.sourceNode;
+	this->targetNode = rhs.targetNode;
+	this->setName(rhs.getName());
+	this->setLabels(rhs.getLabels());
 
-	lazyInfo(__LINE__, __func__, "Calling move assignment");
+	//after we yoink data wanted from our rhs we go ahead and delete it
+	rhs.getSourceNode()->removeOutEdge(rhs);
 
+	return *this;
 }
 
 template<class T>
-inline void Edge<T>::setTargetNode(Node<T> *sink)
+inline void Edge<T>::setSourceNode(Node<T> *source)
 {
-	this->targetNode = sink;
+	this->sourceNode = source;
+}
+
+template<class T>
+inline void Edge<T>::setTargetNode(Node<T> *target)
+{
+	this->targetNode = target;
 }
 
 template<class T>
