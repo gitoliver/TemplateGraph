@@ -19,8 +19,8 @@ public:
 	 *  CONSTRUCTORS/DESTRUCTORS
 	 ***********************************************/
 	Node();
-	Node(std::string inName, T *inObjectPtr);
-	Node(std::string name, std::string label, T *inObjectPtr);
+	Node(std::string inName);
+	Node(std::string name, std::string label);
 
 	//copy constructor
 	Node(const Node<T> &rhs);
@@ -34,15 +34,30 @@ public:
 	//move assignment
 	Node<T>& operator=(Node<T> &&rhs);
 
-	virtual ~Node();
+	virtual ~Node()
+	{
+		std::vector<Edge<T>*> tempInEdge = this->inEdges;
+		//lazyInfo(__LINE__, __func__, "Destroying Node: " + this->getName());
+		//std::cout << "\tMem Addr: " << this << "\n\n";
+		//go through and hit all our parents, i.e. the ones that own the incoming edge and delete them
+		//TODO: Do this but not lazy
+		this->outEdges.clear();
+		for (Edge<T> *currInEdge : tempInEdge)
+		{
+			currInEdge->getSourceNode()->removeOutEdge(currInEdge);
+		}
+		tempInEdge.clear();
+	}
 
 	/************************************************
 	 *  GETTER/SETTER
 	 ***********************************************/
 
-	T* getObjectPtr() const;
-	void setObjectPtr(T* inObjPtr);
-
+	inline T* getDeriviedClass()
+	{
+		auto derived = static_cast<T*>(this);
+		return derived;
+	}
 
 	std::vector<std::weak_ptr<Node<T>>> getNeighbors();
 	//Eventually want to remove. Need to think about how to properly do this
@@ -119,8 +134,7 @@ private:
 	 * 		created the node with. Couldnt find an eloquent way
 	 * 		around this. We should probably rename it.
 	 */
-	T *objectPtr;
-
+	//T *objectPtr;
 	friend class Edge<T> ;
 };
 
@@ -128,60 +142,60 @@ template<class T>
 inline Node<T>::Node() :
 		GenericGraphObject("INVALID NODE")
 {
-	this->objectPtr = NULL;
+	//this->objectPtr = NULL;
 	badBehavior(__LINE__, __func__, "We called the default node constructor");
 }
 
 template<class T>
-inline Node<T>::Node(std::string name, T *inObjectPtr) :
-		GenericGraphObject(name), objectPtr(inObjectPtr)
+inline Node<T>::Node(std::string name) :
+		GenericGraphObject(name)
 {
 	//lazyInfo(__LINE__, __func__,
 	//		"Created node with name <" + this->getName() + ">");
 }
 
 template<class T>
-inline Node<T>::Node(std::string name, std::string label, T *inObjectPtr) :
-		GenericGraphObject(name, label), objectPtr(inObjectPtr)
+inline Node<T>::Node(std::string name, std::string label) :
+		GenericGraphObject(name, label)
 {
 	//lazyInfo(__LINE__, __func__,
 	//		"Created node with name <" + this->getName()
 	//				+ ">\n\tAnd with label <" + this->getLabel() + ">");
 }
 
-template<class T>
-inline Node<T>::~Node()
-{
-	std::vector<Edge<T>*> tempInEdge = this->inEdges;
+/*template<class T>
+ inline Node<T>::~Node() {
+ std::vector<Edge<T>*> tempInEdge = this->inEdges;
+ lazyInfo(__LINE__, __func__, "Destroying Node: " + this->getName());
+ std::cout << "\tMem Addr: " << this << "\n\n";
+ //go through and hit all our parents, i.e. the ones that own the incoming edge and delete them
+ //TODO: Do this but not lazy
+ this->outEdges.clear();
+ for (Edge<T> *currInEdge : tempInEdge) {
+ currInEdge->getSourceNode()->removeOutEdge(currInEdge);
+ }
 
-	//go through and hit all our parents, i.e. the ones that own the incoming edge and delete them
-	//TODO: Do this but not lazy
-	this->outEdges.clear();
-	for (Edge<T> *currInEdge : tempInEdge)
-	{
-		currInEdge->getSourceNode()->removeOutEdge(currInEdge);
-	}
-
-}
+ }*/
 
 //Copy constructor
 template<class T>
 inline Node<T>::Node(const Node<T> &rhs) :
 		GenericGraphObject(rhs.getName(), rhs.getLabels(),
-				rhs.getConnectivityTypeIdentifier()), objectPtr(rhs.objectPtr)
+				rhs.getConnectivityTypeIdentifier())
 {
+	//std::cout << "\n\tGiven object ptr: " << rhs.objectPtr << "\n\n";
 	//lazyInfo(__LINE__, __func__, "Calling copy constructor");
 
 	//copy our in edges
 	/*
- 		std::unique_ptr<Edge<T>> tempEdge(
-				new Edge<T>(edgeName, this->shared_from_this(), childNode));
+	 std::unique_ptr<Edge<T>> tempEdge(
+	 new Edge<T>(edgeName, this->shared_from_this(), childNode));
 
-		childNode.get()->inEdges.push_back(tempEdge.get());
+	 childNode.get()->inEdges.push_back(tempEdge.get());
 
-		this->outEdges.push_back(std::move(tempEdge));
+	 this->outEdges.push_back(std::move(tempEdge));
 
-		^goode code
+	 ^goode code
 	 */
 	for (Edge<T> const *currInEdge : rhs.inEdges)
 	{
@@ -207,10 +221,9 @@ inline Node<T>::Node(const Node<T> &rhs) :
 //move constructor
 template<class T>
 inline Node<T>::Node(Node<T> &&rhs) :
-GenericGraphObject(rhs.getName(), rhs.getLabels(),
+		GenericGraphObject(rhs.getName(), rhs.getLabels(),
 				rhs.getConnectivityTypeIdentifier()), outEdges(
-				std::move(rhs.outEdges)), inEdges(std::move(rhs.inEdges)), objectPtr(
-				std::move(rhs.objectPtr))
+				std::move(rhs.outEdges)), inEdges(std::move(rhs.inEdges))
 {
 	//lazyInfo(__LINE__, __func__, "Calling node move constructor");
 	this->edgeConnectionUpdate();
@@ -236,6 +249,7 @@ inline Node<T>& Node<T>::operator =(Node<T> &&rhs)
 	this->inEdges = std::move(rhs.inEdges);
 	this->outEdges = std::move(rhs.outEdges);
 	this->edgeConnectionUpdate();
+
 	delete rhs;
 }
 
@@ -423,18 +437,6 @@ inline std::vector<std::shared_ptr<Node<T>> > Node<T>::getChildren()
 
 	}
 	return childrenVecToReturn;
-}
-
-template<class T>
-inline T* Node<T>::getObjectPtr() const
-{
-	return this->objectPtr;
-}
-
-template<class T>
-inline void Node<T>::setObjectPtr(T *inObjPtr)
-{
-	this->objectPtr = inObjPtr;
 }
 
 template<class T>

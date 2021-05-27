@@ -26,7 +26,10 @@ public:
 	Graph(std::shared_ptr<Node<T>>const &initialNode);
 	Graph(std::vector<std::shared_ptr<Node<T>>> const &nodeList);
 
-	~Graph();
+	virtual ~Graph()
+	{
+		//lazyInfo(__LINE__, __func__, "Graph deleted");
+	}
 
 	/************************************************
 	 *  GETTER/SETTER
@@ -132,12 +135,13 @@ inline Graph<T>::Graph(std::vector<std::shared_ptr<Node<T>>> const &nodeList)
 		badBehavior(__LINE__, __func__, "Was passed a nodelist of size 0");
 	}
 }
-
+/*
 template<class T>
 inline Graph<T>::~Graph()
 {
 	lazyInfo(__LINE__, __func__, "Graph deleted");
 }
+*/
 
 template<class T>
 inline std::vector<Node<T>*> Graph<T>::getRawNodes() // const
