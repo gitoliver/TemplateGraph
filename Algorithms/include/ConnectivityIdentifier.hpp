@@ -28,7 +28,7 @@ void bridgeDetectHelperDFS(TemplateGraph::Node<T> *currNode,
 	lowestTime[nextIndex] = preTime[nextIndex];
 
 	//now we run our dfs recursion on our neighbors.
-	for (TemplateGraph::Node<T> *currNeigh : nextNode->getRawNeighbors())
+	for (TemplateGraph::Node<T> *currNeigh : nextNode->getNeighbors())
 	{
 		unsigned int currNeighIndex = runningGraph.getIndexFromNode(currNeigh);
 
@@ -46,8 +46,7 @@ void bridgeDetectHelperDFS(TemplateGraph::Node<T> *currNode,
 				//		we must label them as such. Since we are not dealing with a multigraph
 				//  	we know we only have 1 edge to label for now.
 				TemplateGraph::Edge<T> *connectingEdge =
-						currNeigh->getConnectingEdge(
-								nextNode->shared_from_this());
+						currNeigh->getConnectingEdge(nextNode);
 				connectingEdge->setConnectivityTypeIdentifier(
 						TemplateGraph::connectivityType::BRIDGE);
 			} //end if where we lable our bridge edges
@@ -80,7 +79,7 @@ namespace connectivityIdentifier
 template<class T>
 void bridgeDetect(TemplateGraph::Graph<T> &graphToBridgeDetect)
 {
-	unsigned int numOfNodes = graphToBridgeDetect.getRawNodes().size();
+	unsigned int numOfNodes = graphToBridgeDetect.getNodes().size();
 
 	//our lowest time for a certain node to be visited
 	std::vector<int> lowestTime(numOfNodes, -1);
@@ -89,7 +88,7 @@ void bridgeDetect(TemplateGraph::Graph<T> &graphToBridgeDetect)
 
 	unsigned int counter = 0;
 
-	for (TemplateGraph::Node<T> *currNode : graphToBridgeDetect.getRawNodes())
+	for (TemplateGraph::Node<T> *currNode : graphToBridgeDetect.getNodes())
 	{
 		// If our "time" for our previous time is -1 we know that we have not checked said
 		// 	node yet thus we must run our algo.
@@ -103,7 +102,7 @@ void bridgeDetect(TemplateGraph::Graph<T> &graphToBridgeDetect)
 	// Now we hit all of our nodes, we only label a node as a bridge if all of its
 	// 	edges are bridge edges.
 
-	for (TemplateGraph::Node<T> *currNode : graphToBridgeDetect.getRawNodes())
+	for (TemplateGraph::Node<T> *currNode : graphToBridgeDetect.getNodes())
 	{
 		if (!(currNode->getConnectivityTypeIdentifier()
 				== TemplateGraph::connectivityType::LEAF))
@@ -141,7 +140,7 @@ void bridgeDetect(TemplateGraph::Graph<T> &graphToBridgeDetect)
 template<class T>
 void leafDetect(TemplateGraph::Graph<T> &graphToLeafDetect)
 {
-	for (TemplateGraph::Node<T> *currNode : graphToLeafDetect.getRawNodes())
+	for (TemplateGraph::Node<T> *currNode : graphToLeafDetect.getNodes())
 	{
 		//we are at leaf
 		if (currNode->getNeighbors().size() == 1)
@@ -192,7 +191,7 @@ void cycleDetect(TemplateGraph::Graph<T> &graphToCycleDetect)
 {
 	leafDetect(graphToCycleDetect);
 	bridgeDetect(graphToCycleDetect);
-	for (TemplateGraph::Node<T> *currNode : graphToCycleDetect.getRawNodes())
+	for (TemplateGraph::Node<T> *currNode : graphToCycleDetect.getNodes())
 	{
 		if (currNode->getConnectivityTypeIdentifier()
 				== TemplateGraph::connectivityType::UNKNOWN)
@@ -218,7 +217,7 @@ void cycleDetect(TemplateGraph::Graph<T> &graphToCycleDetect)
 	int badEdgeCounter = 0;
 
 	//Lazy post check. We should have all labeled as of now.
-	for (TemplateGraph::Node<T> *currNode : graphToCycleDetect.getRawNodes())
+	for (TemplateGraph::Node<T> *currNode : graphToCycleDetect.getNodes())
 	{
 		if (currNode->getConnectivityTypeIdentifier()
 				== TemplateGraph::connectivityType::UNKNOWN)
@@ -255,6 +254,6 @@ void identifyConnectivity(TemplateGraph::Graph<T> &graphToConnectivityDetect)
 {
 	cycleDetect(graphToConnectivityDetect);
 }
-}// end connectivity identifier namespace
+} // end connectivity identifier namespace
 
 #endif // end TEMPLATEGRAPH_ALGORITHMS_INCLUDE_CONNECTIVITYIDENTIFIER_HPP

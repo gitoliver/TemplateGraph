@@ -50,7 +50,7 @@ std::pair<std::vector<std::unordered_set<TemplateGraph::Node<T>*>>,
 
 	//to construct our actual spanning tree
 	std::unique_ptr<TreeNode[]> aTree(
-			new TreeNode[interestingGraph.getRawNodes().size()]);
+			new TreeNode[interestingGraph.getNodes().size()]);
 
 	std::stack<unsigned int> nodeStack;
 	//start randomly with our 0 node
@@ -64,7 +64,7 @@ std::pair<std::vector<std::unordered_set<TemplateGraph::Node<T>*>>,
 	//initially have all treenodes as their own parent, will create our spanning
 	// tree while running algo
 	for (unsigned int currIndex = 0;
-			currIndex < interestingGraph.getRawNodes().size(); ++currIndex)
+			currIndex < interestingGraph.getNodes().size(); ++currIndex)
 	{
 		aTree[currIndex].parent = &aTree[currIndex];
 		aTree[currIndex].index = currIndex;
@@ -79,7 +79,7 @@ std::pair<std::vector<std::unordered_set<TemplateGraph::Node<T>*>>,
 
 //hit all edges connecting to this node
 		for (unsigned int anotherNodeIndex = 0;
-				anotherNodeIndex < interestingGraph.getRawNodes().size();
+				anotherNodeIndex < interestingGraph.getNodes().size();
 				anotherNodeIndex++)
 		{
 			//not connected we skip current iteration
@@ -92,9 +92,9 @@ std::pair<std::vector<std::unordered_set<TemplateGraph::Node<T>*>>,
 			if (aTree[anotherNodeIndex].parent != &aTree[anotherNodeIndex])
 			{
 				TemplateGraph::HalfAdjacencyMatrix<T> currNodePath(
-						interestingGraph.getRawNodes());
+						interestingGraph.getNodes());
 				TemplateGraph::HalfAdjacencyMatrix<T> anotherNodePath(
-						interestingGraph.getRawNodes());
+						interestingGraph.getNodes());
 
 				//to get our path from the current node
 				unique_tree_path(&aTree[currNodeIndex], currNodePath);
@@ -112,11 +112,11 @@ std::pair<std::vector<std::unordered_set<TemplateGraph::Node<T>*>>,
 
 				//TODO: Make this legitimate, slow...
 				for (unsigned int aNodeIndex = 0;
-						aNodeIndex < interestingGraph.getRawNodes().size();
+						aNodeIndex < interestingGraph.getNodes().size();
 						aNodeIndex++)
 				{
 					for (unsigned int bNodeIndex = 0;
-							bNodeIndex < interestingGraph.getRawNodes().size();
+							bNodeIndex < interestingGraph.getNodes().size();
 							bNodeIndex++)
 					{
 						if (funCycleAdjMatrix.isConnected(aNodeIndex,
@@ -254,7 +254,6 @@ std::vector<
 	std::vector<TemplateGraph::HalfAdjacencyMatrix<T>> funCycleAdj =
 			funCycleInfo.second;
 
-
 	//	This is kind of a doozy but this way each cycle we have contains both out nodes
 	// 		and edges. A "pair" contains a first and second member, pretty self explanatory.
 	//		Now if we insert them into any stl that uses a key-value pair type relation
@@ -271,7 +270,6 @@ std::vector<
 
 	std::vector<bool> combinitoricsVector(funCycleInfo.second.size());
 
-
 	for (unsigned int currFunAdj = 2; currFunAdj <= funCycleAdj.size();
 			currFunAdj++)
 	{
@@ -282,7 +280,7 @@ std::vector<
 		do
 		{
 			TemplateGraph::HalfAdjacencyMatrix<T> mutatingMatrix(
-					inputGraph.getRawNodes());
+					inputGraph.getNodes());
 
 			unsigned int edgeCount = 0;
 
@@ -324,7 +322,6 @@ std::vector<
 				combinitoricsVector.end()));
 	} //end our for loop
 
-
 	// Just transfering our cycles to the node ptrs and edge ptrs.Up until here we
 	//		were running our algo only using adj lists. Now we convert to our (hopefully)
 	//		more useful data.
@@ -333,10 +330,10 @@ std::vector<
 		std::unordered_set<TemplateGraph::Node<T>*> temporaryNodeCycleSet;
 		std::unordered_set<TemplateGraph::Edge<T>*> temporaryEdgeCycleSet;
 		for (unsigned int aNodeIndex = 0;
-				aNodeIndex < inputGraph.getRawNodes().size(); aNodeIndex++)
+				aNodeIndex < inputGraph.getNodes().size(); aNodeIndex++)
 		{
 			for (unsigned int bNodeIndex = 0;
-					bNodeIndex < inputGraph.getRawNodes().size(); bNodeIndex++)
+					bNodeIndex < inputGraph.getNodes().size(); bNodeIndex++)
 			{
 				if (currentCycleAdj.isConnected(bNodeIndex, aNodeIndex))
 				{
@@ -365,10 +362,10 @@ std::vector<
 					//				tested using the set stl and it did return the correct
 					//				order (i.e. order we traversed everything) BUT this was due
 					//				to memory following the comparator.
-					TemplateGraph::Edge<T>* tempLoleEdge = inputGraph.getNodeFromIndex(aNodeIndex)->getConnectingEdge(
-							inputGraph.getNodeFromIndex(bNodeIndex)->shared_from_this());
-					temporaryEdgeCycleSet.insert(tempLoleEdge
-							);
+					TemplateGraph::Edge<T> *tempLoleEdge =
+							inputGraph.getNodeFromIndex(aNodeIndex)->getConnectingEdge(
+									inputGraph.getNodeFromIndex(bNodeIndex));
+					temporaryEdgeCycleSet.insert(tempLoleEdge);
 				}
 			}
 		}

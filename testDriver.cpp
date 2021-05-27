@@ -63,25 +63,21 @@ public:
 		return *this;
 	}
 
-	inline void addBond(std::shared_ptr<Atom> otherAtom)
+	inline void addBond(Atom *otherAtom)
 	{
 		this->addNeighbor(this->getName() + " -> " + otherAtom->getName(),
 				otherAtom);
 	}
 	inline void removeBond(Atom *otherAtom)
 	{
-		this->removeEdgeBetween(otherAtom->getSharedAtom());
-	}
-	inline std::shared_ptr<Node<Atom>> getSharedAtom()
-	{
-		return this->shared_from_this();
+		this->removeEdgeBetween(otherAtom);
 	}
 
 	inline std::vector<Atom*> getBondedAtoms()
 	{
 		std::vector<Atom*> bondedAtomVec;
 
-		for (Node<Atom> *currAtom : this->getRawNeighbors())
+		for (Node<Atom> *currAtom : this->getNeighbors())
 		{
 			bondedAtomVec.push_back(currAtom->getDeriviedClass());
 		}
@@ -94,19 +90,19 @@ private:
 
 int main()
 {
-	std::shared_ptr<Atom> atom0 = std::shared_ptr<Atom>(new Atom("Bobie"));
-	std::shared_ptr<Atom> atom1 = std::shared_ptr<Atom>(new Atom("Steve"));
-	std::shared_ptr<Atom> atom2 = std::shared_ptr<Atom>(new Atom("Ronne"));
-	std::shared_ptr<Atom> atom3 = std::shared_ptr<Atom>(new Atom("Bingo"));
-	std::shared_ptr<Atom> atom4 = std::shared_ptr<Atom>(new Atom("Marsh"));
-	std::shared_ptr<Atom> atom5 = std::shared_ptr<Atom>(new Atom("Delux"));
-	std::shared_ptr<Atom> atom6 = std::shared_ptr<Atom>(new Atom("Frank"));
-	std::shared_ptr<Atom> atom7 = std::shared_ptr<Atom>(new Atom("Bingo1"));
-	std::shared_ptr<Atom> atom8 = std::shared_ptr<Atom>(new Atom("Marsh1"));
-	std::shared_ptr<Atom> atom9 = std::shared_ptr<Atom>(new Atom("Bridge1"));
-	std::shared_ptr<Atom> atom10 = std::shared_ptr<Atom>(new Atom("cycle1"));
-	std::shared_ptr<Atom> atom11 = std::shared_ptr<Atom>(new Atom("cycle2"));
-	std::shared_ptr<Atom> atom12 = std::shared_ptr<Atom>(new Atom("cycle3"));
+	Atom *atom0 = new Atom("Bobie");
+	Atom *atom1 = new Atom("Steve");
+	Atom *atom2 = new Atom("Ronne");
+	Atom *atom3 = new Atom("Bingo");
+	Atom *atom4 = new Atom("Marsh");
+	Atom *atom5 = new Atom("Delux");
+	Atom *atom6 = new Atom("Frank");
+	Atom *atom7 = new Atom("Bingo1");
+	Atom *atom8 = new Atom("Marsh1");
+	Atom *atom9 = new Atom("Bridge1");
+	Atom *atom10 = new Atom("cycle1");
+	Atom *atom11 = new Atom("cycle2");
+	Atom *atom12 = new Atom("cycle3");
 
 	//test vector for our graph constructor overload using a vec of nodes
 	//std::vector<std::shared_ptr<Node<Atom>>> testGraphVec;
@@ -128,7 +124,7 @@ int main()
 	//to show our mega cycle decomp works
 	//b 1 -> cyc 1
 	//atom9->AddBond(atom10);
-	atom9.get()->addBond(atom10);
+	atom9->addBond(atom10);
 	//cyc 1 -> cyc 2
 	atom10->addBond(atom11);
 	//cyc 2 -> cyc 3
@@ -153,7 +149,7 @@ int main()
 	atom6->addBond(atom3);
 	atom6->addBond(atom4);
 
-	//show copy works
+	//show copy & shared ptr works
 	std::shared_ptr<Atom> copyTester = std::shared_ptr<Atom>(new Atom(*atom6));
 	copyTester->setName("copied_frank");
 
@@ -161,29 +157,145 @@ int main()
 	std::vector<std::shared_ptr<Atom>> holderDude;
 	if (copyTester->getName() == "copied_frank")
 	{
-		std::shared_ptr<Atom> dudeWhat = std::shared_ptr<Atom>(new Atom("dudeWhat"));
+		std::shared_ptr<Atom> dudeWhat = std::shared_ptr<Atom>(
+				new Atom("dudeWhat"));
 		holderDude.push_back(dudeWhat);
 	}
-	lazyInfo(__LINE__, __func__, "Showing our node didnt die: " + holderDude.back()->getName());
+	lazyInfo(__LINE__, __func__,
+			"Showing our node didnt die: " + holderDude.back()->getName());
+
+
+	//show unique ptr works
+	std::unique_ptr<Atom> uniqueTester = std::unique_ptr<Atom>(new Atom("jeff"));
+	uniqueTester->addBond(atom0);
+
 
 	//show bonded implementation works
-	lazyInfo(__LINE__, __func__, "Show our get bonded atoms implementation works to get the derived class");
+	lazyInfo(__LINE__, __func__,
+			"Show our get bonded atoms implementation works to get the derived class");
 	std::cout << "Atoms bonded to: " << atom6->getName() << "\n\tBonded to: ";
-	for (Atom* currAtom : atom6->getBondedAtoms())
+	for (Atom *currAtom : atom6->getBondedAtoms())
 	{
 		std::cout << currAtom->getName() + ", ";
 	}
 	std::cout << "\n\n";
 
 	Graph<Atom> *g1 = new Graph<Atom>(atom0);
+
 	connectivityIdentifier::identifyConnectivity(*g1);
+	/*
+	 //connectivity checking my dude
+	std::set<Edge<Atom>*> unknownEdges;
+	std::set<Edge<Atom>*> leafEdges;
+	std::set<Edge<Atom>*> bridgeEdges;
+	std::set<Edge<Atom>*> cycleEdges;
+
+	std::set<Node<Atom>*> unknownNodes;
+	std::set<Node<Atom>*> leafNodes;
+	std::set<Node<Atom>*> bridgeNodes;
+	std::set<Node<Atom>*> cycleNodes;
+
+	for (Node<Atom> *currNode : g1->getNodes())
+	{
+		for (Edge<Atom> *currEdge : currNode->getEdges())
+		{
+			switch (currEdge->getConnectivityTypeIdentifier())
+			{
+			case connectivityType::UNKNOWN:
+				unknownEdges.insert(currEdge);
+				break;
+			case connectivityType::BRIDGE:
+				bridgeEdges.insert(currEdge);
+				break;
+			case connectivityType::LEAF:
+				leafEdges.insert(currEdge);
+				break;
+			case connectivityType::INCYCLE:
+				cycleEdges.insert(currEdge);
+				break;
+			default:
+				badBehavior(__LINE__, __func__, "couldnt get edge conn type");
+			}
+		}
+		switch (currNode->getConnectivityTypeIdentifier())
+		{
+		case connectivityType::UNKNOWN:
+			unknownNodes.insert(currNode);
+			break;
+		case connectivityType::BRIDGE:
+			bridgeNodes.insert(currNode);
+			break;
+		case connectivityType::LEAF:
+			leafNodes.insert(currNode);
+			break;
+		case connectivityType::INCYCLE:
+			cycleNodes.insert(currNode);
+			break;
+		default:
+			badBehavior(__LINE__, __func__, "couldnt get node conn type");
+		}
+	}
+	std::cout << "\n";
+
+	lazyInfo(__LINE__, __func__, "Printing out objects with unkown conn type");
+	std::cout << "Nodes: ";
+	for (Node<Atom> *currDude : unknownNodes)
+	{
+		std::cout << currDude->getName() + ", ";
+	}
+	std::cout << "\nEdges: ";
+	for (Edge<Atom> *currDude : unknownEdges)
+	{
+		std::cout << currDude->getName() + ", ";
+	}
+	std::cout << "\n";
+
+	lazyInfo(__LINE__, __func__, "Printing out objects with leaf conn type");
+	std::cout << "Nodes: ";
+	for (Node<Atom> *currDude : leafNodes)
+	{
+		std::cout << currDude->getName() + ", ";
+	}
+	std::cout << "\nEdges: ";
+	for (Edge<Atom> *currDude : leafEdges)
+	{
+		std::cout << currDude->getName() + ", ";
+	}
+	std::cout << "\n";
+
+	lazyInfo(__LINE__, __func__, "Printing out objects with bridge conn type");
+	std::cout << "Nodes: ";
+	for (Node<Atom> *currDude : bridgeNodes)
+	{
+		std::cout << currDude->getName() + ", ";
+	}
+	std::cout << "\nEdges: ";
+	for (Edge<Atom> *currDude : bridgeEdges)
+	{
+		std::cout << currDude->getName() + ", ";
+	}
+	std::cout << "\n";
+
+	lazyInfo(__LINE__, __func__, "Printing out objects with cycle conn type");
+	std::cout << "Nodes: ";
+	for (Node<Atom> *currDude : cycleNodes)
+	{
+		std::cout << currDude->getName() + ", ";
+	}
+	std::cout << "\nEdges: ";
+	for (Edge<Atom> *currDude : cycleEdges)
+	{
+		std::cout << currDude->getName() + ", ";
+	}
+	std::cout << "\n";
+	*/
 	lazyInfo(__LINE__, __func__,
 			"Graph 1 grapviz link: \n\t" + g1->getGraphvizLink());
 
-	std::shared_ptr<Atom> atomA = std::shared_ptr<Atom>(new Atom("Ronne"));
-	std::shared_ptr<Atom> atomB = std::shared_ptr<Atom>(new Atom("Bingo"));
-	std::shared_ptr<Atom> atomC = std::shared_ptr<Atom>(new Atom("Marsh"));
-	std::shared_ptr<Atom> atomD = std::shared_ptr<Atom>(new Atom("Delux"));
+	Atom *atomA = new Atom("Ronne");
+	Atom *atomB = new Atom("Bingo");
+	Atom *atomC = new Atom("Marsh");
+	Atom *atomD = new Atom("Delux");
 
 	atomA->addBond(atomB);
 	atomB->addBond(atomC);
@@ -248,7 +360,6 @@ int main()
 		}
 		std::cout << "\n\n";
 	}
-
 
 //Graph<Atom> queryGraph(atomA->GetNode());
 //SubgraphMatcher<Atom> sumthin(&atomGraph, &queryGraph);

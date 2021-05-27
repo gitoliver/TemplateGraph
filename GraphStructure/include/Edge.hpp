@@ -20,11 +20,10 @@ public:
 	 *  CONSTRUCTORS/DESTRUCTORS
 	 ***********************************************/
 	Edge();
-	Edge(std::string name, std::shared_ptr<Node<T>> const &sourceNode,
-			std::shared_ptr<Node<T>> const &targetNode);
+	Edge(std::string name, Node<T> *const&sourceNode,
+			Node<T> *const&targetNode);
 	Edge(std::string name, std::vector<std::string> labels,
-			std::shared_ptr<Node<T>> const &sourceNode,
-			std::shared_ptr<Node<T>> const &targetNode);
+			Node<T> *const&sourceNode, Node<T> *const&targetNode);
 
 	//copy constructor
 	Edge(const Edge<T> &rhs);
@@ -71,24 +70,22 @@ inline Edge<T>::Edge()
 }
 
 template<class T>
-inline Edge<T>::Edge(std::string name,
-		std::shared_ptr<Node<T>> const &sourceNode,
-		std::shared_ptr<Node<T>> const &targetNode) :
+inline Edge<T>::Edge(std::string name, Node<T> *const&sourceNode,
+		Node<T> *const&targetNode) :
 		GenericGraphObject(name)
 {
-	this->targetNode = targetNode.get();
-	this->sourceNode = sourceNode.get();
+	this->targetNode = targetNode;
+	this->sourceNode = sourceNode;
 }
 
 template<class T>
 inline Edge<T>::Edge(std::string name, std::vector<std::string> labels,
-		std::shared_ptr<Node<T>> const &sourceNode,
-		std::shared_ptr<Node<T>> const &targetNode) :	GenericGraphObject(name, labels)
+		Node<T> *const&sourceNode, Node<T> *const&targetNode) :
+		GenericGraphObject(name, labels)
 {
-	this->targetNode = targetNode.get();
-	this->sourceNode = sourceNode.get();
+	this->targetNode = targetNode;
+	this->sourceNode = sourceNode;
 }
-
 
 template<class T>
 inline Edge<T>::~Edge()
@@ -98,7 +95,6 @@ inline Edge<T>::~Edge()
 	//lazyInfo(__LINE__, __func__,
 	//			"Edge with name <" + this->getName() + "> deleted");
 }
-
 
 //copy constructor
 template<class T>
@@ -114,7 +110,7 @@ inline Edge<T>::Edge(const Edge<T> &rhs) :
 //move constructor
 template<class T>
 inline Edge<T>::Edge(Edge<T> &&rhs) :
-				GenericGraphObject(rhs.getName(), rhs.getLabels(),
+		GenericGraphObject(rhs.getName(), rhs.getLabels(),
 				rhs.getConnectivityTypeIdentifier()), sourceNode(
 				rhs.getSourceNode()), targetNode(rhs.getTargetNode())
 {
