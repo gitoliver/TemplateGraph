@@ -34,20 +34,7 @@ public:
 	//move assignment
 	Node<T>& operator=(Node<T> &&rhs);
 
-	virtual ~Node()
-	{
-		std::vector<Edge<T>*> tempInEdge = this->inEdges;
-		//lazyInfo(__LINE__, __func__, "Destroying Node: " + this->getName());
-		//std::cout << "\tMem Addr: " << this << "\n\n";
-		//go through and hit all our parents, i.e. the ones that own the incoming edge and delete them
-		//TODO: Do this but not lazy
-		this->outEdges.clear();
-		for (Edge<T> *currInEdge : tempInEdge)
-		{
-			currInEdge->getSourceNode()->removeOutEdge(currInEdge);
-		}
-		tempInEdge.clear();
-	}
+	virtual ~Node();
 
 	/************************************************
 	 *  GETTER/SETTER
@@ -102,39 +89,20 @@ private:
 	/************************************************
 	 *  ATTRIBUTES
 	 ***********************************************/
-	/* TODO: Ensure that unique_ptr is our best option here, I am going to code it and then think more.
-	 * 			For now going to use vectors, going to run tests & time, then going to figure if switch
-	 * 			to set will help speed.
-	 */
 	std::vector<std::unique_ptr<Edge<T>>> outEdges;
 	std::vector<Edge<T>*> inEdges;
-
-	/* TODO: I disagree with past self regarding leaving out obj ptr, but I am still not 100% sure that
-	 * 			including the object ptr that uses Node is considered good practice. I need to read more.
-	 */
 
 	/************************************************
 	 *  FUNCTIONS
 	 ***********************************************/
-	//only write it once
 	void edgeConnectionUpdate();
 
 	bool isChildOf(std::shared_ptr<Node<T>> const &possibleParent);
 	bool isParentOf(std::shared_ptr<Node<T>> const &possibleChild);
 
-	/* Separated these out incase we eventually want to worry about ownership. They could use weak_ptr instead
-	 * 		but this allows me to hold off on checking locks when putting both into our neighbors vector. Casting
-	 * 		is automatic.
-	 *
-	 */
 	std::vector<std::shared_ptr<Node<T>>> getChildren();
 	std::vector<std::shared_ptr<Node<T>>> getParents();
 
-	/*	Needed to allow us to go from our node to the object we
-	 * 		created the node with. Couldnt find an eloquent way
-	 * 		around this. We should probably rename it.
-	 */
-	//T *objectPtr;
 	friend class Edge<T> ;
 };
 
@@ -142,7 +110,6 @@ template<class T>
 inline Node<T>::Node() :
 		GenericGraphObject("INVALID NODE")
 {
-	//this->objectPtr = NULL;
 	badBehavior(__LINE__, __func__, "We called the default node constructor");
 }
 
@@ -163,19 +130,21 @@ inline Node<T>::Node(std::string name, std::string label) :
 	//				+ ">\n\tAnd with label <" + this->getLabel() + ">");
 }
 
-/*template<class T>
- inline Node<T>::~Node() {
- std::vector<Edge<T>*> tempInEdge = this->inEdges;
- lazyInfo(__LINE__, __func__, "Destroying Node: " + this->getName());
- std::cout << "\tMem Addr: " << this << "\n\n";
- //go through and hit all our parents, i.e. the ones that own the incoming edge and delete them
- //TODO: Do this but not lazy
- this->outEdges.clear();
- for (Edge<T> *currInEdge : tempInEdge) {
- currInEdge->getSourceNode()->removeOutEdge(currInEdge);
- }
-
- }*/
+template<class T>
+inline Node<T>::~Node()
+{
+	std::vector<Edge<T>*> tempInEdge = this->inEdges;
+	//lazyInfo(__LINE__, __func__, "Destroying Node: " + this->getName());
+	//std::cout << "\tMem Addr: " << this << "\n\n";
+	//go through and hit all our parents, i.e. the ones that own the incoming edge and delete them
+	//TODO: Do this but not lazy
+	this->outEdges.clear();
+	for (Edge<T> *currInEdge : tempInEdge)
+	{
+		currInEdge->getSourceNode()->removeOutEdge(currInEdge);
+	}
+	tempInEdge.clear();
+}
 
 //Copy constructor
 template<class T>
@@ -185,18 +154,6 @@ inline Node<T>::Node(const Node<T> &rhs) :
 {
 	//std::cout << "\n\tGiven object ptr: " << rhs.objectPtr << "\n\n";
 	//lazyInfo(__LINE__, __func__, "Calling copy constructor");
-
-	//copy our in edges
-	/*
-	 std::unique_ptr<Edge<T>> tempEdge(
-	 new Edge<T>(edgeName, this->shared_from_this(), childNode));
-
-	 childNode.get()->inEdges.push_back(tempEdge.get());
-
-	 this->outEdges.push_back(std::move(tempEdge));
-
-	 ^goode code
-	 */
 	for (Edge<T> const *currInEdge : rhs.inEdges)
 	{
 		std::unique_ptr<Edge<T>> tempIn(new Edge<T>(*currInEdge));
@@ -351,7 +308,6 @@ inline void Node<T>::addChild(std::string edgeName,
 		childNode.get()->inEdges.push_back(tempEdge.get());
 
 		this->outEdges.push_back(std::move(tempEdge));
-
 	}
 }
 

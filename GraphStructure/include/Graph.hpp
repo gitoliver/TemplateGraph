@@ -26,10 +26,7 @@ public:
 	Graph(std::shared_ptr<Node<T>>const &initialNode);
 	Graph(std::vector<std::shared_ptr<Node<T>>> const &nodeList);
 
-	virtual ~Graph()
-	{
-		//lazyInfo(__LINE__, __func__, "Graph deleted");
-	}
+	virtual ~Graph();
 
 	/************************************************
 	 *  GETTER/SETTER
@@ -40,7 +37,7 @@ public:
 	// 			that there should be no deletions etc. when we run our algos. I will do a check prior to
 	// 			returning the vector to ensure that all nodes in our node-list are still alive.
 	//
-	std::vector<Node<T>*> getRawNodes(); // const;
+	std::vector<Node<T>*> getRawNodes();
 	HalfAdjacencyMatrix<T> getAdjMatrix() const;
 
 	unsigned int getIndexFromNode(Node<T> *const&queryNode);
@@ -135,16 +132,16 @@ inline Graph<T>::Graph(std::vector<std::shared_ptr<Node<T>>> const &nodeList)
 		badBehavior(__LINE__, __func__, "Was passed a nodelist of size 0");
 	}
 }
-/*
+
 template<class T>
 inline Graph<T>::~Graph()
 {
 	lazyInfo(__LINE__, __func__, "Graph deleted");
 }
-*/
+
 
 template<class T>
-inline std::vector<Node<T>*> Graph<T>::getRawNodes() // const
+inline std::vector<Node<T>*> Graph<T>::getRawNodes()
 {
 	std::vector<Node<T>*> nodeVecToReturn;
 	for (std::weak_ptr<Node<T>> currWeakNode : this->allNodes)

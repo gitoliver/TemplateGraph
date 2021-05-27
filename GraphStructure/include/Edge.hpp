@@ -38,10 +38,7 @@ public:
 	//move assignment
 	Edge<T>& operator=(Edge<T> &&rhs);
 
-	virtual ~Edge()
-	{
-		this->targetNode->removeInEdge(this);
-	}
+	virtual ~Edge();
 
 	//	Return our weak to ensure alive.
 	Node<T>* getTargetNode() const;
@@ -92,17 +89,16 @@ inline Edge<T>::Edge(std::string name, std::vector<std::string> labels,
 	this->sourceNode = sourceNode.get();
 }
 
-/*
+
 template<class T>
 inline Edge<T>::~Edge()
 {
 	//have our edge destructor remove itself from our inList then let die
 	this->targetNode->removeInEdge(this);
-
 	//lazyInfo(__LINE__, __func__,
 	//			"Edge with name <" + this->getName() + "> deleted");
 }
-*/
+
 
 //copy constructor
 template<class T>
