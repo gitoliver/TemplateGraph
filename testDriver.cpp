@@ -157,6 +157,15 @@ int main()
 	std::shared_ptr<Atom> copyTester = std::shared_ptr<Atom>(new Atom(*atom6));
 	copyTester->setName("copied_frank");
 
+	//showing the scoping deal I discussed, instead of holder dude we would end up using a vector or something
+	std::vector<std::shared_ptr<Atom>> holderDude;
+	if (copyTester->getName() == "copied_frank")
+	{
+		std::shared_ptr<Atom> dudeWhat = std::shared_ptr<Atom>(new Atom("dudeWhat"));
+		holderDude.push_back(dudeWhat);
+	}
+	lazyInfo(__LINE__, __func__, "Showing our node didnt die: " + holderDude.back()->getName());
+
 	//show bonded implementation works
 	lazyInfo(__LINE__, __func__, "Show our get bonded atoms implementation works to get the derived class");
 	std::cout << "Atoms bonded to: " << atom6->getName() << "\n\tBonded to: ";
@@ -164,6 +173,7 @@ int main()
 	{
 		std::cout << currAtom->getName() + ", ";
 	}
+	std::cout << "\n\n";
 
 	Graph<Atom> *g1 = new Graph<Atom>(atom0);
 	connectivityIdentifier::identifyConnectivity(*g1);
