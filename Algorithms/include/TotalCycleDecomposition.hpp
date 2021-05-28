@@ -50,7 +50,7 @@ std::pair<std::vector<std::unordered_set<TemplateGraph::Node<T>*>>,
 
 	//to construct our actual spanning tree
 	std::unique_ptr<TreeNode[]> aTree(
-			new TreeNode[interestingGraph.getRawNodes().size()]);
+			new TreeNode[interestingGraph.getNodes().size()]);
 
 	std::stack<unsigned int> nodeStack;
 	//start randomly with our 0 node
@@ -64,7 +64,7 @@ std::pair<std::vector<std::unordered_set<TemplateGraph::Node<T>*>>,
 	//initially have all treenodes as their own parent, will create our spanning
 	// tree while running algo
 	for (unsigned int currIndex = 0;
-			currIndex < interestingGraph.getRawNodes().size(); ++currIndex)
+			currIndex < interestingGraph.getNodes().size(); ++currIndex)
 	{
 		aTree[currIndex].parent = &aTree[currIndex];
 		aTree[currIndex].index = currIndex;
@@ -79,7 +79,7 @@ std::pair<std::vector<std::unordered_set<TemplateGraph::Node<T>*>>,
 
 //hit all edges connecting to this node
 		for (unsigned int anotherNodeIndex = 0;
-				anotherNodeIndex < interestingGraph.getRawNodes().size();
+				anotherNodeIndex < interestingGraph.getNodes().size();
 				anotherNodeIndex++)
 		{
 			//not connected we skip current iteration
@@ -92,9 +92,9 @@ std::pair<std::vector<std::unordered_set<TemplateGraph::Node<T>*>>,
 			if (aTree[anotherNodeIndex].parent != &aTree[anotherNodeIndex])
 			{
 				TemplateGraph::HalfAdjacencyMatrix<T> currNodePath(
-						interestingGraph.getRawNodes());
+						interestingGraph.getNodes());
 				TemplateGraph::HalfAdjacencyMatrix<T> anotherNodePath(
-						interestingGraph.getRawNodes());
+						interestingGraph.getNodes());
 
 				//to get our path from the current node
 				unique_tree_path(&aTree[currNodeIndex], currNodePath);
@@ -112,11 +112,11 @@ std::pair<std::vector<std::unordered_set<TemplateGraph::Node<T>*>>,
 
 				//TODO: Make this legitimate, slow...
 				for (unsigned int aNodeIndex = 0;
-						aNodeIndex < interestingGraph.getRawNodes().size();
+						aNodeIndex < interestingGraph.getNodes().size();
 						aNodeIndex++)
 				{
 					for (unsigned int bNodeIndex = 0;
-							bNodeIndex < interestingGraph.getRawNodes().size();
+							bNodeIndex < interestingGraph.getNodes().size();
 							bNodeIndex++)
 					{
 						if (funCycleAdjMatrix.isConnected(aNodeIndex,
@@ -239,6 +239,7 @@ std::vector<
 				std::unordered_set<TemplateGraph::Edge<T>*>>> totalCycleDetect(
 		TemplateGraph::Graph<T> &inputGraph)
 {
+
 	//	The following is used to rip out all of our fundamental cycles which
 	// 		are used to compute all cycles. This is currently inneficient due
 	// 		to my use of double storing (i.e. storing our nodes sets & adj sets
@@ -279,7 +280,7 @@ std::vector<
 		do
 		{
 			TemplateGraph::HalfAdjacencyMatrix<T> mutatingMatrix(
-					inputGraph.getRawNodes());
+					inputGraph.getNodes());
 
 			unsigned int edgeCount = 0;
 
@@ -328,12 +329,11 @@ std::vector<
 	{
 		std::unordered_set<TemplateGraph::Node<T>*> temporaryNodeCycleSet;
 		std::unordered_set<TemplateGraph::Edge<T>*> temporaryEdgeCycleSet;
-
 		for (unsigned int aNodeIndex = 0;
-				aNodeIndex < inputGraph.getRawNodes().size(); aNodeIndex++)
+				aNodeIndex < inputGraph.getNodes().size(); aNodeIndex++)
 		{
 			for (unsigned int bNodeIndex = 0;
-					bNodeIndex < inputGraph.getRawNodes().size(); bNodeIndex++)
+					bNodeIndex < inputGraph.getNodes().size(); bNodeIndex++)
 			{
 				if (currentCycleAdj.isConnected(bNodeIndex, aNodeIndex))
 				{
@@ -362,9 +362,10 @@ std::vector<
 					//				tested using the set stl and it did return the correct
 					//				order (i.e. order we traversed everything) BUT this was due
 					//				to memory following the comparator.
-					temporaryEdgeCycleSet.insert(
+					TemplateGraph::Edge<T> *tempLoleEdge =
 							inputGraph.getNodeFromIndex(aNodeIndex)->getConnectingEdge(
-									inputGraph.getNodeFromIndex(bNodeIndex)->shared_from_this()));
+									inputGraph.getNodeFromIndex(bNodeIndex));
+					temporaryEdgeCycleSet.insert(tempLoleEdge);
 				}
 			}
 		}

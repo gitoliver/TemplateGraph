@@ -13,7 +13,6 @@ enum class connectivityType
 
 class GenericGraphObject: public Abstract::AbstractObject
 {
-private:
 	//	Quick tl;dr about each type & why we care.
 	// 		- LEAF: Only a node can be a <leaf>, a <leaf> is a node with a SINGLE edge. In
 	// 			multigraph we can consider a <leaf> as a node with a single neighbor.
@@ -57,7 +56,44 @@ private:
 
 public:
 
-	enum connectivityType getConnectivityTypeIdentifier();
+	//constructor
+	inline GenericGraphObject(const std::string name) :
+			Abstract::AbstractObject(name)
+	{
+	}
+
+	inline GenericGraphObject(const std::string inName,
+			const std::string inLabel) :
+			Abstract::AbstractObject(inName, inLabel)
+	{
+	}
+
+	inline GenericGraphObject(const std::string inName,
+			const std::vector<std::string> inLabels) :
+			Abstract::AbstractObject(inName, inLabels)
+	{
+	}
+
+	inline GenericGraphObject(const std::string inName,
+			const std::vector<std::string> inLabels, connectivityType connType) :
+			Abstract::AbstractObject(inName, inLabels),
+			connectivityTypeIdentifier(connType)
+	{
+	}
+
+	//copy constructor
+	GenericGraphObject(const GenericGraphObject &rhs);
+
+	//move constructor
+	GenericGraphObject(GenericGraphObject &&rhs);
+
+	//copy assignment
+	GenericGraphObject& operator=(const GenericGraphObject &rhs);
+
+	//move assignment
+	GenericGraphObject& operator=(GenericGraphObject &&rhs);
+
+	enum connectivityType getConnectivityTypeIdentifier() const;
 
 	void setConnectivityTypeIdentifier(
 			connectivityType newStructuralIdentifier);
@@ -70,7 +106,7 @@ private:
 
 };
 
-inline enum connectivityType GenericGraphObject::getConnectivityTypeIdentifier()
+inline enum connectivityType GenericGraphObject::getConnectivityTypeIdentifier() const
 {
 	return this->connectivityTypeIdentifier;
 }

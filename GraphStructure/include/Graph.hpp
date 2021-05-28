@@ -23,10 +23,22 @@ public:
 	 ***********************************************/
 	Graph();
 	//TODO: Ensure we would like this functionality, current idea is pass root node then get all traversable from this node and store in our set
-	Graph(std::shared_ptr<Node<T>>const &initialNode);
-	Graph(std::vector<std::shared_ptr<Node<T>>> const &nodeList);
+	Graph(Node<T> *const&initialNode);
+	Graph(std::vector<Node<T>*> const &nodeList);
 
-	~Graph();
+	//copy constructor
+	Graph(const Graph<T> &rhs);
+
+	//move constructor
+	Graph(Graph<T> &&rhs);
+
+	//copy assignment
+	Graph<T>& operator=(const Graph<T> &rhs);
+
+	//move assignment
+	Graph<T>& operator=(Graph<T> &&rhs);
+
+	virtual ~Graph();
 
 	/************************************************
 	 *  GETTER/SETTER
@@ -37,7 +49,7 @@ public:
 	// 			that there should be no deletions etc. when we run our algos. I will do a check prior to
 	// 			returning the vector to ensure that all nodes in our node-list are still alive.
 	//
-	std::vector<Node<T>*> getRawNodes(); // const;
+	std::vector<Node<T>*> getNodes();
 	HalfAdjacencyMatrix<T> getAdjMatrix() const;
 
 	unsigned int getIndexFromNode(Node<T> *const&queryNode);
@@ -56,7 +68,7 @@ private:
 	 *  ATTRIBUTES
 	 ***********************************************/
 	HalfAdjacencyMatrix<T> adjMatrix;
-	std::vector<std::weak_ptr<Node<T>>> allNodes;
+	std::vector<Node<T>*> allNodes;
 	// TODO: Ensure the correct hashing function is being used. Must be 100% sure, am only somewhat sure.
 	std::unordered_map<unsigned int, Node<T>*> nodeLookup;
 	std::unordered_map<Node<T>*, unsigned int> indexLookup;
@@ -68,12 +80,11 @@ private:
 	void populateLookups();
 	void lazyExpiredFixer();
 
-	std::vector<std::shared_ptr<Node<T>>> getReachableNodes(
-			std::shared_ptr<Node<T>>const &startingNode);
+	std::vector<Node<T>*> getReachableNodes(Node<T> *const&startingNode);
 	// NOTE: To be used when we are passed solely a root node.
-	void getReachableHelper(std::shared_ptr<Node<T>> const &currentNode,
+	void getReachableHelper(Node<T> *const&currentNode,
 			std::unordered_set<Node<T>*> &visistedNodeSet,
-			std::vector<std::shared_ptr<Node<T>>> &reachableNodes);
+			std::vector<Node<T>*> &reachableNodes);
 
 };
 
@@ -85,17 +96,18 @@ inline Graph<T>::Graph()
 }
 
 template<class T>
-inline Graph<T>::Graph(std::shared_ptr<Node<T>>const &initialNode)
+inline Graph<T>::Graph(Node<T> *const&initialNode)
 {
+
 	// Lazy way to prevent dupes, cant use method used in get nodes
 	// due to weak_ptr being useless in our typical stl algo functions
-	std::vector<std::shared_ptr<Node<T>>> tempNodeVec = this->getReachableNodes(
-			initialNode);
 
-	std::unordered_set<std::shared_ptr<Node<T>>> tempNodeSet(
-			tempNodeVec.begin(), tempNodeVec.end());
+	std::vector<Node<T>*> tempNodeVec = this->getReachableNodes(initialNode);
 
-	for (std::shared_ptr<Node<T>> currentNode : tempNodeSet)
+	std::unordered_set<Node<T>*> tempNodeSet(tempNodeVec.begin(),
+			tempNodeVec.end());
+
+	for (Node<T> *currentNode : tempNodeSet)
 	{
 		this->allNodes.push_back(currentNode);
 	}
@@ -107,15 +119,15 @@ inline Graph<T>::Graph(std::shared_ptr<Node<T>>const &initialNode)
 }
 
 template<class T>
-inline Graph<T>::Graph(std::vector<std::shared_ptr<Node<T>>> const &nodeList)
+inline Graph<T>::Graph(std::vector<Node<T>*> const &nodeList)
 {
 	if (nodeList.size() > 0)
 	{
 		//Lazy way to prevent dupes, again need to come up with
 		//a more efficient way to actually prevent our dupes
-		std::unordered_set<std::shared_ptr<Node<T>>> tempNodeSet(
-				nodeList.begin(), nodeList.end());
-		for (std::shared_ptr<Node<T>> currNode : tempNodeSet)
+		std::unordered_set<Node<T>*> tempNodeSet(nodeList.begin(),
+				nodeList.end());
+		for (Node<T> *currNode : tempNodeSet)
 		{
 			this->allNodes.push_back(currNode);
 		}
@@ -136,40 +148,9 @@ inline Graph<T>::~Graph()
 }
 
 template<class T>
-inline std::vector<Node<T>*> Graph<T>::getRawNodes() // const
+inline std::vector<Node<T>*> Graph<T>::getNodes()
 {
-	std::vector<Node<T>*> nodeVecToReturn;
-	for (std::weak_ptr<Node<T>> currWeakNode : this->allNodes)
-	{
-		if (currWeakNode.expired())
-		{
-			//TODO: update everything
-			badBehavior(__LINE__, __func__,
-					"HIT EXPIRED NODE NEED TO UPDATE EVERYTHING");
-			this->lazyExpiredFixer();
-			return this->getRawNodes();
-		}
-		else
-		{
-			std::shared_ptr<Node<T>> lockedNode = currWeakNode.lock();
-			if (lockedNode)
-			{
-				nodeVecToReturn.push_back(lockedNode.get());
-			}
-			else
-			{
-				badBehavior(__LINE__, __func__,
-						"COULDNT LOCK OUR PTR TO PUT IN NODE VECTOR");
-			}
-		}
-	}
-	//ensure all unique listings
-	std::sort(nodeVecToReturn.begin(), nodeVecToReturn.end());
-	nodeVecToReturn.erase(
-			std::unique(nodeVecToReturn.begin(), nodeVecToReturn.end()),
-			nodeVecToReturn.end());
-
-	return nodeVecToReturn;
+	return this->allNodes;
 }
 
 template<class T>
@@ -183,68 +164,24 @@ inline void Graph<T>::populateAdjacencyMatrix()
 {
 	if ((this->allNodes.size() > 0) && (this->indexLookup.size()))
 	{
-		this->adjMatrix.initializeWorkaround(this->getRawNodes());
-		for (std::weak_ptr<Node<T>> currWeakNode : this->allNodes)
+		this->adjMatrix.initializeWorkaround(this->getNodes());
+		for (Node<T> *currNode : this->allNodes)
 		{
-			if (currWeakNode.expired())
+			for (Node<T> *currNodeNeighbor : currNode->getNeighbors())
 			{
-				this->lazyExpiredFixer();
-				goto calledExpiredFixer;
-			}
-			else
-			{
-				std::shared_ptr<Node<T>> currLocked = currWeakNode.lock();
-				if (currLocked)
+				if (!(this->adjMatrix.isConnected(this->indexLookup[currNode],
+						this->indexLookup[currNodeNeighbor])))
 				{
-					for (std::weak_ptr<Node<T>> currWeakNeighbor : currLocked.get()->getNeighbors())
-					{
-						if (currWeakNeighbor.expired())
-						{
-							this->lazyExpiredFixer();
-							goto calledExpiredFixer;
-						}
-						else
-						{
-							std::shared_ptr<Node<T>> lockedNeighbor =
-									currWeakNeighbor.lock();
-							if (lockedNeighbor)
-							{
-								if (!(this->adjMatrix.isConnected(
-										this->indexLookup[currLocked.get()],
-										this->indexLookup[lockedNeighbor.get()])))
-								{
-									this->adjMatrix.connect(
-											this->indexLookup[currLocked.get()],
-											this->indexLookup[lockedNeighbor.get()]);
-								}
-							}
-							else
-							{
-								badBehavior(__LINE__, __func__,
-										"Could not lock our neighbor");
-							}
-						}
-					}
-				} // end if currLocked
-				else
-				{
-					badBehavior(__LINE__, __func__,
-							"Could not lock our curr node");
+					this->adjMatrix.connect(this->indexLookup[currNode],
+							this->indexLookup[currNodeNeighbor]);
 				}
-			} //end else for not expired
-
+			}
 		}
 	}
 	else
 	{
 		badBehavior(__LINE__, __func__,
-				"Warning tried to populate adjacency matrix with no node list");
-	}
-	//just using the int to make compiler happy
-	if (false)
-	{
-		calledExpiredFixer: lazyInfo(__LINE__, __func__,
-				"We called our expired fixer");
+				"no nodes present! cannot populate adj matrix");
 	}
 
 }
@@ -259,35 +196,16 @@ inline void Graph<T>::populateLookups()
 		this->indexLookup.clear();
 
 		int currIndex = 0;
-		for (std::weak_ptr<Node<T>> currWeakNode : this->allNodes)
+		for (Node<T> *currNode : this->allNodes)
 		{
-			if (currWeakNode.expired())
-			{
-				badBehavior(__LINE__, __func__,
-						"Warning, found an expired node");
-				this->lazyExpiredFixer();
-				break;
-			}
-			else
-			{
-				std::shared_ptr<Node<T>> currLockedNode = currWeakNode.lock();
-				if (currLockedNode)
-				{
-					this->nodeLookup.insert(
-					{ currIndex, currLockedNode.get() });
 
-					this->indexLookup.insert(
-					{ currLockedNode.get(), currIndex });
+			this->nodeLookup.insert(
+			{ currIndex, currNode });
 
-					currIndex++;
-				}
-				else
-				{
-					badBehavior(__LINE__, __func__,
-							"Couldnt lock our current node");
-					//TODO: How to handle correctly?
-				}
-			}
+			this->indexLookup.insert(
+			{ currNode, currIndex });
+
+			currIndex++;
 
 		}
 	}
@@ -299,14 +217,16 @@ inline void Graph<T>::populateLookups()
 }
 
 template<class T>
-inline std::vector<std::shared_ptr<Node<T>>> Graph<T>::getReachableNodes(
-		std::shared_ptr<Node<T>> const &startingNode)
+inline std::vector<Node<T>*> Graph<T>::getReachableNodes(
+		Node<T> *const&startingNode)
 {
 	std::unordered_set<Node<T>*> visitedNodes;
 	// TODO: Please note that this current method does increase the size of our call stack a good bit due to the use of recursion.
 	// 			Depending on how large of graphs we are dealing with this could become an issue and it may be a better
 	// 			call to use a different method.
-	std::vector<std::shared_ptr<Node<T>>> reachableVecToReturn;
+
+	std::vector<Node<T>*> reachableVecToReturn;
+
 	this->getReachableHelper(startingNode, visitedNodes, reachableVecToReturn);
 	return reachableVecToReturn;
 }
@@ -374,40 +294,28 @@ inline std::string Graph<T>::getGraphvizLink()
 
 	//first make a collection of all of our node connections, just use set cause less chars lazy
 	std::map<Node<T>*, std::set<Node<T>*>> nodeNeighs;
-
-	for (Node<T> *currNode : this->getRawNodes())
+	for (Node<T> *currNode : this->getNodes())
 	{
-		for (std::weak_ptr<Node<T>> currNeigh : currNode->getNeighbors())
+		for (Node<T> *currNeigh : currNode->getNeighbors())
 		{
-			if (currNeigh.expired())
+			//ensure that the current connection is not already present
+			//	We know we do not have a specific connection if either
+			// 		A) We do NOT have our neighbor as a key in the node neighs
+			// 						OR
+			// 		B) If we DO have our neighbor as a key in the node neighs, then we do NOT have
+			// 				the currNode as a member
+			if ((nodeNeighs.count(currNeigh) == 0)
+					|| (nodeNeighs[currNeigh].count(currNode) == 0))
 			{
-				this->lazyExpiredFixer();
-				return this->getGraphvizLink();
-			}
-			else
-			{
-				Node<T> *rawNeigh = currNeigh.lock().get();
-
-				//ensure that the current connection is not already present
-				//	We know we do not have a specific connection if either
-				// 		A) We do NOT have our neighbor as a key in the node neighs
-				// 						OR
-				// 		B) If we DO have our neighbor as a key in the node neighs, then we do NOT have
-				// 				the currNode as a member
-				if ((nodeNeighs.count(rawNeigh) == 0)
-						|| (nodeNeighs[rawNeigh].count(currNode) == 0))
+				if (nodeNeighs[currNode].count(currNeigh) == 0)
 				{
-					if (nodeNeighs[currNode].count(rawNeigh) == 0)
-					{
-						nodeNeighs[currNode].insert(rawNeigh);
-					}
-					else
-					{
-						badBehavior(__LINE__, __func__, "ARGH MATEY");
-					}
+					nodeNeighs[currNode].insert(currNeigh);
 				}
-
-			} //end els
+				else
+				{
+					badBehavior(__LINE__, __func__, "ARGH MATEY");
+				}
+			}
 		} //end 4
 	} //end 44
 
@@ -425,34 +333,69 @@ inline std::string Graph<T>::getGraphvizLink()
 	baseURL += endURL;
 	return baseURL;
 }
+/*
+ adjMatrix;
+ std::vector<Node<T>*> allNodes;
+ // TODO: Ensure the correct hashing function is being used. Must be 100% sure, am only somewhat sure.
+ std::unordered_map<unsigned int, Node<T>*> nodeLookup;
+ std::unordered_map<Node<T>*, unsigned int> indexLookup;
+ */
+
+//copy constructor
+template<class T>
+inline Graph<T>::Graph(const Graph<T> &rhs) :
+		adjMatrix(rhs.adjMatrix), nodeLookup(rhs.nodeLookup), indexLookup(
+				rhs.indexLookup), allNodes(rhs.allNodes)
+{
+}
+
+//move constructor
+template<class T>
+inline Graph<T>::Graph(Graph<T> &&rhs) :
+		adjMatrix(rhs.adjMatrix), nodeLookup(rhs.nodeLookup), indexLookup(
+				rhs.indexLookup), allNodes(rhs.allNodes)
+{
+}
+
+//copy assignment
+template<class T>
+inline Graph<T>& Graph<T>::operator =(const Graph<T> &rhs)
+{
+	this->adjMatrix = rhs.adjMatrix;
+	this->allNodes = rhs.allNodes;
+	this->indexLookup = rhs.indexLookup;
+	this->nodeLookup = rhs.nodeLookup;
+	return *this;
+}
+
+//move assignment
+template<class T>
+inline Graph<T>& Graph<T>::operator =(Graph<T> &&rhs)
+{
+	this->adjMatrix = rhs.adjMatrix;
+	this->allNodes = rhs.allNodes;
+	this->indexLookup = rhs.indexLookup;
+	this->nodeLookup = rhs.nodeLookup;
+	return *this;
+}
 
 template<class T>
-inline void Graph<T>::getReachableHelper(
-		std::shared_ptr<Node<T>> const &currentNode,
+inline void Graph<T>::getReachableHelper(Node<T> *const&currentNode,
 		std::unordered_set<Node<T>*> &visitedNodeSet,
-		std::vector<std::shared_ptr<Node<T>>> &reachableNodes)
+		std::vector<Node<T>*> &reachableNodes)
 {
-	currentNode->getNeighbors();
+
 	reachableNodes.push_back(currentNode);
-	visitedNodeSet.insert(currentNode.get());
-	for (std::weak_ptr<Node<T>> currNeighbor : currentNode->getNeighbors())
+
+	visitedNodeSet.insert(currentNode);
+	for (Node<T> *currNeighbor : currentNode->getNeighbors())
 	{
-		std::shared_ptr<Node<T>> lockedNeighbor = currNeighbor.lock();
-		if (lockedNeighbor)
+		if (!(visitedNodeSet.count(currNeighbor)))
 		{
-			if (!(visitedNodeSet.count(lockedNeighbor.get())))
-			{
-				this->getReachableHelper(lockedNeighbor, visitedNodeSet,
-						reachableNodes);
-			}
-		}
-		else
-		{
-			badBehavior(__LINE__, __func__,
-					"Could not lock neighbor when trying to traverse");
+			this->getReachableHelper(currNeighbor, visitedNodeSet,
+					reachableNodes);
 		}
 	}
-
 }
 
 }
