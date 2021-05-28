@@ -197,13 +197,12 @@ inline Node<T>& Node<T>::operator =(Node<T> &&rhs)
 	this->setName(rhs.getName());
 	this->setLabels(rhs.getLabels());
 	this->setConnectivityTypeIdentifier(rhs.getConnectivityTypeIdentifier());
-	this->objectPtr = rhs.objectPtr;
 
 	this->inEdges = std::move(rhs.inEdges);
 	this->outEdges = std::move(rhs.outEdges);
 	this->edgeConnectionUpdate();
 
-	delete rhs;
+	return *this;
 }
 
 template<class T>

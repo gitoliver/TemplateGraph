@@ -90,19 +90,19 @@ private:
 
 int main()
 {
-	Atom *atom0 = new Atom("Bobie");
-	Atom *atom1 = new Atom("Steve");
-	Atom *atom2 = new Atom("Ronne");
-	Atom *atom3 = new Atom("Bingo");
-	Atom *atom4 = new Atom("Marsh");
-	Atom *atom5 = new Atom("Delux");
-	Atom *atom6 = new Atom("Frank");
-	Atom *atom7 = new Atom("Bingo1");
-	Atom *atom8 = new Atom("Marsh1");
-	Atom *atom9 = new Atom("Bridge1");
-	Atom *atom10 = new Atom("cycle1");
-	Atom *atom11 = new Atom("cycle2");
-	Atom *atom12 = new Atom("cycle3");
+	std::unique_ptr<Atom> atom0 = std::unique_ptr<Atom>(new Atom("Bobie"));
+	std::unique_ptr<Atom> atom1 = std::unique_ptr<Atom>(new Atom("Steve"));
+	std::unique_ptr<Atom> atom2 = std::unique_ptr<Atom>(new Atom("Ronne"));
+	std::unique_ptr<Atom> atom3 = std::unique_ptr<Atom>(new Atom("Bingo"));
+	std::unique_ptr<Atom> atom4 = std::unique_ptr<Atom>(new Atom("Marsh"));
+	std::unique_ptr<Atom> atom5 = std::unique_ptr<Atom>(new Atom("Delux"));
+	std::unique_ptr<Atom> atom6 = std::unique_ptr<Atom>(new Atom("Frank"));
+	std::unique_ptr<Atom> atom7 = std::unique_ptr<Atom>(new Atom("Bingo1"));
+	std::unique_ptr<Atom> atom8 = std::unique_ptr<Atom>(new Atom("Marsh1"));
+	std::unique_ptr<Atom> atom9 = std::unique_ptr<Atom>(new Atom("Bridge1"));
+	std::unique_ptr<Atom> atom10 = std::unique_ptr<Atom>(new Atom("cycle1"));
+	std::unique_ptr<Atom> atom11 = std::unique_ptr<Atom>(new Atom("cycle2"));
+	std::unique_ptr<Atom> atom12 = std::unique_ptr<Atom>(new Atom("cycle3"));
 
 	//test vector for our graph constructor overload using a vec of nodes
 	//std::vector<std::shared_ptr<Node<Atom>>> testGraphVec;
@@ -124,30 +124,30 @@ int main()
 	//to show our mega cycle decomp works
 	//b 1 -> cyc 1
 	//atom9->AddBond(atom10);
-	atom9->addBond(atom10);
+	atom9->addBond(atom10.get());
 	//cyc 1 -> cyc 2
-	atom10->addBond(atom11);
+	atom10->addBond(atom11.get());
 	//cyc 2 -> cyc 3
-	atom11->addBond(atom12);
+	atom11->addBond(atom12.get());
 	//cyc 1 -> cyc 3
-	atom10->addBond(atom12);
+	atom10->addBond(atom12.get());
 	//our mini cycle to the normal cycle
-	atom10->addBond(atom1);
+	atom10->addBond(atom1.get());
 
-	atom0->addBond(atom1);
-	atom1->addBond(atom2);
-	atom2->addBond(atom3);
-	atom3->addBond(atom4);
-	atom4->addBond(atom5);
-	atom1->addBond(atom6);
-	atom5->addBond(atom6);
-	atom2->addBond(atom5);
-	atom2->addBond(atom6);
-	atom5->addBond(atom3);
-	atom2->addBond(atom7);
-	atom7->addBond(atom8);
-	atom6->addBond(atom3);
-	atom6->addBond(atom4);
+	atom0->addBond(atom1.get());
+	atom1->addBond(atom2.get());
+	atom2->addBond(atom3.get());
+	atom3->addBond(atom4.get());
+	atom4->addBond(atom5.get());
+	atom1->addBond(atom6.get());
+	atom5->addBond(atom6.get());
+	atom2->addBond(atom5.get());
+	atom2->addBond(atom6.get());
+	atom5->addBond(atom3.get());
+	atom2->addBond(atom7.get());
+	atom7->addBond(atom8.get());
+	atom6->addBond(atom3.get());
+	atom6->addBond(atom4.get());
 
 	//show copy & shared ptr works
 	std::shared_ptr<Atom> copyTester = std::shared_ptr<Atom>(new Atom(*atom6));
@@ -164,11 +164,10 @@ int main()
 	lazyInfo(__LINE__, __func__,
 			"Showing our node didnt die: " + holderDude.back()->getName());
 
-
 	//show unique ptr works
-	std::unique_ptr<Atom> uniqueTester = std::unique_ptr<Atom>(new Atom("jeff"));
-	uniqueTester->addBond(atom0);
-
+	std::unique_ptr<Atom> uniqueTester = std::unique_ptr<Atom>(
+			new Atom("jeff"));
+	uniqueTester->addBond(atom0.get());
 
 	//show bonded implementation works
 	lazyInfo(__LINE__, __func__,
@@ -180,11 +179,11 @@ int main()
 	}
 	std::cout << "\n\n";
 
-	Graph<Atom> *g1 = new Graph<Atom>(atom0);
+	Graph<Atom> *g1 = new Graph<Atom>(atom0.get());
 
 	connectivityIdentifier::identifyConnectivity(*g1);
-	/*
-	 //connectivity checking my dude
+
+	//connectivity checking my dude
 	std::set<Edge<Atom>*> unknownEdges;
 	std::set<Edge<Atom>*> leafEdges;
 	std::set<Edge<Atom>*> bridgeEdges;
@@ -288,19 +287,19 @@ int main()
 		std::cout << currDude->getName() + ", ";
 	}
 	std::cout << "\n";
-	*/
+
 	lazyInfo(__LINE__, __func__,
 			"Graph 1 grapviz link: \n\t" + g1->getGraphvizLink());
 
-	Atom *atomA = new Atom("Ronne");
-	Atom *atomB = new Atom("Bingo");
-	Atom *atomC = new Atom("Marsh");
-	Atom *atomD = new Atom("Delux");
+	std::shared_ptr<Atom> atomA = std::shared_ptr<Atom> (new Atom("Ronne"));
+	std::shared_ptr<Atom> atomB = std::shared_ptr<Atom> (new Atom("Bingo"));
+	std::shared_ptr<Atom> atomC = std::shared_ptr<Atom> (new Atom("Marsh"));
+	std::shared_ptr<Atom> atomD = std::shared_ptr<Atom> (new Atom("Delux"));
 
-	atomA->addBond(atomB);
-	atomB->addBond(atomC);
-	atomA->addBond(atomD);
-	Graph<Atom> *g2 = new Graph<Atom>(atomA);
+	atomA->addBond(atomB.get());
+	atomB->addBond(atomC.get());
+	atomA->addBond(atomD.get());
+	Graph<Atom> *g2 = new Graph<Atom>(atomA.get());
 	connectivityIdentifier::identifyConnectivity(*g2);
 	lazyInfo(__LINE__, __func__,
 			"Graph 2 grapviz link: \n\t" + g2->getGraphvizLink());
@@ -445,6 +444,8 @@ int main()
 //         std::cout << "And now Other side Neighbor index: " << neighbor->GetIndex() << "\n";
 //     }
 
+	delete g1;
+	delete g2;
 	std::cout << "Finishing!" << std::endl;
 
 //     //BFS

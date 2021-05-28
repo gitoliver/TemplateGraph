@@ -26,6 +26,18 @@ public:
 	Graph(Node<T> *const&initialNode);
 	Graph(std::vector<Node<T>*> const &nodeList);
 
+	//copy constructor
+	Graph(const Graph<T> &rhs);
+
+	//move constructor
+	Graph(Graph<T> &&rhs);
+
+	//copy assignment
+	Graph<T>& operator=(const Graph<T> &rhs);
+
+	//move assignment
+	Graph<T>& operator=(Graph<T> &&rhs);
+
 	virtual ~Graph();
 
 	/************************************************
@@ -320,6 +332,51 @@ inline std::string Graph<T>::getGraphvizLink()
 	endURL += endBracket;
 	baseURL += endURL;
 	return baseURL;
+}
+/*
+ adjMatrix;
+ std::vector<Node<T>*> allNodes;
+ // TODO: Ensure the correct hashing function is being used. Must be 100% sure, am only somewhat sure.
+ std::unordered_map<unsigned int, Node<T>*> nodeLookup;
+ std::unordered_map<Node<T>*, unsigned int> indexLookup;
+ */
+
+//copy constructor
+template<class T>
+inline Graph<T>::Graph(const Graph<T> &rhs) :
+		adjMatrix(rhs.adjMatrix), nodeLookup(rhs.nodeLookup), indexLookup(
+				rhs.indexLookup), allNodes(rhs.allNodes)
+{
+}
+
+//move constructor
+template<class T>
+inline Graph<T>::Graph(Graph<T> &&rhs) :
+		adjMatrix(rhs.adjMatrix), nodeLookup(rhs.nodeLookup), indexLookup(
+				rhs.indexLookup), allNodes(rhs.allNodes)
+{
+}
+
+//copy assignment
+template<class T>
+inline Graph<T>& Graph<T>::operator =(const Graph<T> &rhs)
+{
+	this->adjMatrix = rhs.adjMatrix;
+	this->allNodes = rhs.allNodes;
+	this->indexLookup = rhs.indexLookup;
+	this->nodeLookup = rhs.nodeLookup;
+	return *this;
+}
+
+//move assignment
+template<class T>
+inline Graph<T>& Graph<T>::operator =(Graph<T> &&rhs)
+{
+	this->adjMatrix = rhs.adjMatrix;
+	this->allNodes = rhs.allNodes;
+	this->indexLookup = rhs.indexLookup;
+	this->nodeLookup = rhs.nodeLookup;
+	return *this;
 }
 
 template<class T>
