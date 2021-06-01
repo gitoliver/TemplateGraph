@@ -76,22 +76,39 @@ public:
 
 	inline GenericGraphObject(const std::string inName,
 			const std::vector<std::string> inLabels, connectivityType connType) :
-			Abstract::AbstractObject(inName, inLabels),
-			connectivityTypeIdentifier(connType)
+			Abstract::AbstractObject(inName, inLabels), connectivityTypeIdentifier(
+					connType)
 	{
 	}
 
 	//copy constructor
-	GenericGraphObject(const GenericGraphObject &rhs);
+	inline GenericGraphObject(const GenericGraphObject &rhs) :
+			Abstract::AbstractObject(rhs), connectivityTypeIdentifier(
+					rhs.getConnectivityTypeIdentifier())
+	{
+	}
 
 	//move constructor
-	GenericGraphObject(GenericGraphObject &&rhs);
+	inline GenericGraphObject(GenericGraphObject &&rhs) :
+			Abstract::AbstractObject(rhs), connectivityTypeIdentifier(
+					rhs.getConnectivityTypeIdentifier())
+	{
+	}
 
 	//copy assignment
-	GenericGraphObject& operator=(const GenericGraphObject &rhs);
+	inline GenericGraphObject& operator=(const GenericGraphObject &rhs)
+	{
+		return *this = GenericGraphObject(rhs);
+	}
 
 	//move assignment
-	GenericGraphObject& operator=(GenericGraphObject &&rhs);
+	GenericGraphObject& operator=(GenericGraphObject &&rhs)
+	{
+		this->setConnectivityTypeIdentifier(
+				rhs.getConnectivityTypeIdentifier());
+		Abstract::AbstractObject::operator =(rhs);
+		return *this;
+	}
 
 	enum connectivityType getConnectivityTypeIdentifier() const;
 
