@@ -5,20 +5,20 @@
 
 inline std::string starLine = "****************************************\n";
 
-//LAZY INFORMATION OUTPUT
-inline void lazyInfo(int lineCalled, const char *funcName)
+// LAZY INFORMATION OUTPUT
+inline void lazyInfo(int t_lineCalled, const char *t_funcName)
 {
-	std::cout << starLine << "\tINFORMATION: " << funcName << "\n" << starLine;
-	std::cout << "Function Name: " << funcName << std::endl;
-	std::cout << "Line Number: " << lineCalled << std::endl << std::endl;
+  std::cout << starLine << "\tINFORMATION: " << t_funcName << "\n" << starLine;
+  std::cout << "Function Name: " << t_funcName << std::endl;
+  std::cout << "Line Number: " << t_lineCalled << std::endl << std::endl;
 }
 
-inline void lazyInfo(int lineCalled, const char *funcName, std::string infoToPass)
+inline void lazyInfo(int t_lineCalled, const char *t_funcName, std::string t_infoToPass)
 {
-	std::cout << starLine << "\t\tINFORMATION\n" << starLine;
-	std::cout << "Function Name: " << funcName << std::endl;
-	std::cout << "Line Number: " << lineCalled << std::endl;
-	std::cout << "Msg: " << infoToPass << std::endl << std::endl;
+  std::cout << starLine << "\t\tINFORMATION\n" << starLine;
+  std::cout << "Function Name: " << t_funcName << std::endl;
+  std::cout << "Line Number: " << t_lineCalled << std::endl;
+  std::cout << "Msg: " << t_infoToPass << std::endl << std::endl;
 }
 
 /* NOTE: Please note that these are to temporarily keep track of unwanted behavior
@@ -27,20 +27,19 @@ inline void lazyInfo(int lineCalled, const char *funcName, std::string infoToPas
  * 			our error handling ambiguous.
  *
  */
-inline void badBehavior(int lineBroke, const char *funcNameBroke)
+inline void badBehavior(int t_lineBroke, const char *t_funcNameBroke)
 {
-	std::cout << starLine << "\t\tBORKED\n" << starLine;
-	std::cout << "Borked Function Name: " << funcNameBroke << std::endl;
-	std::cout << "Line Number: " << lineBroke << std::endl << std::endl;
+  std::cout << starLine << "\t\tBORKED\n" << starLine;
+  std::cout << "Borked Function Name: " << t_funcNameBroke << std::endl;
+  std::cout << "Line Number: " << t_lineBroke << std::endl << std::endl;
 }
 
-inline void badBehavior(int lineBroke, const char *funcNameBroke,
-		std::string infoToPass)
+inline void badBehavior(int t_lineBroke, const char *t_funcNameBroke, std::string t_infoToPass)
 {
-	std::cout << starLine << "\t\tBORKED\n" << starLine;
-	std::cout << "Borked Function Name: " << funcNameBroke << std::endl;
-	std::cout << "Line Number: " << lineBroke << std::endl << std::endl;
-	std::cout << "Msg: " << infoToPass << std::endl << std::endl;
+  std::cout << starLine << "\t\tBORKED\n" << starLine;
+  std::cout << "Borked Function Name: " << t_funcNameBroke << std::endl;
+  std::cout << "Line Number: " << t_lineBroke << std::endl << std::endl;
+  std::cout << "Msg: " << t_infoToPass << std::endl << std::endl;
 }
 
-#endif //LAZY_PRINTERS_HPP
+#endif // LAZY_PRINTERS_HPP
