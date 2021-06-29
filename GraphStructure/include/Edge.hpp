@@ -170,5 +170,5 @@ namespace temp_graph
     return this->m_sourceNode;
   }
 
-} // namespace TemplateGraph
+} // namespace temp_graph
 #endif // end TEMPLATEGRAPH_GRAPHSTRUCTURE_INCLUDE_EDGE_HPP

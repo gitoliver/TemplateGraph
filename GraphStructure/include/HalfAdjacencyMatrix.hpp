@@ -256,5 +256,5 @@ namespace temp_graph
       }
   }
 
-} // namespace TemplateGraph
+} // namespace temp_graph
 #endif // end TEMPLATEGRAPH_GRAPHSTRUCTURE_INCLUDE_HALF_ADJACENCY_MATRIX_HPP

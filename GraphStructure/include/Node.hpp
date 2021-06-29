@@ -441,6 +441,6 @@ namespace temp_graph
     return NULL;
   }
 
-} // namespace TemplateGraph
+} // namespace temp_graph
 
 #endif // end TEMPLATEGRAPH_GRAPHSTRUCTURE_INCLUDE_NODE_HPP

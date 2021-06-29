@@ -289,8 +289,7 @@ int main()
   lazyInfo(__LINE__, __func__, "Graph 2 grapviz link: \n\t" + g2->getGraphvizLink());
 
   // Showing cycle decomp works
-  std::vector<
-      std::pair<std::unordered_set<temp_graph::Node<Atom> *>, std::unordered_set<temp_graph::Edge<Atom> *>>>
+  std::vector<std::pair<std::unordered_set<temp_graph::Node<Atom> *>, std::unordered_set<temp_graph::Edge<Atom> *>>>
       g1Cycles = cycle_decomp::totalCycleDetect(*g1);
 
   // Showing subgraph matching works

@@ -51,10 +51,10 @@ namespace temp_graph
     //
     //	Quick blurb about enums: If we dont set a variable that uses our enum to a specific value
     //								the variable will be equal to our first element (in our
-    // case 								<UNKNOWN>). The only reason why I included a specific value 								in our variable decleration is
-    // to just drive the point home 								that we are going to be
-    // defaulting to UNKNOWN. It is not 								needed but does help ensure there is
-    // clarity.
+    // case 								<UNKNOWN>). The only reason why I included a specific value 								in our variable decleration
+    // is to just drive the point home 								that we are going to be
+    // defaulting to UNKNOWN. It is not 								needed but does help ensure there
+    // is clarity.
     //
 
   public:
@@ -120,6 +120,6 @@ namespace temp_graph
     this->m_connectivityTypeIdentifier = t_structuralIdentifier;
   }
 
-} // namespace TemplateGraph
+} // namespace temp_graph
 
 #endif // end TEMPLATEGRAPH_GRAPHSTRUCTURE_INCLUDE_GENERICGRAPHOBJECT_hpp

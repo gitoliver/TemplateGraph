@@ -39,8 +39,7 @@ namespace
 
   // to compute all of our fundamental cycles and return them as a vec
   template<class T>
-  std::pair<std::vector<std::unordered_set<temp_graph::Node<T> *>>,
-            std::vector<temp_graph::HalfAdjacencyMatrix<T>>>
+  std::pair<std::vector<std::unordered_set<temp_graph::Node<T> *>>, std::vector<temp_graph::HalfAdjacencyMatrix<T>>>
   computeFundamentalCycles(temp_graph::Graph<T> &t_interestingGraph)
   {
     std::vector<std::unordered_set<temp_graph::Node<T> *>> funCycleSet;
@@ -136,8 +135,7 @@ namespace
             mutatingAdjMatrix.disconnect(currNodeIndex, anotherNodeIndex);
           }
       }
-    std::pair<std::vector<std::unordered_set<temp_graph::Node<T> *>>,
-              std::vector<temp_graph::HalfAdjacencyMatrix<T>>>
+    std::pair<std::vector<std::unordered_set<temp_graph::Node<T> *>>, std::vector<temp_graph::HalfAdjacencyMatrix<T>>>
         funCycleInfo(funCycleSet, funCycleAdjMatrixSet);
 
     return funCycleInfo;
@@ -221,8 +219,7 @@ namespace cycle_decomp
     //
     // 		TODO: Need to not do above.
 
-    std::pair<std::vector<std::unordered_set<temp_graph::Node<T> *>>,
-              std::vector<temp_graph::HalfAdjacencyMatrix<T>>>
+    std::pair<std::vector<std::unordered_set<temp_graph::Node<T> *>>, std::vector<temp_graph::HalfAdjacencyMatrix<T>>>
         funCycleInfo = computeFundamentalCycles(t_inputGraph);
 
     std::vector<temp_graph::HalfAdjacencyMatrix<T>> funCycleAdj = funCycleInfo.second;
@@ -318,11 +315,11 @@ namespace cycle_decomp
                     //
                     //		NOTE: Turns out I was being dumb with the "set" stl preserving
                     //				order. It turns out that the elements are ordered within
-                    //									the set by use of a comparator. This means ordering
-                    //is not 				based on when we inserted. Switched back to unordered, I
+                    //									the set by use of a comparator. This means
+                    //ordering is not 				based on when we inserted. Switched back to unordered, I
                     // tested using the set stl and it did
-                    // return the correct 				order (i.e. order we traversed everything) BUT this was due 				to memory
-                    // following the comparator.
+                    // return the correct 				order (i.e. order we traversed everything) BUT this was due 				to
+                    // memory following the comparator.
                     temp_graph::Edge<T> *tempLoleEdge =
                         t_inputGraph.getNodeFromIndex(aNodeIndex)
                             ->getConnectingEdge(t_inputGraph.getNodeFromIndex(bNodeIndex));
@@ -344,6 +341,6 @@ namespace cycle_decomp
     return allCycleEdgesNodes;
   } // end total cycle detect
 
-} // namespace cycleDetector
+} // namespace cycle_decomp
 
 #endif // end TEMPLATEGRAPH_ALGORITHMS_INCLUDE_TOTALCYCLEDECOMPOSITION_HPP

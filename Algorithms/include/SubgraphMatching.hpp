@@ -49,12 +49,11 @@ namespace
 
   // forward declare because dumb
   template<class T>
-  void
-  searchMatches(std::vector<temp_graph::Node<T> *>                                                    t_matches,
-                std::map<std::string, std::vector<std::string>>                                          t_patterns,
-                std::pair<std::vector<temp_graph::Node<T> *>, std::vector<temp_graph::Edge<T> *>> &t_resultsPair,
-                std::unordered_set<temp_graph::Node<T> *> &t_visitedKeys, temp_graph::Node<T> *t_previousNode,
-                temp_graph::Graph<T> &t_graphSearch);
+  void searchMatches(std::vector<temp_graph::Node<T> *>                                                 t_matches,
+                     std::map<std::string, std::vector<std::string>>                                    t_patterns,
+                     std::pair<std::vector<temp_graph::Node<T> *>, std::vector<temp_graph::Edge<T> *>> &t_resultsPair,
+                     std::unordered_set<temp_graph::Node<T> *> &t_visitedKeys, temp_graph::Node<T> *t_previousNode,
+                     temp_graph::Graph<T> &t_graphSearch);
 
   template<class T>
   int searchForPatterns(
@@ -182,12 +181,11 @@ namespace
   // 	then hit this function again.
   //
   template<class T>
-  void
-  searchMatches(std::vector<temp_graph::Node<T> *>                                                    t_matches,
-                std::map<std::string, std::vector<std::string>>                                          t_patterns,
-                std::pair<std::vector<temp_graph::Node<T> *>, std::vector<temp_graph::Edge<T> *>> &t_resultsPair,
-                std::unordered_set<temp_graph::Node<T> *> &t_visitedKeys, temp_graph::Node<T> *t_previousNode,
-                temp_graph::Graph<T> &t_graphSearch)
+  void searchMatches(std::vector<temp_graph::Node<T> *>                                                 t_matches,
+                     std::map<std::string, std::vector<std::string>>                                    t_patterns,
+                     std::pair<std::vector<temp_graph::Node<T> *>, std::vector<temp_graph::Edge<T> *>> &t_resultsPair,
+                     std::unordered_set<temp_graph::Node<T> *> &t_visitedKeys, temp_graph::Node<T> *t_previousNode,
+                     temp_graph::Graph<T> &t_graphSearch)
   {
     for (temp_graph::Node<T> *currMatch : t_matches)
       {
@@ -266,6 +264,6 @@ namespace subgraph_match
     return subgraphEdgeNodeResults;
   }
 
-} // namespace subgraphMatcher
+} // namespace subgraph_match
 
 #endif // END TEMPLATEGRAPH_ALGORITHMS_INCLUDE_SUBGRAPHMATCHING_HPP

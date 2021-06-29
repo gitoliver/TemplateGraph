@@ -209,8 +209,8 @@ namespace temp_graph
   {
     std::unordered_set<Node<T> *> visitedNodes;
     // TODO: Please note that this current method does increase the size of our call stack a good bit due to the use of
-    // recursion. 			Depending on how large of graphs we are dealing with this could become an issue and it may be a
-    // better 			call to use a different method.
+    // recursion. 			Depending on how large of graphs we are dealing with this could become an issue and it may be
+    // a better 			call to use a different method.
 
     std::vector<Node<T> *> reachableVecToReturn;
 
@@ -379,5 +379,5 @@ namespace temp_graph
       }
   }
 
-} // namespace TemplateGraph
+} // namespace temp_graph
 #endif // TEMPLATEGRAPH_GRAPHSTRUCTURE_INCLUDE_GRAPH_HPP

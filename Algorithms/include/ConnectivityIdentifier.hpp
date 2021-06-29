@@ -232,6 +232,6 @@ namespace connect_id
   {
     cycleDetect(t_graphToConnectivityDetect);
   }
-} // namespace connectivityIdentifier
+} // namespace connect_id
 
 #endif // end TEMPLATEGRAPH_ALGORITHMS_INCLUDE_CONNECTIVITYIDENTIFIER_HPP
