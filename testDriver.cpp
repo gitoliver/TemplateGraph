@@ -11,7 +11,7 @@
 #include <map>
 #include <set>
 
-using namespace temp_graph;
+using namespace glygraph;
 class Atom : public Node<Atom>
 {
 public:
@@ -167,7 +167,7 @@ int main()
 
   Graph<Atom> *g1 = new Graph<Atom>(atom0.get());
 
-  connect_id::identifyConnectivity(*g1);
+  id_connectivity::identifyConnectivity(*g1);
 
   // connectivity checking my dude
   std::set<Edge<Atom> *> unknownEdges;
@@ -285,21 +285,21 @@ int main()
   atomB->addBond(atomC.get());
   atomA->addBond(atomD.get());
   Graph<Atom> *g2 = new Graph<Atom>(atomA.get());
-  connect_id::identifyConnectivity(*g2);
+  id_connectivity::identifyConnectivity(*g2);
   lazyInfo(__LINE__, __func__, "Graph 2 grapviz link: \n\t" + g2->getGraphvizLink());
 
   // Showing cycle decomp works
-  std::vector<std::pair<std::unordered_set<temp_graph::Node<Atom> *>, std::unordered_set<temp_graph::Edge<Atom> *>>>
+  std::vector<std::pair<std::unordered_set<glygraph::Node<Atom> *>, std::unordered_set<glygraph::Edge<Atom> *>>>
       g1Cycles = cycle_decomp::totalCycleDetect(*g1);
 
   // Showing subgraph matching works
-  std::unordered_map<temp_graph::Node<Atom> *,
-                     std::pair<std::vector<temp_graph::Node<Atom> *>, std::vector<temp_graph::Edge<Atom> *>>>
+  std::unordered_map<glygraph::Node<Atom> *,
+                     std::pair<std::vector<glygraph::Node<Atom> *>, std::vector<glygraph::Edge<Atom> *>>>
       g2MatchesIng1 = subgraph_match::findSubgraphs(*g1, *g2);
 
   lazyInfo(__LINE__, __func__, "Printing out all cycles of g1\n");
   int prettyCounter = 0;
-  for (std::pair<std::unordered_set<temp_graph::Node<Atom> *>, std::unordered_set<temp_graph::Edge<Atom> *>>
+  for (std::pair<std::unordered_set<glygraph::Node<Atom> *>, std::unordered_set<glygraph::Edge<Atom> *>>
            currCyclePair : g1Cycles)
     {
 
@@ -321,8 +321,8 @@ int main()
 
   lazyInfo(__LINE__, __func__, "Printing out our nodes in g1 that match g2");
 
-  for (std::pair<temp_graph::Node<Atom> *,
-                 std::pair<std::vector<temp_graph::Node<Atom> *>, std::vector<temp_graph::Edge<Atom> *>>>
+  for (std::pair<glygraph::Node<Atom> *,
+                 std::pair<std::vector<glygraph::Node<Atom> *>, std::vector<glygraph::Edge<Atom> *>>>
            currMatchPair : g2MatchesIng1)
     {
       std::cout << "Node Key: " + currMatchPair.first->getName() + "\n\tNodes: ";

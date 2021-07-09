@@ -3,7 +3,7 @@
 
 #include "../../AbstractObject/includes/AbstractObject.hpp"
 
-namespace temp_graph
+namespace glygraph
 {
 
   enum class ConnectivityType
@@ -59,33 +59,33 @@ namespace temp_graph
 
   public:
     // constructor
-    inline GenericGraphObject(const std::string t_name) : Abstract::AbstractObject(t_name) {}
+    inline GenericGraphObject(const std::string name_t) : Abstract::AbstractObject(name_t) {}
 
-    inline GenericGraphObject(const std::string t_name, const std::string t_label)
-        : Abstract::AbstractObject(t_name, t_label)
+    inline GenericGraphObject(const std::string name_t, const std::string label_t)
+        : Abstract::AbstractObject(name_t, label_t)
     {
     }
 
-    inline GenericGraphObject(const std::string t_name, const std::vector<std::string> t_labels)
-        : Abstract::AbstractObject(t_name, t_labels)
+    inline GenericGraphObject(const std::string name_t, const std::vector<std::string> labels_t)
+        : Abstract::AbstractObject(name_t, labels_t)
     {
     }
 
-    inline GenericGraphObject(const std::string t_name, const std::vector<std::string> t_labels,
-                              ConnectivityType connType)
-        : Abstract::AbstractObject(t_name, t_labels), m_connectivityTypeIdentifier(connType)
+    inline GenericGraphObject(const std::string name_t, const std::vector<std::string> labels_t,
+                              ConnectivityType connType_t)
+        : Abstract::AbstractObject(name_t, labels_t), connTypeIdentifier_m(connType_t)
     {
     }
 
     // copy constructor
     inline GenericGraphObject(const GenericGraphObject &rhs)
-        : Abstract::AbstractObject(rhs), m_connectivityTypeIdentifier(rhs.getConnectivityTypeIdentifier())
+        : Abstract::AbstractObject(rhs), connTypeIdentifier_m(rhs.getConnectivityTypeIdentifier())
     {
     }
 
     // move constructor
     inline GenericGraphObject(GenericGraphObject &&rhs)
-        : Abstract::AbstractObject(rhs), m_connectivityTypeIdentifier(rhs.getConnectivityTypeIdentifier())
+        : Abstract::AbstractObject(rhs), connTypeIdentifier_m(rhs.getConnectivityTypeIdentifier())
     {
     }
 
@@ -102,22 +102,22 @@ namespace temp_graph
 
     enum ConnectivityType getConnectivityTypeIdentifier() const;
 
-    void setConnectivityTypeIdentifier(ConnectivityType t_structuralIdentifier);
+    void setConnectivityTypeIdentifier(ConnectivityType structuralIdentifier_t);
 
   private:
     // our deafult enum value is <UNKNOWN>, default enum value is the first element
     // just added the strutualType::UNKNOWN to make obvious
-    ConnectivityType m_connectivityTypeIdentifier = ConnectivityType::UNKNOWN;
+    ConnectivityType connTypeIdentifier_m = ConnectivityType::UNKNOWN;
   };
 
   inline enum ConnectivityType GenericGraphObject::getConnectivityTypeIdentifier() const
   {
-    return this->m_connectivityTypeIdentifier;
+    return this->connTypeIdentifier_m;
   }
 
-  inline void GenericGraphObject::setConnectivityTypeIdentifier(ConnectivityType t_structuralIdentifier)
+  inline void GenericGraphObject::setConnectivityTypeIdentifier(ConnectivityType structuralIdentifier_t)
   {
-    this->m_connectivityTypeIdentifier = t_structuralIdentifier;
+    this->connTypeIdentifier_m = structuralIdentifier_t;
   }
 
 } // namespace temp_graph

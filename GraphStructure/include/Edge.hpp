@@ -6,7 +6,7 @@
 
 #include <memory>
 
-namespace temp_graph
+namespace glygraph
 {
 
   // TODO: Ensure that this is correct forward declare
@@ -21,9 +21,9 @@ namespace temp_graph
      *  CONSTRUCTORS/DESTRUCTORS
      ***********************************************/
     Edge();
-    Edge(std::string t_name, Node<T> *const &t_sourceNode, Node<T> *const &t_targetNode);
-    Edge(std::string t_name, std::vector<std::string> t_labels, Node<T> *const &t_sourceNode,
-         Node<T> *const &t_targetNode);
+    Edge(std::string name_t, Node<T> *const &sourceNode_t, Node<T> *const &targetNode_t);
+    Edge(std::string name_t, std::vector<std::string> labels_t, Node<T> *const &sourceNode_t,
+         Node<T> *const &targetNode_t);
 
     // copy constructor
     Edge(const Edge<T> &rhs);
@@ -48,49 +48,49 @@ namespace temp_graph
      ***********************************************/
     // NOTE: Using shared pointer to get our source and sink in order to ensure
     // 			source and sink are good and alive.
-    void setSourceNode(Node<T> *t_source);
-    void setTargetNode(Node<T> *t_target);
+    void setSourceNode(Node<T> *source_t);
+    void setTargetNode(Node<T> *target_t);
 
   private:
     /************************************************
      *  ATTRIBUTES
      ***********************************************/
     // NOTE: Source node = the node that has a unique_ptr to this edge
-    Node<T> *m_sourceNode;
+    Node<T> *sourceNode_m;
     // NOTE: Sink node = the node that has a raw pointer to this edge
-    Node<T> *m_targetNode;
+    Node<T> *targetNode_m;
   };
 
   template<class T>
   inline Edge<T>::Edge()
   {
     badBehavior(__LINE__, __func__, "Warning calling default constructor");
-    this->m_targetNode = NULL;
-    this->m_sourceNode = NULL;
+    this->targetNode_m = NULL;
+    this->sourceNode_m = NULL;
   }
 
   template<class T>
-  inline Edge<T>::Edge(std::string t_name, Node<T> *const &t_sourceNode, Node<T> *const &t_targetNode)
-      : GenericGraphObject(t_name)
+  inline Edge<T>::Edge(std::string name_t, Node<T> *const &sourceNode_t, Node<T> *const &targetNode_t)
+      : GenericGraphObject(name_t)
   {
-    this->m_targetNode = t_targetNode;
-    this->m_sourceNode = t_sourceNode;
+    this->targetNode_m = targetNode_t;
+    this->sourceNode_m = sourceNode_t;
   }
 
   template<class T>
-  inline Edge<T>::Edge(std::string t_name, std::vector<std::string> t_labels, Node<T> *const &t_sourceNode,
-                       Node<T> *const &t_targetNode)
-      : GenericGraphObject(t_name, t_labels)
+  inline Edge<T>::Edge(std::string name_t, std::vector<std::string> labels_t, Node<T> *const &sourceNode_t,
+                       Node<T> *const &targetNode_t)
+      : GenericGraphObject(name_t, labels_t)
   {
-    this->m_targetNode = t_targetNode;
-    this->m_sourceNode = t_sourceNode;
+    this->targetNode_m = targetNode_t;
+    this->sourceNode_m = sourceNode_t;
   }
 
   template<class T>
   inline Edge<T>::~Edge()
   {
     // have our edge destructor remove itself from our inList then let die
-    this->m_targetNode->removeInEdge(this);
+    this->targetNode_m->removeInEdge(this);
     // lazyInfo(__LINE__, __func__,
     //			"Edge with name <" + this->getName() + "> deleted");
   }
@@ -99,7 +99,7 @@ namespace temp_graph
   template<class T>
   inline Edge<T>::Edge(const Edge<T> &rhs)
       : GenericGraphObject(rhs.getName(), rhs.getLabels(), rhs.getConnectivityTypeIdentifier()),
-        m_sourceNode(rhs.getSourceNode()), m_targetNode(rhs.getTargetNode())
+        sourceNode_m(rhs.getSourceNode()), targetNode_m(rhs.getTargetNode())
   {
     // lazyInfo(__LINE__, __func__,
     //		"Calling copy constructor on " + this->getName());
@@ -109,7 +109,7 @@ namespace temp_graph
   template<class T>
   inline Edge<T>::Edge(Edge<T> &&rhs)
       : GenericGraphObject(rhs.getName(), rhs.getLabels(), rhs.getConnectivityTypeIdentifier()),
-        m_sourceNode(rhs.getSourceNode()), m_targetNode(rhs.getTargetNode())
+        sourceNode_m(rhs.getSourceNode()), targetNode_m(rhs.getTargetNode())
   {
     // wanted data has been yoinked so we go ahead and delete this edge that we dont care about
     //	anymore. As stated in move assignment we dont care what state we leave our rhs in after a move
@@ -135,8 +135,8 @@ namespace temp_graph
     //	causing bad connectivity to arise (i.e. multigraph creation, etc.) I am using
     //	the delete on move paradigm in order to help prevent this. Keep in mind move
     //	implies that we dont care about what happens to our rhs.
-    this->m_sourceNode = rhs.m_sourceNode;
-    this->m_targetNode = rhs.m_targetNode;
+    this->sourceNode_m = rhs.sourceNode_m;
+    this->targetNode_m = rhs.targetNode_m;
     this->setName(rhs.getName());
     this->setLabels(rhs.getLabels());
 
@@ -147,27 +147,27 @@ namespace temp_graph
   }
 
   template<class T>
-  inline void Edge<T>::setSourceNode(Node<T> *t_source)
+  inline void Edge<T>::setSourceNode(Node<T> *source_t)
   {
-    this->m_sourceNode = t_source;
+    this->sourceNode_m = source_t;
   }
 
   template<class T>
-  inline void Edge<T>::setTargetNode(Node<T> *t_target)
+  inline void Edge<T>::setTargetNode(Node<T> *target_t)
   {
-    this->m_targetNode = t_target;
+    this->targetNode_m = target_t;
   }
 
   template<class T>
   inline Node<T> *Edge<T>::getTargetNode() const
   {
-    return this->m_targetNode;
+    return this->targetNode_m;
   }
 
   template<class T>
   inline Node<T> *Edge<T>::getSourceNode() const
   {
-    return this->m_sourceNode;
+    return this->sourceNode_m;
   }
 
 } // namespace temp_graph

@@ -8,7 +8,7 @@
 #include <memory>
 #include <unordered_set>
 
-namespace temp_graph
+namespace glygraph
 {
   template<class T>
   class Node : public GenericGraphObject, public std::enable_shared_from_this<Node<T>>
@@ -18,8 +18,8 @@ namespace temp_graph
      *  CONSTRUCTORS/DESTRUCTORS
      ***********************************************/
     Node();
-    Node(std::string t_name);
-    Node(std::string t_name, std::string t_label);
+    Node(std::string name_t);
+    Node(std::string name_t, std::string label_t);
 
     // copy constructor
     Node(const Node<T> &rhs);
@@ -54,46 +54,46 @@ namespace temp_graph
     /************************************************
      *  MUTATORS
      ***********************************************/
-    void addEdge(Edge<T> *t_edgeToAdd);
+    void addEdge(Edge<T> *edgeToAdd_t);
     /* TODO: Finalize how we would like to add nodes to one another. The addNeighbor will just be a
      * 			wrapper for our addChild. Please note how I avoided having an "addEdge" because from
      * 			my understanding and what I am pretty sure our use will be every single edge is
      * 			guaranteed to have both a source and sink node.
      */
-    void addNeighbor(std::string t_edgeName, Node<T> *const &t_newNeighbor);
+    void addNeighbor(std::string edgeName_t, Node<T> *const &newNeighbor_t);
 
-    void addChild(std::string t_edgeName, Node<T> *const &t_childNode);
+    void addChild(std::string edgeName_t, Node<T> *const &childNode_t);
 
-    void addParent(std::string t_edgeName, Node<T> *const &t_parentNode);
+    void addParent(std::string edgeName_t, Node<T> *const &parentNode_t);
     /* NOTE: We MUST remove the edge from out "child" node BEFORE deleting the edge by deleting the
      * 			unique_ptr that owns it. This is handled in edge's destructor, all we have to worry
      * 			about is deleting the unique ptr that owns our edge.
      */
-    void removeEdgeBetween(Node<T> *const &t_otherNode);
+    void removeEdgeBetween(Node<T> *const &otherNode_t);
 
-    void removeInEdge(Edge<T> *t_edgeToRemove);
-    void removeOutEdge(Edge<T> *t_edgeToRemove);
+    void removeInEdge(Edge<T> *edgeToRemove_t);
+    void removeOutEdge(Edge<T> *edgeToRemove_t);
 
     /************************************************
      *  FUNCTIONS
      ***********************************************/
-    bool     isNeighbor(Node<T> *const &t_otherNode);
-    Edge<T> *getConnectingEdge(Node<T> *const &t_otherNode);
+    bool     isNeighbor(Node<T> *const &otherNode_t);
+    Edge<T> *getConnectingEdge(Node<T> *const &otherNode_t);
 
   private:
     /************************************************
      *  ATTRIBUTES
      ***********************************************/
-    std::vector<std::unique_ptr<Edge<T>>> m_outEdges;
-    std::vector<Edge<T> *>                m_inEdges;
+    std::vector<std::unique_ptr<Edge<T>>> outEdges_m;
+    std::vector<Edge<T> *>                inEdges_m;
 
     /************************************************
      *  FUNCTIONS
      ***********************************************/
     void edgeConnectionUpdate();
 
-    bool isChildOf(Node<T> *const &t_possibleParent);
-    bool isParentOf(Node<T> *const &t_possibleChild);
+    bool isChildOf(Node<T> *const &possibleParent_t);
+    bool isParentOf(Node<T> *const &possibleChild_t);
 
     std::vector<Node<T> *> getChildren();
     std::vector<Node<T> *> getParents();
@@ -108,14 +108,14 @@ namespace temp_graph
   }
 
   template<class T>
-  inline Node<T>::Node(std::string name) : GenericGraphObject(name)
+  inline Node<T>::Node(std::string name_t) : GenericGraphObject(name_t)
   {
     // lazyInfo(__LINE__, __func__,
     //		"Created node with name <" + this->getName() + ">");
   }
 
   template<class T>
-  inline Node<T>::Node(std::string t_name, std::string t_label) : GenericGraphObject(t_name, t_label)
+  inline Node<T>::Node(std::string name_t, std::string label_t) : GenericGraphObject(name_t, label_t)
   {
     // lazyInfo(__LINE__, __func__,
     //		"Created node with name <" + this->getName()
@@ -125,12 +125,12 @@ namespace temp_graph
   template<class T>
   inline Node<T>::~Node()
   {
-    std::vector<Edge<T> *> tempInEdge = this->m_inEdges;
+    std::vector<Edge<T> *> tempInEdge = this->inEdges_m;
     lazyInfo(__LINE__, __func__, "Destroying Node: " + this->getName());
     std::cout << "\tMem Addr: " << this << "\n\n";
     // go through and hit all our parents, i.e. the ones that own the incoming edge and delete them
     // TODO: Do this but not lazy
-    this->m_outEdges.clear();
+    this->outEdges_m.clear();
     for (Edge<T> *currInEdge : tempInEdge)
       {
         currInEdge->getSourceNode()->removeOutEdge(currInEdge);
@@ -145,23 +145,23 @@ namespace temp_graph
   {
     // std::cout << "\n\tGiven object ptr: " << rhs.objectPtr << "\n\n";
     // lazyInfo(__LINE__, __func__, "Calling copy constructor");
-    for (Edge<T> const *currInEdge : rhs.m_inEdges)
+    for (Edge<T> const *currInEdge : rhs.inEdges_m)
       {
         std::unique_ptr<Edge<T>> tempIn(new Edge<T>(*currInEdge));
 
         tempIn.get()->setTargetNode(this);
 
-        this->m_inEdges.push_back(tempIn.get());
-        tempIn.get()->getSourceNode()->m_outEdges.push_back(std::move(tempIn));
+        this->inEdges_m.push_back(tempIn.get());
+        tempIn.get()->getSourceNode()->outEdges_m.push_back(std::move(tempIn));
       }
-    for (std::unique_ptr<Edge<T>> const &currOutEdge : rhs.m_outEdges)
+    for (std::unique_ptr<Edge<T>> const &currOutEdge : rhs.outEdges_m)
       {
         std::unique_ptr<Edge<T>> tempOut(new Edge<T>(*currOutEdge.get()));
 
         tempOut.get()->setSourceNode(this);
 
-        tempOut.get()->getTargetNode()->m_inEdges.push_back(tempOut.get());
-        this->m_outEdges.push_back(std::move(tempOut));
+        tempOut.get()->getTargetNode()->inEdges_m.push_back(tempOut.get());
+        this->outEdges_m.push_back(std::move(tempOut));
       }
   }
 
@@ -169,7 +169,7 @@ namespace temp_graph
   template<class T>
   inline Node<T>::Node(Node<T> &&rhs)
       : GenericGraphObject(rhs.getName(), rhs.getLabels(), rhs.getConnectivityTypeIdentifier()),
-        m_outEdges(std::move(rhs.m_outEdges)), m_inEdges(std::move(rhs.m_inEdges))
+        outEdges_m(std::move(rhs.outEdges_m)), inEdges_m(std::move(rhs.inEdges_m))
   {
     // lazyInfo(__LINE__, __func__, "Calling node move constructor");
     this->edgeConnectionUpdate();
@@ -191,8 +191,8 @@ namespace temp_graph
     this->setLabels(rhs.getLabels());
     this->setConnectivityTypeIdentifier(rhs.getConnectivityTypeIdentifier());
 
-    this->m_inEdges  = std::move(rhs.m_inEdges);
-    this->m_outEdges = std::move(rhs.m_outEdges);
+    this->inEdges_m  = std::move(rhs.inEdges_m);
+    this->outEdges_m = std::move(rhs.outEdges_m);
     this->edgeConnectionUpdate();
 
     return *this;
@@ -234,7 +234,7 @@ namespace temp_graph
   inline std::vector<Edge<T> *> Node<T>::getOutEdges() const
   {
     std::vector<Edge<T> *> outEdgeVecToReturn;
-    for (std::unique_ptr<Edge<T>> const &currOutEdge : this->m_outEdges)
+    for (std::unique_ptr<Edge<T>> const &currOutEdge : this->outEdges_m)
       {
         outEdgeVecToReturn.push_back(currOutEdge.get());
       }
@@ -244,55 +244,55 @@ namespace temp_graph
   template<class T>
   inline std::vector<Edge<T> *> Node<T>::getInEdges() const
   {
-    return this->m_inEdges;
+    return this->inEdges_m;
   }
 
   template<class T>
-  inline void Node<T>::addNeighbor(std::string t_edgeName, Node<T> *const &t_newNeighbor)
+  inline void Node<T>::addNeighbor(std::string edgeName_t, Node<T> *const &newNeighbor_t)
   {
-    this->addChild(t_edgeName, t_newNeighbor);
+    this->addChild(edgeName_t, newNeighbor_t);
   }
 
   template<class T>
-  inline void Node<T>::addChild(std::string t_edgeName, Node<T> *const &t_childNode)
+  inline void Node<T>::addChild(std::string edgeName_t, Node<T> *const &childNode_t)
   {
-    if (this->isNeighbor(t_childNode))
+    if (this->isNeighbor(childNode_t))
       {
         badBehavior(__LINE__, __func__, "Trying to make create an edge between two nodes that are already neighbors");
       }
-    else if (this == t_childNode)
+    else if (this == childNode_t)
       {
         badBehavior(__LINE__, __func__, "Trying to add self as child, stop that!");
       }
     else
       {
-        std::unique_ptr<Edge<T>> tempEdge(new Edge<T>(t_edgeName, this, t_childNode));
+        std::unique_ptr<Edge<T>> tempEdge(new Edge<T>(edgeName_t, this, childNode_t));
 
-        t_childNode->m_inEdges.push_back(tempEdge.get());
+        childNode_t->inEdges_m.push_back(tempEdge.get());
 
-        this->m_outEdges.push_back(std::move(tempEdge));
+        this->outEdges_m.push_back(std::move(tempEdge));
       }
   }
 
   template<class T>
-  inline void Node<T>::addParent(std::string t_edgeName, Node<T> *const &t_parentNode)
+  inline void Node<T>::addParent(std::string edgeName_t, Node<T> *const &parentNode_t)
   {
-    t_parentNode->addChild(t_edgeName, this);
+    parentNode_t->addChild(edgeName_t, this);
   }
 
   template<class T>
-  inline void Node<T>::removeEdgeBetween(Node<T> *const &t_otherNode)
+  inline void Node<T>::removeEdgeBetween(Node<T> *const &otherNode_t)
   {
-    if (this->isNeighbor(t_otherNode))
+    if (this->isNeighbor(otherNode_t))
       {
-        if (this->isChildOf(t_otherNode))
+        if (this->isChildOf(otherNode_t))
           {
-            Edge<T> *edgeToRemove = this->getConnectingEdge(t_otherNode);
-            t_otherNode->removeOutEdge(edgeToRemove);
+            Edge<T> *edgeToRemove = this->getConnectingEdge(otherNode_t);
+            otherNode_t->removeOutEdge(edgeToRemove);
           }
-        else if (this->isParentOf(t_otherNode))
+        else if (this->isParentOf(otherNode_t))
           {
-            t_otherNode->removeEdgeBetween(this);
+            otherNode_t->removeEdgeBetween(this);
           }
         else
           {
@@ -303,22 +303,22 @@ namespace temp_graph
       {
         badBehavior(__LINE__, __func__,
                     "Tried to remove an edge between node <" + this->getName() + "> and node <" +
-                        t_otherNode->getName() + ">");
+                        otherNode_t->getName() + ">");
       }
   }
 
   template<class T>
-  inline bool Node<T>::isNeighbor(Node<T> *const &t_otherNode)
+  inline bool Node<T>::isNeighbor(Node<T> *const &otherNode_t)
   {
-    return this->isChildOf(t_otherNode) || this->isParentOf(t_otherNode);
+    return this->isChildOf(otherNode_t) || this->isParentOf(otherNode_t);
   }
 
   template<class T>
-  bool Node<T>::isChildOf(Node<T> *const &t_possibleParent)
+  bool Node<T>::isChildOf(Node<T> *const &possibleParent_t)
   {
-    for (Edge<T> *currInEdge : this->m_inEdges)
+    for (Edge<T> *currInEdge : this->inEdges_m)
       {
-        if (currInEdge->getSourceNode() == t_possibleParent)
+        if (currInEdge->getSourceNode() == possibleParent_t)
           {
             return true;
           }
@@ -327,11 +327,11 @@ namespace temp_graph
   }
 
   template<class T>
-  inline bool Node<T>::isParentOf(Node<T> *const &t_possibleChild)
+  inline bool Node<T>::isParentOf(Node<T> *const &possibleChild_t)
   {
-    for (std::unique_ptr<Edge<T>> const &currOutEdge : this->m_outEdges)
+    for (std::unique_ptr<Edge<T>> const &currOutEdge : this->outEdges_m)
       {
-        if (currOutEdge.get()->getTargetNode() == t_possibleChild)
+        if (currOutEdge.get()->getTargetNode() == possibleChild_t)
           {
             return true;
           }
@@ -343,7 +343,7 @@ namespace temp_graph
   inline std::vector<Node<T> *> Node<T>::getChildren()
   {
     std::vector<Node<T> *> childrenVecToReturn;
-    for (std::unique_ptr<Edge<T>> const &currOutEdge : this->m_outEdges)
+    for (std::unique_ptr<Edge<T>> const &currOutEdge : this->outEdges_m)
       {
         childrenVecToReturn.push_back(currOutEdge.get()->getTargetNode());
         // lazyInfo(__LINE__, __func__,
@@ -358,11 +358,11 @@ namespace temp_graph
   {
     // So even tho we moved all the references to an edge, we have
     //	not updated said edges with their new vertex appropriately
-    for (Edge<T> *currInEdge : this->m_inEdges)
+    for (Edge<T> *currInEdge : this->inEdges_m)
       {
         currInEdge->setTargetNode(this);
       }
-    for (std::unique_ptr<Edge<T>> &currOutEdge : this->m_outEdges)
+    for (std::unique_ptr<Edge<T>> &currOutEdge : this->outEdges_m)
       {
         currOutEdge.get()->setSourceNode(this);
       }
@@ -372,7 +372,7 @@ namespace temp_graph
   inline std::vector<Node<T> *> Node<T>::getParents()
   {
     std::vector<Node<T> *> parentsVecToReturn;
-    for (Edge<T> *currInEdge : this->m_inEdges)
+    for (Edge<T> *currInEdge : this->inEdges_m)
       {
         parentsVecToReturn.push_back(currInEdge->getSourceNode());
       }
@@ -380,50 +380,50 @@ namespace temp_graph
   }
 
   template<class T>
-  inline void Node<T>::removeInEdge(Edge<T> *t_edgeToRemove)
+  inline void Node<T>::removeInEdge(Edge<T> *edgeToRemove_t)
   {
     // lazyInfo(__LINE__, __func__,
     //		"removing in edge <" + edgeToRemove->getName()
     //				+ "> from node named <" + this->getName() + ">");
-    this->m_inEdges.erase(std::remove(this->m_inEdges.begin(), this->m_inEdges.end(), t_edgeToRemove),
-                          this->m_inEdges.end());
+    this->inEdges_m.erase(std::remove(this->inEdges_m.begin(), this->inEdges_m.end(), edgeToRemove_t),
+                          this->inEdges_m.end());
   }
 
   template<class T>
-  inline void Node<T>::removeOutEdge(Edge<T> *t_edgeToRemove)
+  inline void Node<T>::removeOutEdge(Edge<T> *edgeToRemove_t)
   {
     // lazyInfo(__LINE__, __func__,
     //			"removing out edge <" + edgeToRemove->getName()
     //	 				+ "> from node named <" + this->getName() + ">");
-    for (unsigned int outIndex = 0; outIndex <= this->m_outEdges.size(); outIndex++)
+    for (unsigned int outIndex = 0; outIndex <= this->outEdges_m.size(); outIndex++)
       {
-        if (this->m_outEdges[outIndex].get() == t_edgeToRemove)
+        if (this->outEdges_m[outIndex].get() == edgeToRemove_t)
           {
-            this->m_outEdges.erase(this->m_outEdges.begin() + outIndex);
+            this->outEdges_m.erase(this->outEdges_m.begin() + outIndex);
           }
       }
   }
 
   template<class T>
-  inline Edge<T> *temp_graph::Node<T>::getConnectingEdge(Node<T> *const &t_otherNode)
+  inline Edge<T> *glygraph::Node<T>::getConnectingEdge(Node<T> *const &otherNode_t)
   {
-    if (this->isNeighbor(t_otherNode))
+    if (this->isNeighbor(otherNode_t))
       {
-        if (this->isChildOf(t_otherNode))
+        if (this->isChildOf(otherNode_t))
           {
-            for (Edge<T> *currInEdge : this->m_inEdges)
+            for (Edge<T> *currInEdge : this->inEdges_m)
               {
-                if (currInEdge->getSourceNode() == t_otherNode)
+                if (currInEdge->getSourceNode() == otherNode_t)
                   {
                     return currInEdge;
                   }
               }
           }
-        else if (this->isParentOf(t_otherNode))
+        else if (this->isParentOf(otherNode_t))
           {
-            for (std::unique_ptr<Edge<T>> const &currOutEdge : this->m_outEdges)
+            for (std::unique_ptr<Edge<T>> const &currOutEdge : this->outEdges_m)
               {
-                if (currOutEdge.get()->getTargetNode() == t_otherNode)
+                if (currOutEdge.get()->getTargetNode() == otherNode_t)
                   {
                     return currOutEdge.get();
                   }

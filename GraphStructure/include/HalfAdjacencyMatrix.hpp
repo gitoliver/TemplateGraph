@@ -5,7 +5,7 @@
 
 #include "../../LazyPrints/LazyPrinters.hpp"
 
-namespace temp_graph
+namespace glygraph
 {
   // TODO:Remove forward declare, why throwing errors?
   template<class T>
@@ -19,9 +19,9 @@ namespace temp_graph
      *  CONSTRUCTORS/DESTRUCTORS
      ***********************************************/
     HalfAdjacencyMatrix();
-    HalfAdjacencyMatrix(std::vector<Node<T> *> const &t_nodeList);
+    HalfAdjacencyMatrix(std::vector<Node<T> *> const &nodeList_t);
     // copy constructor
-    HalfAdjacencyMatrix(const HalfAdjacencyMatrix<T> &m);
+    HalfAdjacencyMatrix(const HalfAdjacencyMatrix<T> &rhs);
 
     ~HalfAdjacencyMatrix() {};
 
@@ -34,25 +34,25 @@ namespace temp_graph
     /************************************************
      *  MUTATORS
      ***********************************************/
-    void connect(unsigned int t_aNodeIndex, unsigned int t_bNodeIndex);
-    void disconnect(unsigned int t_aNodeIndex, unsigned int t_bNodeIndex);
+    void connect(unsigned int aNodeIndex_t, unsigned int bNodeIndex_t);
+    void disconnect(unsigned int aNodeIndex_t, unsigned int bNodeIndex_t);
 
     /************************************************
      *  FUNCTIONS
      ***********************************************/
-    bool isConnected(unsigned int t_aNodeIndex, unsigned int t_bNodeIndex);
+    bool isConnected(unsigned int aNodeIndex_t, unsigned int bNodeIndex_t);
 
     // TODO: Actually fix our constructors so we do not have to use this initialize workaround stuff
-    void initializeWorkaround(const HalfAdjacencyMatrix<T> &m);
-    void initializeWorkaround(std::vector<Node<T> *> const &t_nodeList);
-    void emptyInitializeWorkaround(const HalfAdjacencyMatrix<T> &m);
+    void initializeWorkaround(const HalfAdjacencyMatrix<T> &rhs);
+    void initializeWorkaround(std::vector<Node<T> *> const &nodeList_t);
+    void emptyInitializeWorkaround(const HalfAdjacencyMatrix<T> &rhs);
 
     /************************************************
      *  OPERATOR OVERLOADS
      ***********************************************/
-    inline bool operator()(unsigned int t_nodeAIndex, unsigned int t_nodeBIndex)
+    inline bool operator()(unsigned int nodeAIndex_t, unsigned int nodeBIndex_t)
     {
-      return isConnected(t_nodeAIndex, t_nodeBIndex);
+      return isConnected(nodeAIndex_t, nodeBIndex_t);
     }
 
     // our XOR overload
@@ -63,20 +63,20 @@ namespace temp_graph
       // HalfAdjacencyMatrix<T> result(this->numNodes);
       HalfAdjacencyMatrix<T> result(rhs);
       result.emptyInitializeWorkaround(rhs);
-      if (this->m_numNodes != rhs.m_numNodes)
+      if (this->numNodes_m != rhs.numNodes_m)
         {
           badBehavior(__LINE__, __func__, "WARNING NUMBER OF NODES NOT EQUAL XOR");
           return result;
         }
       else
         {
-          for (unsigned int bitListIndex = 0; bitListIndex < this->m_bitList.size(); bitListIndex++)
+          for (unsigned int bitListIndex = 0; bitListIndex < this->bitList_m.size(); bitListIndex++)
             {
-              if ((this->m_bitList[bitListIndex] || rhs.m_bitList[bitListIndex]) &&
-                  (this->m_bitList[bitListIndex] != rhs.m_bitList[bitListIndex]))
+              if ((this->bitList_m[bitListIndex] || rhs.bitList_m[bitListIndex]) &&
+                  (this->bitList_m[bitListIndex] != rhs.bitList_m[bitListIndex]))
                 {
-                  result.m_bitList[bitListIndex] = 1;
-                  ++result.m_numEdges;
+                  result.bitList_m[bitListIndex] = 1;
+                  ++result.numEdges_m;
                 }
             }
           return result;
@@ -86,21 +86,21 @@ namespace temp_graph
     // our XOR-EQUALS overload
     inline HalfAdjacencyMatrix<T> &operator^=(const HalfAdjacencyMatrix<T> &rhs)
     {
-      if (this->m_numNodes != rhs.m_numNodes)
+      if (this->numNodes_m != rhs.numNodes_m)
         {
           badBehavior(__LINE__, __func__, "WARNING NUMBER OF NODES NOT EQUAL XOREQUALS");
         }
-      m_numEdges = 0;
-      for (unsigned int bitListIndex = 0; bitListIndex < this->m_bitList.size(); bitListIndex++)
+      numEdges_m = 0;
+      for (unsigned int bitListIndex = 0; bitListIndex < this->bitList_m.size(); bitListIndex++)
         {
-          if ((this->m_bitList[bitListIndex] || rhs.m_bitList[bitListIndex]) &&
-              (this->m_bitList[bitListIndex] != rhs.m_bitList[bitListIndex]))
+          if ((this->bitList_m[bitListIndex] || rhs.bitList_m[bitListIndex]) &&
+              (this->bitList_m[bitListIndex] != rhs.bitList_m[bitListIndex]))
             {
-              this->m_bitList[bitListIndex] = 1;
-              m_numEdges++;
+              this->bitList_m[bitListIndex] = 1;
+              numEdges_m++;
             }
           else
-            this->m_bitList[bitListIndex] = 0;
+            this->bitList_m[bitListIndex] = 0;
         }
       return *this;
     }
@@ -108,145 +108,145 @@ namespace temp_graph
     // our equals operator, well assignment equals
     inline HalfAdjacencyMatrix<T> &operator=(const HalfAdjacencyMatrix<T> &rhs)
     {
-      if (this->m_numNodes != rhs.m_numNodes)
+      if (this->numNodes_m != rhs.numNodes_m)
         {
           badBehavior(__LINE__, __func__, "WARNING NUMBER OF NODES NOT EQUAL EQUAL");
         }
-      this->m_bitList  = rhs.m_bitList;
-      this->m_numEdges = rhs.m_numEdges;
+      this->bitList_m  = rhs.bitList_m;
+      this->numEdges_m = rhs.numEdges_m;
       return *this;
     }
 
   private:
     // Allows for proper index lookup. We use a half adjacency matrix because
     // 	our data is mirrored on the diagonal and we would like to save space
-    unsigned int index(const unsigned int t_aNodeIndex, const unsigned int t_bNodeIndex);
+    unsigned int index(const unsigned int aNodeIndex_t, const unsigned int bNodeIndex_t);
     // Our actual connections/Adj matrix
-    std::vector<bool> m_bitList;
-    unsigned int      m_numEdges;
-    unsigned int      m_numNodes;
-    long long         m_indexFactor;
+    std::vector<bool> bitList_m;
+    unsigned int      numEdges_m;
+    unsigned int      numNodes_m;
+    long long         indexFactor_m;
   };
 
   template<class T>
   HalfAdjacencyMatrix<T>::HalfAdjacencyMatrix()
   {
     badBehavior(__LINE__, __func__, "Warning default constructor called");
-    this->m_numEdges    = 0;
-    this->m_numNodes    = 0;
-    this->m_indexFactor = 0;
+    this->numEdges_m    = 0;
+    this->numNodes_m    = 0;
+    this->indexFactor_m = 0;
   }
 
   template<class T>
-  HalfAdjacencyMatrix<T>::HalfAdjacencyMatrix(std::vector<Node<T> *> const &t_nodeList)
+  HalfAdjacencyMatrix<T>::HalfAdjacencyMatrix(std::vector<Node<T> *> const &nodeList_t)
   {
-    unsigned int numNodes = t_nodeList.size();
-    this->m_bitList.assign(((numNodes * (numNodes - 1)) / 2), 0);
-    this->m_numNodes    = numNodes;
-    this->m_numEdges    = 0;
-    this->m_indexFactor = (1 + 2 * (numNodes - 2));
+    unsigned int numNodes = nodeList_t.size();
+    this->bitList_m.assign(((numNodes * (numNodes - 1)) / 2), 0);
+    this->numNodes_m    = numNodes;
+    this->numEdges_m    = 0;
+    this->indexFactor_m = (1 + 2 * (numNodes - 2));
   }
 
   template<class T>
-  HalfAdjacencyMatrix<T>::HalfAdjacencyMatrix(const HalfAdjacencyMatrix<T> &m)
+  HalfAdjacencyMatrix<T>::HalfAdjacencyMatrix(const HalfAdjacencyMatrix<T> &rhs)
   {
-    this->m_bitList     = m.m_bitList;
-    this->m_numEdges    = m.m_numEdges;
-    this->m_numNodes    = m.m_numNodes;
-    this->m_indexFactor = m.m_indexFactor;
+    this->bitList_m     = rhs.bitList_m;
+    this->numEdges_m    = rhs.numEdges_m;
+    this->numNodes_m    = rhs.numNodes_m;
+    this->indexFactor_m = rhs.indexFactor_m;
   }
 
   template<class T>
-  void HalfAdjacencyMatrix<T>::initializeWorkaround(const HalfAdjacencyMatrix<T> &m)
+  void HalfAdjacencyMatrix<T>::initializeWorkaround(const HalfAdjacencyMatrix<T> &rhs)
   {
-    this->m_bitList     = m.m_bitList;
-    this->m_numEdges    = m.m_numEdges;
-    this->m_numNodes    = m.m_numNodes;
-    this->m_indexFactor = m.m_indexFactor;
+    this->bitList_m     = rhs.bitList_m;
+    this->numEdges_m    = rhs.numEdges_m;
+    this->numNodes_m    = rhs.numNodes_m;
+    this->indexFactor_m = rhs.indexFactor_m;
   }
 
   template<class T>
-  void HalfAdjacencyMatrix<T>::initializeWorkaround(std::vector<Node<T> *> const &t_nodeList)
+  void HalfAdjacencyMatrix<T>::initializeWorkaround(std::vector<Node<T> *> const &nodeList_t)
   {
-    unsigned int numNodes = t_nodeList.size();
-    this->m_bitList.assign(((numNodes * (numNodes - 1)) / 2), 0);
-    this->m_numNodes    = numNodes;
-    this->m_numEdges    = 0;
-    this->m_indexFactor = (1 + 2 * (numNodes - 2));
+    unsigned int numNodes = nodeList_t.size();
+    this->bitList_m.assign(((numNodes * (numNodes - 1)) / 2), 0);
+    this->numNodes_m    = numNodes;
+    this->numEdges_m    = 0;
+    this->indexFactor_m = (1 + 2 * (numNodes - 2));
   }
 
   template<class T>
   unsigned int HalfAdjacencyMatrix<T>::getNumEdges()
   {
-    return this->m_numEdges;
+    return this->numEdges_m;
   }
 
   template<class T>
-  void HalfAdjacencyMatrix<T>::connect(unsigned int t_aNodeIndex, unsigned int t_bNodeIndex)
+  void HalfAdjacencyMatrix<T>::connect(unsigned int aNodeIndex_t, unsigned int bNodeIndex_t)
   {
-    if (this->m_bitList[index(t_aNodeIndex, t_bNodeIndex)])
+    if (this->bitList_m[index(aNodeIndex_t, bNodeIndex_t)])
       {
         badBehavior(__LINE__, __func__, "TRYING TO ADD A CONNECTION THAT WAS ALREADY THERE");
       }
     else
       {
-        this->m_bitList[index(t_aNodeIndex, t_bNodeIndex)] = true;
-        this->m_numEdges++;
+        this->bitList_m[index(aNodeIndex_t, bNodeIndex_t)] = true;
+        this->numEdges_m++;
       }
   }
 
   template<class T>
-  void HalfAdjacencyMatrix<T>::disconnect(unsigned int t_aNodeIndex, unsigned int t_bNodeIndex)
+  void HalfAdjacencyMatrix<T>::disconnect(unsigned int aNodeIndex_t, unsigned int bNodeIndex_t)
   {
-    if (!(this->m_bitList[index(t_aNodeIndex, t_bNodeIndex)]))
+    if (!(this->bitList_m[index(aNodeIndex_t, bNodeIndex_t)]))
       {
         badBehavior(__LINE__, __func__, "TRYING TO REMOVE A CONNECTION THAT WAS NOT THERE");
       }
     else
       {
-        this->m_bitList[index(t_aNodeIndex, t_bNodeIndex)] = false;
-        this->m_numEdges--;
+        this->bitList_m[index(aNodeIndex_t, bNodeIndex_t)] = false;
+        this->numEdges_m--;
       }
   }
 
   template<class T>
-  bool HalfAdjacencyMatrix<T>::isConnected(unsigned int t_aNodeIndex, unsigned int t_bNodeIndex)
+  bool HalfAdjacencyMatrix<T>::isConnected(unsigned int aNodeIndex_t, unsigned int bNodeIndex_t)
   {
-    if (t_aNodeIndex == t_bNodeIndex)
+    if (aNodeIndex_t == bNodeIndex_t)
       return false;
-    return this->m_bitList[index(t_aNodeIndex, t_bNodeIndex)];
+    return this->bitList_m[index(aNodeIndex_t, bNodeIndex_t)];
   }
 
   template<class T>
   unsigned int HalfAdjacencyMatrix<T>::getNumNodes()
   {
-    return this->m_numNodes;
+    return this->numNodes_m;
   }
 
   template<class T>
-  void HalfAdjacencyMatrix<T>::emptyInitializeWorkaround(const HalfAdjacencyMatrix<T> &m)
+  void HalfAdjacencyMatrix<T>::emptyInitializeWorkaround(const HalfAdjacencyMatrix<T> &rhs)
   {
-    unsigned int numNodes = m.m_numNodes;
-    this->m_bitList.assign(((numNodes * (numNodes - 1)) / 2), 0);
-    this->m_numNodes    = numNodes;
-    this->m_numEdges    = 0;
-    this->m_indexFactor = (1 + 2 * (numNodes - 2));
+    unsigned int numNodes = rhs.numNodes_m;
+    this->bitList_m.assign(((numNodes * (numNodes - 1)) / 2), 0);
+    this->numNodes_m    = numNodes;
+    this->numEdges_m    = 0;
+    this->indexFactor_m = (1 + 2 * (numNodes - 2));
   }
 
   template<class T>
-  unsigned int HalfAdjacencyMatrix<T>::index(const unsigned int t_aNodeIndex, const unsigned int t_bNodeIndex)
+  unsigned int HalfAdjacencyMatrix<T>::index(const unsigned int aNodeIndex_t, const unsigned int bNodeIndex_t)
   {
-    if ((t_aNodeIndex < this->m_numNodes) && (t_bNodeIndex < this->m_numNodes) && (t_aNodeIndex != t_bNodeIndex))
+    if ((aNodeIndex_t < this->numNodes_m) && (bNodeIndex_t < this->numNodes_m) && (aNodeIndex_t != bNodeIndex_t))
       {
-        long long aLongIndex = t_aNodeIndex;
-        long long bLongIndex = t_bNodeIndex;
-        if (t_aNodeIndex < t_bNodeIndex)
+        long long aLongIndex = aNodeIndex_t;
+        long long bLongIndex = bNodeIndex_t;
+        if (aNodeIndex_t < bNodeIndex_t)
           {
-            return (bLongIndex - aLongIndex * (aLongIndex - m_indexFactor) / 2) - 1;
+            return (bLongIndex - aLongIndex * (aLongIndex - indexFactor_m) / 2) - 1;
           }
         else
           {
-            return (aLongIndex - bLongIndex * (bLongIndex - m_indexFactor) / 2) - 1;
+            return (aLongIndex - bLongIndex * (bLongIndex - indexFactor_m) / 2) - 1;
           }
       }
     else

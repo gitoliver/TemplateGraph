@@ -28,26 +28,26 @@ namespace
   // to help us validate that our tree path is actually unique, allows
   // finding of all the different needed cycles
   template<class T>
-  void unique_tree_path(TreeNode *t_pathNode, temp_graph::HalfAdjacencyMatrix<T> &t_mutatingMatrix)
+  void unique_tree_path(TreeNode *pathNode_t, glygraph::HalfAdjacencyMatrix<T> &mutatingMatrix_t)
   {
-    if (t_pathNode->parent != t_pathNode)
+    if (pathNode_t->parent != pathNode_t)
       {
-        t_mutatingMatrix.connect(t_pathNode->index, t_pathNode->parent->index);
-        unique_tree_path(t_pathNode->parent, t_mutatingMatrix);
+        mutatingMatrix_t.connect(pathNode_t->index, pathNode_t->parent->index);
+        unique_tree_path(pathNode_t->parent, mutatingMatrix_t);
       }
   }
 
   // to compute all of our fundamental cycles and return them as a vec
   template<class T>
-  std::pair<std::vector<std::unordered_set<temp_graph::Node<T> *>>, std::vector<temp_graph::HalfAdjacencyMatrix<T>>>
-  computeFundamentalCycles(temp_graph::Graph<T> &t_interestingGraph)
+  std::pair<std::vector<std::unordered_set<glygraph::Node<T> *>>, std::vector<glygraph::HalfAdjacencyMatrix<T>>>
+  computeFundamentalCycles(glygraph::Graph<T> &interestingGraph_t)
   {
-    std::vector<std::unordered_set<temp_graph::Node<T> *>> funCycleSet;
+    std::vector<std::unordered_set<glygraph::Node<T> *>> funCycleSet;
 
-    std::vector<temp_graph::HalfAdjacencyMatrix<T>> funCycleAdjMatrixSet;
+    std::vector<glygraph::HalfAdjacencyMatrix<T>> funCycleAdjMatrixSet;
 
     // to construct our actual spanning tree
-    std::unique_ptr<TreeNode[]> aTree(new TreeNode[t_interestingGraph.getNodes().size()]);
+    std::unique_ptr<TreeNode[]> aTree(new TreeNode[interestingGraph_t.getNodes().size()]);
 
     std::stack<unsigned int> nodeStack;
     // start randomly with our 0 node
@@ -55,11 +55,11 @@ namespace
 
     // copy over our matrix we are gonna be mutating. Dont want to screw
     //	up our actual structure
-    temp_graph::HalfAdjacencyMatrix<T> mutatingAdjMatrix(t_interestingGraph.getAdjMatrix());
+    glygraph::HalfAdjacencyMatrix<T> mutatingAdjMatrix(interestingGraph_t.getAdjMatrix());
 
     // initially have all treenodes as their own parent, will create our spanning
     // tree while running algo
-    for (unsigned int currIndex = 0; currIndex < t_interestingGraph.getNodes().size(); ++currIndex)
+    for (unsigned int currIndex = 0; currIndex < interestingGraph_t.getNodes().size(); ++currIndex)
       {
         aTree[currIndex].parent = &aTree[currIndex];
         aTree[currIndex].index  = currIndex;
@@ -73,7 +73,7 @@ namespace
         TreeNode &currTreeNode = aTree[currNodeIndex];
 
         // hit all edges connecting to this node
-        for (unsigned int anotherNodeIndex = 0; anotherNodeIndex < t_interestingGraph.getNodes().size();
+        for (unsigned int anotherNodeIndex = 0; anotherNodeIndex < interestingGraph_t.getNodes().size();
              anotherNodeIndex++)
           {
             // not connected we skip current iteration
@@ -85,8 +85,8 @@ namespace
             // doesnt point to self
             if (aTree[anotherNodeIndex].parent != &aTree[anotherNodeIndex])
               {
-                temp_graph::HalfAdjacencyMatrix<T> currNodePath(t_interestingGraph.getNodes());
-                temp_graph::HalfAdjacencyMatrix<T> anotherNodePath(t_interestingGraph.getNodes());
+                glygraph::HalfAdjacencyMatrix<T> currNodePath(interestingGraph_t.getNodes());
+                glygraph::HalfAdjacencyMatrix<T> anotherNodePath(interestingGraph_t.getNodes());
 
                 // to get our path from the current node
                 unique_tree_path(&aTree[currNodeIndex], currNodePath);
@@ -97,21 +97,21 @@ namespace
                 currNodePath.connect(currNodeIndex, anotherNodeIndex);
 
                 // xor our 2 matriciies to get our fundamental cycle
-                temp_graph::HalfAdjacencyMatrix<T> funCycleAdjMatrix(currNodePath ^ anotherNodePath);
+                glygraph::HalfAdjacencyMatrix<T> funCycleAdjMatrix(currNodePath ^ anotherNodePath);
 
-                std::unordered_set<temp_graph::Node<T> *> funCycleNodeSet;
+                std::unordered_set<glygraph::Node<T> *> funCycleNodeSet;
 
                 // TODO: Make this legitimate, slow...
-                for (unsigned int aNodeIndex = 0; aNodeIndex < t_interestingGraph.getNodes().size(); aNodeIndex++)
+                for (unsigned int aNodeIndex = 0; aNodeIndex < interestingGraph_t.getNodes().size(); aNodeIndex++)
                   {
-                    for (unsigned int bNodeIndex = 0; bNodeIndex < t_interestingGraph.getNodes().size(); bNodeIndex++)
+                    for (unsigned int bNodeIndex = 0; bNodeIndex < interestingGraph_t.getNodes().size(); bNodeIndex++)
                       {
                         if (funCycleAdjMatrix.isConnected(aNodeIndex, bNodeIndex))
                           {
 
-                            funCycleNodeSet.insert(t_interestingGraph.getNodeFromIndex(aNodeIndex));
+                            funCycleNodeSet.insert(interestingGraph_t.getNodeFromIndex(aNodeIndex));
 
-                            funCycleNodeSet.insert(t_interestingGraph.getNodeFromIndex(bNodeIndex));
+                            funCycleNodeSet.insert(interestingGraph_t.getNodeFromIndex(bNodeIndex));
                           }
                       }
                   } // end out garbage node finder
@@ -135,39 +135,39 @@ namespace
             mutatingAdjMatrix.disconnect(currNodeIndex, anotherNodeIndex);
           }
       }
-    std::pair<std::vector<std::unordered_set<temp_graph::Node<T> *>>, std::vector<temp_graph::HalfAdjacencyMatrix<T>>>
+    std::pair<std::vector<std::unordered_set<glygraph::Node<T> *>>, std::vector<glygraph::HalfAdjacencyMatrix<T>>>
         funCycleInfo(funCycleSet, funCycleAdjMatrixSet);
 
     return funCycleInfo;
   } // end compute fundamental cycles
 
   template<class T>
-  void validateCycleMatrixRecursive(temp_graph::HalfAdjacencyMatrix<T> &t_matrixToValidate,
-                                    unsigned int &t_currPathLength, const int t_interestingNodeIndex,
-                                    unsigned int t_prevNodeIndex, std::set<unsigned int> &t_visitedTracker)
+  void validateCycleMatrixRecursive(glygraph::HalfAdjacencyMatrix<T> &matrixToValidate_t,
+                                    unsigned int &currPathLength_t, const int interestingNodeIndex_t,
+                                    unsigned int prevNodeIndex_t, std::set<unsigned int> &visitedTracker_t)
   {
     // just makes sure our call stack isnt stupid large, we can mutate this to our needs
-    if (t_currPathLength > 750)
+    if (currPathLength_t > 750)
       {
         badBehavior(__LINE__, __func__, "Our path is too long");
       }
     else
       {
-        for (unsigned int curiousIndex = 0; curiousIndex < t_matrixToValidate.getNumNodes(); curiousIndex++)
+        for (unsigned int curiousIndex = 0; curiousIndex < matrixToValidate_t.getNumNodes(); curiousIndex++)
           {
-            if ((t_matrixToValidate.isConnected(t_interestingNodeIndex, curiousIndex)) &&
-                (curiousIndex != t_prevNodeIndex))
+            if ((matrixToValidate_t.isConnected(interestingNodeIndex_t, curiousIndex)) &&
+                (curiousIndex != prevNodeIndex_t))
               {
-                auto possVisited = t_visitedTracker.find(curiousIndex);
-                if (possVisited != t_visitedTracker.end())
+                auto possVisited = visitedTracker_t.find(curiousIndex);
+                if (possVisited != visitedTracker_t.end())
                   {
                     // if we have visited and not at end we leave
                     return;
                   }
-                ++t_currPathLength;
-                t_visitedTracker.insert(t_interestingNodeIndex);
-                validateCycleMatrixRecursive(t_matrixToValidate, t_currPathLength, curiousIndex, t_interestingNodeIndex,
-                                             t_visitedTracker);
+                ++currPathLength_t;
+                visitedTracker_t.insert(interestingNodeIndex_t);
+                validateCycleMatrixRecursive(matrixToValidate_t, currPathLength_t, curiousIndex, interestingNodeIndex_t,
+                                             visitedTracker_t);
                 return;
               }
           }
@@ -176,21 +176,21 @@ namespace
   } // end validate recursion
 
   template<class T>
-  bool validateCycleMatrix(temp_graph::HalfAdjacencyMatrix<T> &t_matrixToCheck)
+  bool validateCycleMatrix(glygraph::HalfAdjacencyMatrix<T> &matrixToCheck_t)
   {
     unsigned int pathLength = 0;
-    for (unsigned int aNodeIndex = 0; aNodeIndex < t_matrixToCheck.getNumNodes(); aNodeIndex++)
+    for (unsigned int aNodeIndex = 0; aNodeIndex < matrixToCheck_t.getNumNodes(); aNodeIndex++)
       {
-        for (unsigned int bNodeIndex = 0; bNodeIndex < t_matrixToCheck.getNumNodes(); bNodeIndex++)
+        for (unsigned int bNodeIndex = 0; bNodeIndex < matrixToCheck_t.getNumNodes(); bNodeIndex++)
           {
-            if (t_matrixToCheck.isConnected(aNodeIndex, bNodeIndex))
+            if (matrixToCheck_t.isConnected(aNodeIndex, bNodeIndex))
               {
                 // when we are connected we check our cycle matrix
                 ++pathLength;
                 std::set<unsigned int> isVisited;
                 isVisited.insert(aNodeIndex);
-                validateCycleMatrixRecursive(t_matrixToCheck, pathLength, bNodeIndex, aNodeIndex, isVisited);
-                return ((pathLength + 1) == t_matrixToCheck.getNumEdges());
+                validateCycleMatrixRecursive(matrixToCheck_t, pathLength, bNodeIndex, aNodeIndex, isVisited);
+                return ((pathLength + 1) == matrixToCheck_t.getNumEdges());
               }
           }
       }
@@ -208,8 +208,8 @@ namespace cycle_decomp
   //		and the edges so we know our exact connectivity. The reasoning for this
   //		is explained a little bit down.
   template<typename T>
-  std::vector<std::pair<std::unordered_set<temp_graph::Node<T> *>, std::unordered_set<temp_graph::Edge<T> *>>>
-  totalCycleDetect(temp_graph::Graph<T> &t_inputGraph)
+  std::vector<std::pair<std::unordered_set<glygraph::Node<T> *>, std::unordered_set<glygraph::Edge<T> *>>>
+  totalCycleDetect(glygraph::Graph<T> &inputGraph_t)
   {
 
     //	The following is used to rip out all of our fundamental cycles which
@@ -219,22 +219,22 @@ namespace cycle_decomp
     //
     // 		TODO: Need to not do above.
 
-    std::pair<std::vector<std::unordered_set<temp_graph::Node<T> *>>, std::vector<temp_graph::HalfAdjacencyMatrix<T>>>
-        funCycleInfo = computeFundamentalCycles(t_inputGraph);
+    std::pair<std::vector<std::unordered_set<glygraph::Node<T> *>>, std::vector<glygraph::HalfAdjacencyMatrix<T>>>
+        funCycleInfo = computeFundamentalCycles(inputGraph_t);
 
-    std::vector<temp_graph::HalfAdjacencyMatrix<T>> funCycleAdj = funCycleInfo.second;
+    std::vector<glygraph::HalfAdjacencyMatrix<T>> funCycleAdj = funCycleInfo.second;
 
     //	This is kind of a doozy but this way each cycle we have contains both out nodes
     // 		and edges. A "pair" contains a first and second member, pretty self explanatory.
     //		Now if we insert them into any stl that uses a key-value pair type relation
     // 		the first member will be utilized as the key and the second will be used as
     // 		the value.
-    std::vector<std::pair<std::unordered_set<temp_graph::Node<T> *>, std::unordered_set<temp_graph::Edge<T> *>>>
+    std::vector<std::pair<std::unordered_set<glygraph::Node<T> *>, std::unordered_set<glygraph::Edge<T> *>>>
         allCycleEdgesNodes;
 
     //	All of our fundamental cycles are still cycles so we throw them over
     // 		to our  whole adj list.
-    std::vector<temp_graph::HalfAdjacencyMatrix<T>> allCyclesAdj(funCycleAdj);
+    std::vector<glygraph::HalfAdjacencyMatrix<T>> allCyclesAdj(funCycleAdj);
 
     std::vector<bool> combinitoricsVector(funCycleInfo.second.size());
 
@@ -245,7 +245,7 @@ namespace cycle_decomp
 
         do
           {
-            temp_graph::HalfAdjacencyMatrix<T> mutatingMatrix(t_inputGraph.getNodes());
+            glygraph::HalfAdjacencyMatrix<T> mutatingMatrix(inputGraph_t.getNodes());
 
             unsigned int edgeCount = 0;
 
@@ -287,18 +287,18 @@ namespace cycle_decomp
     // Just transfering our cycles to the node ptrs and edge ptrs.Up until here we
     //		were running our algo only using adj lists. Now we convert to our (hopefully)
     //		more useful data.
-    for (temp_graph::HalfAdjacencyMatrix<T> currentCycleAdj : allCyclesAdj)
+    for (glygraph::HalfAdjacencyMatrix<T> currentCycleAdj : allCyclesAdj)
       {
-        std::unordered_set<temp_graph::Node<T> *> temporaryNodeCycleSet;
-        std::unordered_set<temp_graph::Edge<T> *> temporaryEdgeCycleSet;
-        for (unsigned int aNodeIndex = 0; aNodeIndex < t_inputGraph.getNodes().size(); aNodeIndex++)
+        std::unordered_set<glygraph::Node<T> *> temporaryNodeCycleSet;
+        std::unordered_set<glygraph::Edge<T> *> temporaryEdgeCycleSet;
+        for (unsigned int aNodeIndex = 0; aNodeIndex < inputGraph_t.getNodes().size(); aNodeIndex++)
           {
-            for (unsigned int bNodeIndex = 0; bNodeIndex < t_inputGraph.getNodes().size(); bNodeIndex++)
+            for (unsigned int bNodeIndex = 0; bNodeIndex < inputGraph_t.getNodes().size(); bNodeIndex++)
               {
                 if (currentCycleAdj.isConnected(bNodeIndex, aNodeIndex))
                   {
-                    temporaryNodeCycleSet.insert(t_inputGraph.getNodeFromIndex(aNodeIndex));
-                    temporaryNodeCycleSet.insert(t_inputGraph.getNodeFromIndex(bNodeIndex));
+                    temporaryNodeCycleSet.insert(inputGraph_t.getNodeFromIndex(aNodeIndex));
+                    temporaryNodeCycleSet.insert(inputGraph_t.getNodeFromIndex(bNodeIndex));
 
                     // Now to insert our specifc edges in order to ensure we completely destroy any
                     // 		possibility of being able to produce an induced cycle from what is returned.
@@ -320,9 +320,9 @@ namespace cycle_decomp
                     // tested using the set stl and it did
                     // return the correct 				order (i.e. order we traversed everything) BUT this was due 				to
                     // memory following the comparator.
-                    temp_graph::Edge<T> *tempLoleEdge =
-                        t_inputGraph.getNodeFromIndex(aNodeIndex)
-                            ->getConnectingEdge(t_inputGraph.getNodeFromIndex(bNodeIndex));
+                    glygraph::Edge<T> *tempLoleEdge =
+                        inputGraph_t.getNodeFromIndex(aNodeIndex)
+                            ->getConnectingEdge(inputGraph_t.getNodeFromIndex(bNodeIndex));
                     temporaryEdgeCycleSet.insert(tempLoleEdge);
                   }
               }

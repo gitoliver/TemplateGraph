@@ -19,25 +19,25 @@ namespace
   // now, our key and node signifiers are the names of the nodes. This can be changed but please note it will require us
   // to cascade changes throughout our algo.
   template<class T>
-  std::map<std::string, std::vector<std::string>> patternExtractor(temp_graph::Graph<T> &t_patternGraph)
+  std::map<std::string, std::vector<std::string>> patternExtractor(glygraph::Graph<T> &patternGraph_t)
   {
     std::map<std::string, std::vector<std::string>> foundPatterns;
 
-    for (unsigned int indexA = 0; indexA < t_patternGraph.getNodes().size(); indexA++)
+    for (unsigned int indexA = 0; indexA < patternGraph_t.getNodes().size(); indexA++)
       {
         // our "A-node"'s name will be our key for patterns
         std::pair<std::string, std::vector<std::string>> currentPattern;
         // we now place current nodes name as key for our current pattern
-        currentPattern.first = t_patternGraph.getNodeFromIndex(indexA)->getName();
+        currentPattern.first = patternGraph_t.getNodeFromIndex(indexA)->getName();
         // now we hit all other nodes and if the 2 nodes are connected we throw the
         //	secondary node signifier in our pattern
-        for (unsigned int indexB = 0; indexB < t_patternGraph.getNodes().size(); indexB++)
+        for (unsigned int indexB = 0; indexB < patternGraph_t.getNodes().size(); indexB++)
           {
             // now we must check if the two nodes are connected. We can do this faster.
             // Fix up later
-            if (t_patternGraph.getAdjMatrix().isConnected(indexA, indexB))
+            if (patternGraph_t.getAdjMatrix().isConnected(indexA, indexB))
               {
-                currentPattern.second.push_back(t_patternGraph.getNodeFromIndex(indexB)->getName());
+                currentPattern.second.push_back(patternGraph_t.getNodeFromIndex(indexB)->getName());
               }
           }
         // once we populate all our patterns to the current key, we throw the pair
@@ -49,48 +49,48 @@ namespace
 
   // forward declare because dumb
   template<class T>
-  void searchMatches(std::vector<temp_graph::Node<T> *>                                                 t_matches,
-                     std::map<std::string, std::vector<std::string>>                                    t_patterns,
-                     std::pair<std::vector<temp_graph::Node<T> *>, std::vector<temp_graph::Edge<T> *>> &t_resultsPair,
-                     std::unordered_set<temp_graph::Node<T> *> &t_visitedKeys, temp_graph::Node<T> *t_previousNode,
-                     temp_graph::Graph<T> &t_graphSearch);
+  void searchMatches(std::vector<glygraph::Node<T> *>                                                 matches_t,
+                     std::map<std::string, std::vector<std::string>>                                    patterns_t,
+                     std::pair<std::vector<glygraph::Node<T> *>, std::vector<glygraph::Edge<T> *>> &resultsPair_t,
+                     std::unordered_set<glygraph::Node<T> *> &visitedKeys_t, glygraph::Node<T> *previousNode_t,
+                     glygraph::Graph<T> &graphSearch_t);
 
   template<class T>
   int searchForPatterns(
-      unsigned int t_currNodeIndex, std::map<std::string, std::vector<std::string>> t_patterns,
-      std::pair<std::vector<temp_graph::Node<T> *>, std::vector<temp_graph::Edge<T> *>> &t_resultsPair,
-      std::unordered_set<temp_graph::Node<T> *> &t_visitedKeys, temp_graph::Node<T> *t_previousNode,
-      temp_graph::Graph<T> &t_graphSearch)
+      unsigned int currNodeIndex_t, std::map<std::string, std::vector<std::string>> patterns_t,
+      std::pair<std::vector<glygraph::Node<T> *>, std::vector<glygraph::Edge<T> *>> &resultsPair_t,
+      std::unordered_set<glygraph::Node<T> *> &visitedKeys_t, glygraph::Node<T> *previousNode_t,
+      glygraph::Graph<T> &graphSearch_t)
   {
-    temp_graph::Node<T> *currNode = t_graphSearch.getNodeFromIndex(t_currNodeIndex);
+    glygraph::Node<T> *currNode = graphSearch_t.getNodeFromIndex(currNodeIndex_t);
 
     // we check if we have a corresponding pattern to this node
-    if (t_patterns.count(currNode->getName()) && !t_visitedKeys.count(currNode))
+    if (patterns_t.count(currNode->getName()) && !visitedKeys_t.count(currNode))
       {
-        t_visitedKeys.insert(currNode);
+        visitedKeys_t.insert(currNode);
         // When we are searching and we hit a match in our graphSearch (i.e. a parital
         // 	match onto our query graph) we want to put them in our matched nodes, then
         // 	we want to check search our patterns for each match.
-        std::vector<temp_graph::Node<T> *> foundMatches;
+        std::vector<glygraph::Node<T> *> foundMatches;
 
-        for (temp_graph::Node<T> *interestingNode : t_graphSearch.getNodes())
+        for (glygraph::Node<T> *interestingNode : graphSearch_t.getNodes())
           {
             // for now we just want to check if we have our current node
             // we are checking out in our results vector.
-            bool isInterestingInResults = (std::find(t_resultsPair.first.begin(), t_resultsPair.first.end(),
-                                                     interestingNode) != t_resultsPair.first.end());
+            bool isInterestingInResults = (std::find(resultsPair_t.first.begin(), resultsPair_t.first.end(),
+                                                     interestingNode) != resultsPair_t.first.end());
             // if we dont have current node in our results we want to check it out
-            if (!(t_visitedKeys.count(interestingNode) && !isInterestingInResults))
+            if (!(visitedKeys_t.count(interestingNode) && !isInterestingInResults))
               {
                 // now ensure the two nodes are actually connected
-                int interestingNodeIndex = t_graphSearch.getIndexFromNode(interestingNode);
+                int interestingNodeIndex = graphSearch_t.getIndexFromNode(interestingNode);
 
-                if (t_graphSearch.getAdjMatrix().isConnected(t_currNodeIndex, interestingNodeIndex))
+                if (graphSearch_t.getAdjMatrix().isConnected(currNodeIndex_t, interestingNodeIndex))
                   {
                     // after confirmed connect we check if our interesting node
                     // is within the pattern requirements of our "current" node
                     // recall our keys for our pattern matching is the name of the node
-                    std::vector<std::string> tempPatternReqs = t_patterns[currNode->getName()];
+                    std::vector<std::string> tempPatternReqs = patterns_t[currNode->getName()];
 
                     bool isInterestingInReqs = (std::find(tempPatternReqs.begin(), tempPatternReqs.end(),
                                                           interestingNode->getName()) != tempPatternReqs.end());
@@ -111,7 +111,7 @@ namespace
         // end our for loop, this finds all matches we want to check and possibly throw in our
         // pairResults
 
-        unsigned int currNodeReqsLength = t_patterns[currNode->getName()].size();
+        unsigned int currNodeReqsLength = patterns_t[currNode->getName()].size();
         // now we want to make sure that we have AT LEAST the same amount of matches
         // 	as we do for the current node requirements. Keep in mind we need to hit
         // 	all of each nodes pattern requirements to continue with a valid/matching
@@ -121,7 +121,7 @@ namespace
           {
             // we now prune our matches in order to make the rest of our resursive journey
             // easier and faster. Once we match a pattern who cares about it anymore for this current run
-            t_patterns.erase(currNode->getName());
+            patterns_t.erase(currNode->getName());
 
             //	Now we get the edge between the previous node and this node to insert.
             //
@@ -136,16 +136,16 @@ namespace
             //	see if my idea is correct. It was, we were trying to get an edge between
             //	our node and itself (a "loop" edge).
             // if (!(currNode == resultsPair.first.back()))
-            if (!(t_previousNode == currNode))
+            if (!(previousNode_t == currNode))
               {
-                t_resultsPair.second.push_back(currNode->getConnectingEdge(t_previousNode));
+                resultsPair_t.second.push_back(currNode->getConnectingEdge(previousNode_t));
               }
             //}				//end our bit that inserts edge.
 
             // add the current node we are checking out to our results since we are good so far
-            t_resultsPair.first.push_back(currNode);
-            t_previousNode = currNode;
-            searchMatches(foundMatches, t_patterns, t_resultsPair, t_visitedKeys, t_previousNode, t_graphSearch);
+            resultsPair_t.first.push_back(currNode);
+            previousNode_t = currNode;
+            searchMatches(foundMatches, patterns_t, resultsPair_t, visitedKeys_t, previousNode_t, graphSearch_t);
 
             // return 2 to designate we are continuing our traversal
             return 2;
@@ -153,20 +153,20 @@ namespace
         else if ((foundMatches.size() == 0) && (currNodeReqsLength == 0))
           {
             // we have hit a leaf, update our patterns
-            t_patterns.erase(currNode->getName());
+            patterns_t.erase(currNode->getName());
 
-            if (t_resultsPair.first.size() > 0)
+            if (resultsPair_t.first.size() > 0)
               {
                 // Since I have a small brain and need to check whats getting algo mad I wanna
                 //	see if my idea is correct. It was, we were trying to get an edge between
                 //	our node and itself (a "loop" edge).
-                if (!(currNode == t_resultsPair.first.back()))
+                if (!(currNode == resultsPair_t.first.back()))
                   {
-                    t_resultsPair.second.push_back(currNode->getConnectingEdge(t_resultsPair.first.back()));
+                    resultsPair_t.second.push_back(currNode->getConnectingEdge(resultsPair_t.first.back()));
                   }
               } // end our bit that inserts edge.
 
-            t_resultsPair.first.push_back(currNode);
+            resultsPair_t.first.push_back(currNode);
 
             // return 1 for our leaf case
             return 1;
@@ -181,26 +181,26 @@ namespace
   // 	then hit this function again.
   //
   template<class T>
-  void searchMatches(std::vector<temp_graph::Node<T> *>                                                 t_matches,
-                     std::map<std::string, std::vector<std::string>>                                    t_patterns,
-                     std::pair<std::vector<temp_graph::Node<T> *>, std::vector<temp_graph::Edge<T> *>> &t_resultsPair,
-                     std::unordered_set<temp_graph::Node<T> *> &t_visitedKeys, temp_graph::Node<T> *t_previousNode,
-                     temp_graph::Graph<T> &t_graphSearch)
+  void searchMatches(std::vector<glygraph::Node<T> *>                                                 matches_t,
+                     std::map<std::string, std::vector<std::string>>                                    patterns_t,
+                     std::pair<std::vector<glygraph::Node<T> *>, std::vector<glygraph::Edge<T> *>> &resultsPair_t,
+                     std::unordered_set<glygraph::Node<T> *> &visitedKeys_t, glygraph::Node<T> *previousNode_t,
+                     glygraph::Graph<T> &graphSearch_t)
   {
-    for (temp_graph::Node<T> *currMatch : t_matches)
+    for (glygraph::Node<T> *currMatch : matches_t)
       {
         // as before we need to check if our node we are checking out is
         // already in our results i.e. already been run through
         bool isMatchInResults =
-            (std::find(t_resultsPair.first.begin(), t_resultsPair.first.end(), currMatch) != t_resultsPair.first.end());
+            (std::find(resultsPair_t.first.begin(), resultsPair_t.first.end(), currMatch) != resultsPair_t.first.end());
         // We want to make sure we havent used the current node as an "entry point"
         // 		for our search pattern function AND we want to make sure she doesnt
         // 		exist in our results yet.
         //
-        if (!isMatchInResults && !(t_visitedKeys.count(currMatch)))
+        if (!isMatchInResults && !(visitedKeys_t.count(currMatch)))
           {
-            int searchState = searchForPatterns(t_graphSearch.getIndexFromNode(currMatch), t_patterns, t_resultsPair,
-                                                t_visitedKeys, t_previousNode, t_graphSearch);
+            int searchState = searchForPatterns(graphSearch_t.getIndexFromNode(currMatch), patterns_t, resultsPair_t,
+                                                visitedKeys_t, previousNode_t, graphSearch_t);
             // if we hit a leaf we get out
             if (searchState == 1)
               break;
@@ -224,36 +224,36 @@ namespace
 namespace subgraph_match
 {
   template<class T>
-  std::unordered_map<temp_graph::Node<T> *,
-                     std::pair<std::vector<temp_graph::Node<T> *>, std::vector<temp_graph::Edge<T> *>>>
-  findSubgraphs(temp_graph::Graph<T> &t_mainGraph, temp_graph::Graph<T> &t_queryGraph)
+  std::unordered_map<glygraph::Node<T> *,
+                     std::pair<std::vector<glygraph::Node<T> *>, std::vector<glygraph::Edge<T> *>>>
+  findSubgraphs(glygraph::Graph<T> &mainGraph_t, glygraph::Graph<T> &queryGraph_t)
   {
     // This will be what is returned, we be slowly built using what is right below it.
-    std::unordered_map<temp_graph::Node<T> *,
-                       std::pair<std::vector<temp_graph::Node<T> *>, std::vector<temp_graph::Edge<T> *>>>
+    std::unordered_map<glygraph::Node<T> *,
+                       std::pair<std::vector<glygraph::Node<T> *>, std::vector<glygraph::Edge<T> *>>>
         subgraphEdgeNodeResults;
 
-    std::pair<std::vector<temp_graph::Node<T> *>, std::vector<temp_graph::Edge<T> *>> pairedResult;
+    std::pair<std::vector<glygraph::Node<T> *>, std::vector<glygraph::Edge<T> *>> pairedResult;
 
     // first we want to grab all our patterns that we will use to match on our main graph
-    std::map<std::string, std::vector<std::string>> patternsToMatch = patternExtractor(t_queryGraph);
+    std::map<std::string, std::vector<std::string>> patternsToMatch = patternExtractor(queryGraph_t);
 
-    std::vector<temp_graph::Node<T> *> currResults;
+    std::vector<glygraph::Node<T> *> currResults;
 
-    std::unordered_set<temp_graph::Node<T> *> keyVisitTracker;
+    std::unordered_set<glygraph::Node<T> *> keyVisitTracker;
 
-    std::unordered_map<temp_graph::Node<T> *, std::vector<temp_graph::Node<T> *>> finalResults;
+    std::unordered_map<glygraph::Node<T> *, std::vector<glygraph::Node<T> *>> finalResults;
 
     // now we run a search for each node
-    for (unsigned int searchStartNodeIndex = 0; searchStartNodeIndex < t_mainGraph.getNodes().size();
+    for (unsigned int searchStartNodeIndex = 0; searchStartNodeIndex < mainGraph_t.getNodes().size();
          searchStartNodeIndex++)
       {
-        temp_graph::Node<T> *firstNode = t_mainGraph.getNodeFromIndex(searchStartNodeIndex);
-        searchForPatterns(searchStartNodeIndex, patternsToMatch, pairedResult, keyVisitTracker, firstNode, t_mainGraph);
+        glygraph::Node<T> *firstNode = mainGraph_t.getNodeFromIndex(searchStartNodeIndex);
+        searchForPatterns(searchStartNodeIndex, patternsToMatch, pairedResult, keyVisitTracker, firstNode, mainGraph_t);
 
         if (pairedResult.first.size() != 0)
           {
-            subgraphEdgeNodeResults.insert({t_mainGraph.getNodeFromIndex(searchStartNodeIndex), pairedResult});
+            subgraphEdgeNodeResults.insert({mainGraph_t.getNodeFromIndex(searchStartNodeIndex), pairedResult});
             // after we recursively hit all patterns we want to go ahead and clear out
             //	our results so we hit all again. From my understanding this is, in our case,
             //	the best way to clear our pairedResult pair.

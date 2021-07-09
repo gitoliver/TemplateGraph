@@ -11,7 +11,7 @@
 #include <unordered_map>
 #include <unordered_set>
 
-namespace temp_graph
+namespace glygraph
 {
 
   template<class T>
@@ -24,8 +24,8 @@ namespace temp_graph
     Graph();
     // TODO: Ensure we would like this functionality, current idea is pass root node then get all traversable from this
     // node and store in our set
-    Graph(Node<T> *const &t_initialNode);
-    Graph(std::vector<Node<T> *> const &t_nodeList);
+    Graph(Node<T> *const &initialNode_t);
+    Graph(std::vector<Node<T> *> const &nodeList_t);
 
     // copy constructor
     Graph(const Graph<T> &rhs);
@@ -53,8 +53,8 @@ namespace temp_graph
     std::vector<Node<T> *> getNodes();
     HalfAdjacencyMatrix<T> getAdjMatrix() const;
 
-    unsigned int getIndexFromNode(Node<T> *const &t_queryNode);
-    Node<T> *    getNodeFromIndex(unsigned int const &t_queryIndex);
+    unsigned int getIndexFromNode(Node<T> *const &queryNode_t);
+    Node<T> *    getNodeFromIndex(unsigned int const &queryIndex_t);
     /************************************************
      *  MUTATORS
      ***********************************************/
@@ -68,11 +68,11 @@ namespace temp_graph
     /************************************************
      *  ATTRIBUTES
      ***********************************************/
-    HalfAdjacencyMatrix<T> m_adjMatrix;
-    std::vector<Node<T> *> m_allNodes;
+    HalfAdjacencyMatrix<T> adjMatrix_m;
+    std::vector<Node<T> *> allNodes_m;
     // TODO: Ensure the correct hashing function is being used. Must be 100% sure, am only somewhat sure.
-    std::unordered_map<unsigned int, Node<T> *> m_nodeLookup;
-    std::unordered_map<Node<T> *, unsigned int> m_indexLookup;
+    std::unordered_map<unsigned int, Node<T> *> nodeLookup_m;
+    std::unordered_map<Node<T> *, unsigned int> indexLookup_m;
 
     /************************************************
      *  HELPER FUNCTIONS
@@ -81,10 +81,10 @@ namespace temp_graph
     void populateLookups();
     void lazyExpiredFixer();
 
-    std::vector<Node<T> *> getReachableNodes(Node<T> *const &t_startingNode);
+    std::vector<Node<T> *> getReachableNodes(Node<T> *const &startingNode_t);
     // NOTE: To be used when we are passed solely a root node.
-    void getReachableHelper(Node<T> *const &t_currentNode, std::unordered_set<Node<T> *> &t_visistedNodeSet,
-                            std::vector<Node<T> *> &t_reachableNodes);
+    void getReachableHelper(Node<T> *const &currentNode_t, std::unordered_set<Node<T> *> &visistedNodeSet_t,
+                            std::vector<Node<T> *> &reachableNodes_t);
   }; // end graph class
 
   template<class T>
@@ -94,19 +94,19 @@ namespace temp_graph
   }
 
   template<class T>
-  inline Graph<T>::Graph(Node<T> *const &t_initialNode)
+  inline Graph<T>::Graph(Node<T> *const &initialNode_t)
   {
 
     // Lazy way to prevent dupes, cant use method used in get nodes
     // due to weak_ptr being useless in our typical stl algo functions
 
-    std::vector<Node<T> *> tempNodeVec = this->getReachableNodes(t_initialNode);
+    std::vector<Node<T> *> tempNodeVec = this->getReachableNodes(initialNode_t);
 
     std::unordered_set<Node<T> *> tempNodeSet(tempNodeVec.begin(), tempNodeVec.end());
 
     for (Node<T> *currentNode : tempNodeSet)
       {
-        this->m_allNodes.push_back(currentNode);
+        this->allNodes_m.push_back(currentNode);
       }
 
     // populate our lookups
@@ -115,16 +115,16 @@ namespace temp_graph
   }
 
   template<class T>
-  inline Graph<T>::Graph(std::vector<Node<T> *> const &t_nodeList)
+  inline Graph<T>::Graph(std::vector<Node<T> *> const &nodeList_t)
   {
-    if (t_nodeList.size() > 0)
+    if (nodeList_t.size() > 0)
       {
         // Lazy way to prevent dupes, again need to come up with
         // a more efficient way to actually prevent our dupes
-        std::unordered_set<Node<T> *> tempNodeSet(t_nodeList.begin(), t_nodeList.end());
+        std::unordered_set<Node<T> *> tempNodeSet(nodeList_t.begin(), nodeList_t.end());
         for (Node<T> *currNode : tempNodeSet)
           {
-            this->m_allNodes.push_back(currNode);
+            this->allNodes_m.push_back(currNode);
           }
 
         this->populateLookups();
@@ -145,29 +145,29 @@ namespace temp_graph
   template<class T>
   inline std::vector<Node<T> *> Graph<T>::getNodes()
   {
-    return this->m_allNodes;
+    return this->allNodes_m;
   }
 
   template<class T>
   inline HalfAdjacencyMatrix<T> Graph<T>::getAdjMatrix() const
   {
-    return this->m_adjMatrix;
+    return this->adjMatrix_m;
   }
 
   template<class T>
   inline void Graph<T>::populateAdjacencyMatrix()
   {
-    if ((this->m_allNodes.size() > 0) && (this->m_indexLookup.size()))
+    if ((this->allNodes_m.size() > 0) && (this->indexLookup_m.size()))
       {
-        this->m_adjMatrix.initializeWorkaround(this->getNodes());
-        for (Node<T> *currNode : this->m_allNodes)
+        this->adjMatrix_m.initializeWorkaround(this->getNodes());
+        for (Node<T> *currNode : this->allNodes_m)
           {
             for (Node<T> *currNodeNeighbor : currNode->getNeighbors())
               {
-                if (!(this->m_adjMatrix.isConnected(this->m_indexLookup[currNode],
-                                                    this->m_indexLookup[currNodeNeighbor])))
+                if (!(this->adjMatrix_m.isConnected(this->indexLookup_m[currNode],
+                                                    this->indexLookup_m[currNodeNeighbor])))
                   {
-                    this->m_adjMatrix.connect(this->m_indexLookup[currNode], this->m_indexLookup[currNodeNeighbor]);
+                    this->adjMatrix_m.connect(this->indexLookup_m[currNode], this->indexLookup_m[currNodeNeighbor]);
                   }
               }
           }
@@ -182,18 +182,18 @@ namespace temp_graph
   template<class T>
   inline void Graph<T>::populateLookups()
   {
-    if (this->m_allNodes.size() > 0)
+    if (this->allNodes_m.size() > 0)
       {
-        this->m_nodeLookup.clear();
-        this->m_indexLookup.clear();
+        this->nodeLookup_m.clear();
+        this->indexLookup_m.clear();
 
         int currIndex = 0;
-        for (Node<T> *currNode : this->m_allNodes)
+        for (Node<T> *currNode : this->allNodes_m)
           {
 
-            this->m_nodeLookup.insert({currIndex, currNode});
+            this->nodeLookup_m.insert({currIndex, currNode});
 
-            this->m_indexLookup.insert({currNode, currIndex});
+            this->indexLookup_m.insert({currNode, currIndex});
 
             currIndex++;
           }
@@ -205,7 +205,7 @@ namespace temp_graph
   }
 
   template<class T>
-  inline std::vector<Node<T> *> Graph<T>::getReachableNodes(Node<T> *const &t_startingNode)
+  inline std::vector<Node<T> *> Graph<T>::getReachableNodes(Node<T> *const &startingNode_t)
   {
     std::unordered_set<Node<T> *> visitedNodes;
     // TODO: Please note that this current method does increase the size of our call stack a good bit due to the use of
@@ -214,21 +214,21 @@ namespace temp_graph
 
     std::vector<Node<T> *> reachableVecToReturn;
 
-    this->getReachableHelper(t_startingNode, visitedNodes, reachableVecToReturn);
+    this->getReachableHelper(startingNode_t, visitedNodes, reachableVecToReturn);
     return reachableVecToReturn;
   }
 
   // Should be correct. Passing pointer by reference
   template<class T>
-  inline unsigned int Graph<T>::getIndexFromNode(Node<T> *const &t_queryNode)
+  inline unsigned int Graph<T>::getIndexFromNode(Node<T> *const &queryNode_t)
   {
-    return this->m_indexLookup[t_queryNode];
+    return this->indexLookup_m[queryNode_t];
   }
 
   template<class T>
-  inline Node<T> *Graph<T>::getNodeFromIndex(unsigned int const &t_queryIndex)
+  inline Node<T> *Graph<T>::getNodeFromIndex(unsigned int const &queryIndex_t)
   {
-    return this->m_nodeLookup[t_queryIndex];
+    return this->nodeLookup_m[queryIndex_t];
   }
 
   // TODO: Find a better way to remove all expired ptrs that will always work
@@ -240,12 +240,12 @@ namespace temp_graph
   inline void Graph<T>::lazyExpiredFixer()
   {
     // Possibly a good way, need to run through some tests.
-    unsigned int ogSize = this->m_allNodes.size();
-    for (unsigned int currIndex = 0; currIndex < this->m_allNodes.size(); currIndex++)
+    unsigned int ogSize = this->allNodes_m.size();
+    for (unsigned int currIndex = 0; currIndex < this->allNodes_m.size(); currIndex++)
       {
-        if (this->m_allNodes[currIndex].expired())
+        if (this->allNodes_m[currIndex].expired())
           {
-            this->m_allNodes.erase(this->m_allNodes.begin() + currIndex);
+            this->allNodes_m.erase(this->allNodes_m.begin() + currIndex);
             currIndex--;
           }
       }
@@ -262,7 +262,7 @@ namespace temp_graph
     // this->m_allNodes.push_back(currDusty);
     // }
     // }
-    if (ogSize != this->m_allNodes.size())
+    if (ogSize != this->allNodes_m.size())
       {
         this->populateLookups();
         this->populateAdjacencyMatrix();
@@ -327,16 +327,16 @@ namespace temp_graph
   // copy constructor
   template<class T>
   inline Graph<T>::Graph(const Graph<T> &rhs)
-      : m_adjMatrix(rhs.m_adjMatrix), m_nodeLookup(rhs.m_nodeLookup), m_indexLookup(rhs.m_indexLookup),
-        m_allNodes(rhs.m_allNodes)
+      : adjMatrix_m(rhs.adjMatrix_m), nodeLookup_m(rhs.nodeLookup_m), indexLookup_m(rhs.indexLookup_m),
+        allNodes_m(rhs.allNodes_m)
   {
   }
 
   // move constructor
   template<class T>
   inline Graph<T>::Graph(Graph<T> &&rhs)
-      : m_adjMatrix(rhs.m_adjMatrix), m_nodeLookup(rhs.m_nodeLookup), m_indexLookup(rhs.m_indexLookup),
-        m_allNodes(rhs.m_allNodes)
+      : adjMatrix_m(rhs.adjMatrix_m), nodeLookup_m(rhs.nodeLookup_m), indexLookup_m(rhs.indexLookup_m),
+        allNodes_m(rhs.allNodes_m)
   {
   }
 
@@ -344,10 +344,10 @@ namespace temp_graph
   template<class T>
   inline Graph<T> &Graph<T>::operator=(const Graph<T> &rhs)
   {
-    this->m_adjMatrix   = rhs.m_adjMatrix;
-    this->m_allNodes    = rhs.m_allNodes;
-    this->m_indexLookup = rhs.m_indexLookup;
-    this->m_nodeLookup  = rhs.m_nodeLookup;
+    this->adjMatrix_m   = rhs.adjMatrix_m;
+    this->allNodes_m    = rhs.allNodes_m;
+    this->indexLookup_m = rhs.indexLookup_m;
+    this->nodeLookup_m  = rhs.nodeLookup_m;
     return *this;
   }
 
@@ -355,26 +355,26 @@ namespace temp_graph
   template<class T>
   inline Graph<T> &Graph<T>::operator=(Graph<T> &&rhs)
   {
-    this->m_adjMatrix   = rhs.m_adjMatrix;
-    this->m_allNodes    = rhs.m_allNodes;
-    this->m_indexLookup = rhs.m_indexLookup;
-    this->m_nodeLookup  = rhs.m_nodeLookup;
+    this->adjMatrix_m   = rhs.adjMatrix_m;
+    this->allNodes_m    = rhs.allNodes_m;
+    this->indexLookup_m = rhs.indexLookup_m;
+    this->nodeLookup_m  = rhs.nodeLookup_m;
     return *this;
   }
 
   template<class T>
-  inline void Graph<T>::getReachableHelper(Node<T> *const &t_currentNode, std::unordered_set<Node<T> *> &visitedNodeSet,
-                                           std::vector<Node<T> *> &t_reachableNodes)
+  inline void Graph<T>::getReachableHelper(Node<T> *const &currentNode_t, std::unordered_set<Node<T> *> &visitedNodeSet_t,
+                                           std::vector<Node<T> *> &reachableNodes_t)
   {
 
-    t_reachableNodes.push_back(t_currentNode);
+    reachableNodes_t.push_back(currentNode_t);
 
-    visitedNodeSet.insert(t_currentNode);
-    for (Node<T> *currNeighbor : t_currentNode->getNeighbors())
+    visitedNodeSet_t.insert(currentNode_t);
+    for (Node<T> *currNeighbor : currentNode_t->getNeighbors())
       {
-        if (!(visitedNodeSet.count(currNeighbor)))
+        if (!(visitedNodeSet_t.count(currNeighbor)))
           {
-            this->getReachableHelper(currNeighbor, visitedNodeSet, t_reachableNodes);
+            this->getReachableHelper(currNeighbor, visitedNodeSet_t, reachableNodes_t);
           }
       }
   }
