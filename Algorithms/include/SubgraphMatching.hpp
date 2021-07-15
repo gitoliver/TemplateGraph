@@ -9,7 +9,7 @@
 #include "../../GraphStructure/include/Graph.hpp"
 #include "../../GraphStructure/include/HalfAdjacencyMatrix.hpp"
 #include "../../GraphStructure/include/Node.hpp"
-#include "../../LazyPrints/LazyPrinters.hpp"
+//#include "../../LazyPrints/LazyPrinters.hpp"
 
 namespace
 {

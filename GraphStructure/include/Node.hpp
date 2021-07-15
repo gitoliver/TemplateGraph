@@ -1,7 +1,7 @@
 #ifndef TEMPLATEGRAPH_GRAPHSTRUCTURE_INCLUDE_NODE_HPP
 #define TEMPLATEGRAPH_GRAPHSTRUCTURE_INCLUDE_NODE_HPP
 
-#include "../../LazyPrints/LazyPrinters.hpp"
+//#include "../../LazyPrints/LazyPrinters.hpp"
 #include "./Edge.hpp"
 #include "./GenericGraphObject.hpp"
 
@@ -104,7 +104,7 @@ namespace glygraph
   template<class T>
   inline Node<T>::Node() : GenericGraphObject("INVALID NODE")
   {
-    badBehavior(__LINE__, __func__, "We called the default node constructor");
+    //badBehavior(__LINE__, __func__, "We called the default node constructor");
   }
 
   template<class T>
@@ -126,8 +126,8 @@ namespace glygraph
   inline Node<T>::~Node()
   {
     std::vector<Edge<T> *> tempInEdge = this->inEdges_m;
-    lazyInfo(__LINE__, __func__, "Destroying Node: " + this->getName());
-    std::cout << "\tMem Addr: " << this << "\n\n";
+    //lazyInfo(__LINE__, __func__, "Destroying Node: " + this->getName());
+    //std::cout << "\tMem Addr: " << this << "\n\n";
     // go through and hit all our parents, i.e. the ones that own the incoming edge and delete them
     // TODO: Do this but not lazy
     this->outEdges_m.clear();
@@ -258,11 +258,11 @@ namespace glygraph
   {
     if (this->isNeighbor(childNode_t))
       {
-        badBehavior(__LINE__, __func__, "Trying to make create an edge between two nodes that are already neighbors");
+        //badBehavior(__LINE__, __func__, "Trying to make create an edge between two nodes that are already neighbors");
       }
     else if (this == childNode_t)
       {
-        badBehavior(__LINE__, __func__, "Trying to add self as child, stop that!");
+        //badBehavior(__LINE__, __func__, "Trying to add self as child, stop that!");
       }
     else
       {
@@ -296,14 +296,14 @@ namespace glygraph
           }
         else
           {
-            badBehavior(__LINE__, __func__, "Tried to remove an edge for some reason it isnt a parent or child");
+            //badBehavior(__LINE__, __func__, "Tried to remove an edge for some reason it isnt a parent or child");
           }
       }
     else
       {
-        badBehavior(__LINE__, __func__,
-                    "Tried to remove an edge between node <" + this->getName() + "> and node <" +
-                        otherNode_t->getName() + ">");
+        //badBehavior(__LINE__, __func__,
+        //            "Tried to remove an edge between node <" + this->getName() + "> and node <" +
+        //                otherNode_t->getName() + ">");
       }
   }
 
@@ -431,11 +431,11 @@ namespace glygraph
           }
 
         // NOTE: Should never hit here
-        badBehavior(__LINE__, __func__, "Found that two nodes were neihgbors but could not find the connecting edge");
+        //badBehavior(__LINE__, __func__, "Found that two nodes were neihgbors but could not find the connecting edge");
       }
     else
       {
-        badBehavior(__LINE__, __func__, "Tried to get a connecting edge whene the two nodes are not connected");
+        //badBehavior(__LINE__, __func__, "Tried to get a connecting edge whene the two nodes are not connected");
         return NULL;
       }
     return NULL;

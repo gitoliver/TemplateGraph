@@ -1,7 +1,7 @@
 #ifndef TEMPLATEGRAPH_GRAPHSTRUCTURE_INCLUDE_EDGE_HPP
 #define TEMPLATEGRAPH_GRAPHSTRUCTURE_INCLUDE_EDGE_HPP
 
-#include "../../LazyPrints/LazyPrinters.hpp"
+//#include "../../LazyPrints/LazyPrinters.hpp"
 #include "./GenericGraphObject.hpp"
 
 #include <memory>
@@ -64,7 +64,7 @@ namespace glygraph
   template<class T>
   inline Edge<T>::Edge()
   {
-    badBehavior(__LINE__, __func__, "Warning calling default constructor");
+    //badBehavior(__LINE__, __func__, "Warning calling default constructor");
     this->targetNode_m = NULL;
     this->sourceNode_m = NULL;
   }

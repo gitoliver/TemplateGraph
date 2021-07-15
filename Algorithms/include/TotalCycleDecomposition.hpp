@@ -13,7 +13,7 @@
 #include "../../GraphStructure/include/Graph.hpp"
 #include "../../GraphStructure/include/HalfAdjacencyMatrix.hpp"
 #include "../../GraphStructure/include/Node.hpp"
-#include "../../LazyPrints/LazyPrinters.hpp"
+//#include "../../LazyPrints/LazyPrinters.hpp"
 
 namespace
 {
@@ -122,7 +122,7 @@ namespace
                   }
                 else
                   {
-                    badBehavior(__LINE__, __func__, "Fun cycle size of 0");
+                    //badBehavior(__LINE__, __func__, "Fun cycle size of 0");
                   }
               }
             else
@@ -149,7 +149,7 @@ namespace
     // just makes sure our call stack isnt stupid large, we can mutate this to our needs
     if (currPathLength_t > 750)
       {
-        badBehavior(__LINE__, __func__, "Our path is too long");
+        //badBehavior(__LINE__, __func__, "Our path is too long");
       }
     else
       {
@@ -171,7 +171,7 @@ namespace
                 return;
               }
           }
-        badBehavior(__LINE__, __func__, "Dead end when checking our cycle validation");
+        //badBehavior(__LINE__, __func__, "Dead end when checking our cycle validation");
       }
   } // end validate recursion
 
@@ -194,7 +194,7 @@ namespace
               }
           }
       }
-    badBehavior(__LINE__, __func__, "No edges");
+    //badBehavior(__LINE__, __func__, "No edges");
     return false;
   } // end validate cycle matrix
 
@@ -329,7 +329,7 @@ namespace cycle_decomp
           }
         if (temporaryNodeCycleSet.size() == 0)
           {
-            badBehavior(__LINE__, __func__, "Our found cycle is empty");
+            //badBehavior(__LINE__, __func__, "Our found cycle is empty");
           }
         else
           {

@@ -3,7 +3,7 @@
 
 #include <vector>
 
-#include "../../LazyPrints/LazyPrinters.hpp"
+//#include "../../LazyPrints/LazyPrinters.hpp"
 
 namespace glygraph
 {
@@ -65,7 +65,7 @@ namespace glygraph
       result.emptyInitializeWorkaround(rhs);
       if (this->numNodes_m != rhs.numNodes_m)
         {
-          badBehavior(__LINE__, __func__, "WARNING NUMBER OF NODES NOT EQUAL XOR");
+          //badBehavior(__LINE__, __func__, "WARNING NUMBER OF NODES NOT EQUAL XOR");
           return result;
         }
       else
@@ -88,7 +88,7 @@ namespace glygraph
     {
       if (this->numNodes_m != rhs.numNodes_m)
         {
-          badBehavior(__LINE__, __func__, "WARNING NUMBER OF NODES NOT EQUAL XOREQUALS");
+          //badBehavior(__LINE__, __func__, "WARNING NUMBER OF NODES NOT EQUAL XOREQUALS");
         }
       numEdges_m = 0;
       for (unsigned int bitListIndex = 0; bitListIndex < this->bitList_m.size(); bitListIndex++)
@@ -110,7 +110,7 @@ namespace glygraph
     {
       if (this->numNodes_m != rhs.numNodes_m)
         {
-          badBehavior(__LINE__, __func__, "WARNING NUMBER OF NODES NOT EQUAL EQUAL");
+          //badBehavior(__LINE__, __func__, "WARNING NUMBER OF NODES NOT EQUAL EQUAL");
         }
       this->bitList_m  = rhs.bitList_m;
       this->numEdges_m = rhs.numEdges_m;
@@ -131,7 +131,7 @@ namespace glygraph
   template<class T>
   HalfAdjacencyMatrix<T>::HalfAdjacencyMatrix()
   {
-    badBehavior(__LINE__, __func__, "Warning default constructor called");
+    //badBehavior(__LINE__, __func__, "Warning default constructor called");
     this->numEdges_m    = 0;
     this->numNodes_m    = 0;
     this->indexFactor_m = 0;
@@ -186,7 +186,7 @@ namespace glygraph
   {
     if (this->bitList_m[index(aNodeIndex_t, bNodeIndex_t)])
       {
-        badBehavior(__LINE__, __func__, "TRYING TO ADD A CONNECTION THAT WAS ALREADY THERE");
+        //badBehavior(__LINE__, __func__, "TRYING TO ADD A CONNECTION THAT WAS ALREADY THERE");
       }
     else
       {
@@ -200,7 +200,7 @@ namespace glygraph
   {
     if (!(this->bitList_m[index(aNodeIndex_t, bNodeIndex_t)]))
       {
-        badBehavior(__LINE__, __func__, "TRYING TO REMOVE A CONNECTION THAT WAS NOT THERE");
+        //badBehavior(__LINE__, __func__, "TRYING TO REMOVE A CONNECTION THAT WAS NOT THERE");
       }
     else
       {
@@ -251,7 +251,7 @@ namespace glygraph
       }
     else
       {
-        badBehavior(__LINE__, __func__, "ERROR DUE TO OUR INDEX PICKS");
+        //badBehavior(__LINE__, __func__, "ERROR DUE TO OUR INDEX PICKS");
         return -1;
       }
   }

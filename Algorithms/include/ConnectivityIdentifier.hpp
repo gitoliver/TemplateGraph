@@ -7,7 +7,7 @@
 #include "../../GraphStructure/include/Graph.hpp"
 #include "../../GraphStructure/include/Node.hpp"
 
-#include "../../LazyPrints/LazyPrinters.hpp"
+//#include "../../LazyPrints/LazyPrinters.hpp"
 
 namespace
 {
@@ -140,8 +140,8 @@ namespace id_connectivity
               {
                 if (errorEdgeCounter > 1)
                   {
-                    badBehavior(__LINE__, __func__,
-                                "WE FOUND A NODE THAT HAS MORE THAN ONE EDGE BUT ONLY HAS ONE NEIGHBOR");
+                    //badBehavior(__LINE__, __func__,
+                    //            "WE FOUND A NODE THAT HAS MORE THAN ONE EDGE BUT ONLY HAS ONE NEIGHBOR");
                     break;
                   }
                 else
@@ -216,9 +216,9 @@ namespace id_connectivity
 
     if ((badNodeCounter > 0) || (badEdgeCounter > 0))
       {
-        badBehavior(__LINE__, __func__,
-                    "Warning after running our total lableing there are " + std::to_string(badNodeCounter) +
-                        " UNKNOWN nodes and " + std::to_string(badEdgeCounter) + " UNKNOWN edges");
+        //badBehavior(__LINE__, __func__,
+        //            "Warning after running our total lableing there are " + std::to_string(badNodeCounter) +
+        //                " UNKNOWN nodes and " + std::to_string(badEdgeCounter) + " UNKNOWN edges");
       }
   }
 

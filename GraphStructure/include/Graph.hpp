@@ -1,7 +1,7 @@
 #ifndef TEMPLATEGRAPH_GRAPHSTRUCTURE_INCLUDE_GRAPH_HPP
 #define TEMPLATEGRAPH_GRAPHSTRUCTURE_INCLUDE_GRAPH_HPP
 
-#include "../../LazyPrints/LazyPrinters.hpp"
+//#include "../../LazyPrints/LazyPrinters.hpp"
 #include "HalfAdjacencyMatrix.hpp"
 #include "Node.hpp"
 
@@ -90,7 +90,7 @@ namespace glygraph
   template<class T>
   inline Graph<T>::Graph()
   {
-    badBehavior(__LINE__, __func__, "Warning calling default graph constructor");
+    //badBehavior(__LINE__, __func__, "Warning calling default graph constructor");
   }
 
   template<class T>
@@ -132,14 +132,14 @@ namespace glygraph
       }
     else
       {
-        badBehavior(__LINE__, __func__, "Was passed a nodelist of size 0");
+        //badBehavior(__LINE__, __func__, "Was passed a nodelist of size 0");
       }
   }
 
   template<class T>
   inline Graph<T>::~Graph()
   {
-    lazyInfo(__LINE__, __func__, "Graph deleted");
+    //lazyInfo(__LINE__, __func__, "Graph deleted");
   }
 
   template<class T>
@@ -174,7 +174,7 @@ namespace glygraph
       }
     else
       {
-        badBehavior(__LINE__, __func__, "no nodes present! cannot populate adj matrix");
+        //badBehavior(__LINE__, __func__, "no nodes present! cannot populate adj matrix");
       }
   }
 
@@ -200,7 +200,7 @@ namespace glygraph
       }
     else
       {
-        badBehavior(__LINE__, __func__, "Warning tried to populate lookups with no node list");
+        //badBehavior(__LINE__, __func__, "Warning tried to populate lookups with no node list");
       }
   }
 
@@ -297,7 +297,7 @@ namespace glygraph
                   }
                 else
                   {
-                    badBehavior(__LINE__, __func__, "ARGH MATEY");
+                    //badBehavior(__LINE__, __func__, "ARGH MATEY");
                   }
               }
           } // end 4
